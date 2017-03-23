@@ -31,7 +31,7 @@ class HomeController @Inject()(implicit exec: ExecutionContext, val messagesApi:
     mapping(
       "email" -> email,
       "password" -> nonEmptyText(4, 12),
-      "checkbox" -> boolean
+      "remember" -> boolean
     )(Login.apply)(Login.unapply)
   }
 
@@ -42,6 +42,14 @@ class HomeController @Inject()(implicit exec: ExecutionContext, val messagesApi:
     //Ok("Index")
   }
 
+  def login = Action {
+    Ok(views.html.Login.login())
+  }
+
+  def list = Action {
+    Ok(views.html.Board.list())
+  }
+
   def formtest = Action { request =>
     Logger.debug(messagesApi("greeting"))
     Logger.debug(Messages("greeting"))
@@ -50,6 +58,19 @@ class HomeController @Inject()(implicit exec: ExecutionContext, val messagesApi:
 
     Logger.debug(request.acceptLanguages.map(_.code).mkString(", "))
     Ok(views.html.form_test(login_form))
+  }
+
+  def formTestResult = Action { implicit request =>
+    val new_form = login_form.bindFromRequest
+
+    new_form.fold(
+      hasErrors = { form =>
+        Redirect(routes.HomeController.formtest)
+      },
+      success = { new_form =>
+        Ok(new_form.toString)
+      }
+    )
   }
 
   def str2 = Action { request =>

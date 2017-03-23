@@ -3,18 +3,24 @@
 # ~~~~
 
 # An example controller showing a sample home page
-GET        /                    controllers.HomeController.index
+GET         /                      controllers.HomeController.index
 
-GET        /str2                controllers.HomeController.str2
+GET         /str2                  controllers.HomeController.str2
 
-GET        /str                 controllers.HomeController.str(str:String)
+GET         /str                   controllers.HomeController.str(str:String)
 
-GET        /formtest            controllers.HomeController.formtest
+GET         /formtest              controllers.HomeController.formtest
+
+POST        /formtestresult        controllers.HomeController.formTestResult
+
+GET         /login                 controllers.HomeController.login
+
+GET         /list                  controllers.HomeController.list
 
 # An example controller showing how to use dependency injection
-GET        /count               controllers.CountController.count
+GET         /count                 controllers.CountController.count
 # An example controller showing how to write asynchronous code
-GET        /message             controllers.AsyncController.message
+GET         /message               controllers.AsyncController.message
 
 # Map static resources from the /public folder to the /assets URL path
-GET        /assets/*file        controllers.Assets.versioned(path="/public", file: Asset)
+GET         /assets/*file          controllers.Assets.versioned(path="/public", file: Asset)
