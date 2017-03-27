@@ -4,7 +4,7 @@ import javax.inject._
 
 import play.api._
 import play.api.data.Form
-import play.api.data.Forms._
+import play.api.data.Forms.{nonEmptyText, _}
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc._
 
@@ -26,7 +26,6 @@ class HomeController @Inject()(implicit exec: ExecutionContext, val messagesApi:
     * a path of `/`.
     */
 
-
   val login_form: Form[Login] = Form {
     mapping(
       "email" -> email,
@@ -35,6 +34,10 @@ class HomeController @Inject()(implicit exec: ExecutionContext, val messagesApi:
     )(Login.apply)(Login.unapply)
   }
 
+  val writeForm = Form(tuple(
+    "title" -> nonEmptyText(maxLength = 20),
+    "contents" -> nonEmptyText
+  ))
 
   def index = Action { implicit request =>
     Logger.debug(request.headers.headers.mkString("\n"))
@@ -42,45 +45,112 @@ class HomeController @Inject()(implicit exec: ExecutionContext, val messagesApi:
     //Ok("Index")
   }
 
+  def session = Action { implicit request =>
+    Ok(views.html.session("Your new application is ready.")).withSession("connected" -> "동희")
+  }
+
+  def authorized = Action { implicit request =>
+    request.session.get("connected").map { user =>
+      Ok("Hello " + user)
+    }.getOrElse {
+      Unauthorized("Oops, you are not connected")
+    }
+  }
+
   def login = Action {
-    Ok(views.html.Login.login())
+    implicit request =>
+
+      /*request.method match {
+        case
+      }*/
+
+      val form = login_form.bindFromRequest
+
+      form.fold(
+        hasErrors = {
+          _ =>
+            Ok(views.html.Login.login(login_form))
+        },
+        success = {
+          form =>
+            Logger.debug(form.toString)
+            Ok(form.toString)
+        }
+      )
+
+    /*form.value match {
+      case Some(_) => {
+        form.fold(
+          hasErrors = { _ =>
+            Redirect(routes.HomeController.formtest)
+          },
+          success = { form =>
+
+            Logger.debug(form.toString)
+
+            Ok(form.toString)
+          }
+        )
+      }
+      case None => Ok(views.html.Login.login(login_form))
+    }*/
   }
 
   def list = Action {
     Ok(views.html.Board.list())
   }
 
-  def formtest = Action { request =>
-    Logger.debug(messagesApi("greeting"))
-    Logger.debug(Messages("greeting"))
+  def write = Action {
+    implicit request =>
+      val new_form = writeForm.bindFromRequest
 
-    Logger.debug("한글")
-
-    Logger.debug(request.acceptLanguages.map(_.code).mkString(", "))
-    Ok(views.html.form_test(login_form))
+      Ok(views.html.Board.write(writeForm))
   }
 
-  def formTestResult = Action { implicit request =>
-    val new_form = login_form.bindFromRequest
+  def writeResult = Action {
+    implicit request =>
+      val new_form = writeForm.bindFromRequest
 
-    new_form.fold(
-      hasErrors = { form =>
-        Redirect(routes.HomeController.formtest)
-      },
-      success = { new_form =>
-        Ok(new_form.toString)
-      }
-    )
+      Ok(views.html.Board.write(new_form))
   }
 
-  def str2 = Action { request =>
-    Ok(request.queryString.mkString("\n"))
+  def formtest = Action {
+    request =>
+      Logger.debug(messagesApi("greeting"))
+      Logger.debug(Messages("greeting"))
+
+      Logger.debug("한글")
+
+      Logger.debug(request.acceptLanguages.map(_.code).mkString(", "))
+      Ok(views.html.form_test(login_form))
   }
 
-  def str(str: String) = Action { request =>
+  def formTestResult = Action {
+    implicit request =>
+      val new_form = login_form.bindFromRequest
 
-    Logger.debug(request.queryString.mkString("\n"))
+      new_form.fold(
+        hasErrors = {
+          form =>
+            Redirect(routes.HomeController.formtest)
+        },
+        success = {
+          new_form =>
+            Ok(new_form.toString)
+        }
+      )
+  }
 
-    Ok(request.queryString.mkString("\n"))
+  def str2 = Action {
+    request =>
+      Ok(request.queryString.mkString("\n"))
+  }
+
+  def str(str: String) = Action {
+    request =>
+
+      Logger.debug(request.queryString.mkString("\n"))
+
+      Ok(request.queryString.mkString("\n"))
   }
 }

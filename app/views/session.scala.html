@@ -1,0 +1,5 @@
+@(title: String)(implicit session: Session)
+
+@main(title) {
+    welcome @session.get("connected")
+}

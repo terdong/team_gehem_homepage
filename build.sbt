@@ -35,3 +35,8 @@ libraryDependencies ++= Seq(
   "org.webjars" % "font-awesome" % "4.7.0",
   "org.webjars" % "bootstrap-datepicker" % "1.6.4"
 )
+
+// google'sHTML Compressor
+libraryDependencies += "com.mohiva" %% "play-html-compressor" % "0.6.3"
+
+libraryDependencies += "com.google.api-client" % "google-api-client" % "1.22.0"
