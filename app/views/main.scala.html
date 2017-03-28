@@ -1,5 +1,4 @@
 @(title: String, tab: String = "", styles: Html = Html(""), scripts: Html = Html(""), modals: Html = Html(""))(content: Html)
-
 <!DOCTYPE html>
 <html>
     <head>
@@ -30,13 +29,13 @@
     <![endif]-->
     </head>
     <body>
-        @navbar(tab)
-            <!-- Page Content -->
-        <div class="container">
-            @content
-            @footer()
-        </div>
-            <!-- /.container -->
+        @Layout.navbar(tab)
+        <!-- Page Content -->
+    <div class="container">
+        @content
+        @Layout.footer()
+    </div>
+        <!-- /.container -->
         @modals
     </body>
 </html>

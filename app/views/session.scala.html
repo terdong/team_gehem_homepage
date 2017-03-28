@@ -1,5 +1,6 @@
-@(title: String)(implicit session: Session)
+@(title: String)(implicit session: Session, configuration: play.api.Configuration)
 
 @main(title) {
     welcome @session.get("connected")
+    @configuration.getString("version")
 }

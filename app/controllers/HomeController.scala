@@ -2,6 +2,7 @@ package controllers
 
 import javax.inject._
 
+import com.typesafe.config.ConfigFactory
 import play.api._
 import play.api.data.Form
 import play.api.data.Forms.{nonEmptyText, _}
@@ -17,7 +18,7 @@ case class Login(email: String, password: String, checkbox: Boolean)
   * application's home page.
   */
 @Singleton
-class HomeController @Inject()(implicit exec: ExecutionContext, val messagesApi: MessagesApi) extends Controller with I18nSupport {
+class HomeController @Inject()(implicit exec: ExecutionContext, val messagesApi: MessagesApi, config: play.api.Configuration) extends Controller with I18nSupport {
 
   /**
     * Create an Action to render an HTML page with a welcome message.
@@ -46,6 +47,7 @@ class HomeController @Inject()(implicit exec: ExecutionContext, val messagesApi:
   }
 
   def session = Action { implicit request =>
+    Logger.debug(ConfigFactory.load().getString("version"))
     Ok(views.html.session("Your new application is ready.")).withSession("connected" -> "동희")
   }
 
