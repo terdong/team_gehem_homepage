@@ -34,6 +34,8 @@ GET         /signup                 controllers.AccountController.createSignUpFo
 POST        /signin                  controllers.AccountController.signin
 GET         /signin                  controllers.AccountController.createSignInForm
 
+GET         /signout                controllers.AccountController.signout
+
 # An example controller showing how to use dependency injection
 GET         /count                  controllers.CountController.count
 # An example controller showing how to write asynchronous code

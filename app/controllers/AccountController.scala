@@ -6,9 +6,8 @@ import models.MemberDataAccess
 import play.api.Logger
 import play.api.data.Form
 import play.api.data.Forms.{nonEmptyText, _}
-
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
-import play.api.mvc.{Action, Controller}
+import play.api.mvc.{Action, Controller, Session}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
@@ -18,11 +17,23 @@ import scala.util.{Failure, Success}
 /**
   * Created by terdo on 2017-04-12 012.
   */
-
 case class SignIn(email: String, checkbox: Boolean)
 
+trait Accounts {
+  implicit def account(implicit session: Session): Option[String] = {
+    for (name <- session.get(AccountController.CONNECTED_KEY)) yield name
+  }
+}
+
+object AccountController {
+  val CONNECTED_KEY = "connected"
+}
+
 @Singleton
-class AccountController @Inject()(member_dao: MemberDataAccess, val messagesApi: MessagesApi) extends Controller with I18nSupport {
+class AccountController @Inject()(member_dao: MemberDataAccess,
+                                  val messagesApi: MessagesApi)
+    extends Controller
+    with I18nSupport {
 
   def emailExists(email: String): Boolean = {
     Await.result(member_dao.existsEmail(email), Duration.Inf)
@@ -30,14 +41,16 @@ class AccountController @Inject()(member_dao: MemberDataAccess, val messagesApi:
 
   val signin_form: Form[SignIn] = Form {
     mapping(
-      "email" -> email,
+      "email" -> email.verifying(Messages("account.signin.exists.email"),
+                                 emailExists(_)),
       "remember" -> boolean
     )(SignIn.apply)(SignIn.unapply)
   }
 
   val signup_form = Form {
     tuple(
-      "email" -> email.verifying (Messages("account.exists.email"), !emailExists(_)),
+      "email" -> email.verifying(Messages("account.signup.exists.email"),
+                                 !emailExists(_)),
       "name" -> nonEmptyText(2),
       "nickName" -> nonEmptyText(2)
     )
@@ -54,10 +67,12 @@ class AccountController @Inject()(member_dao: MemberDataAccess, val messagesApi:
         Future.successful(BadRequest(views.html.Account.signup(hasErrors))),
       (form: (String, String, String)) => {
         member_dao.insert(form) map (_ match {
-          case Success(result) => Ok(views.html.Account.signup_complete(result.email, signin_form))
+          case Success(result) =>
+            Ok(views.html.Account.signup_complete(result.email, signin_form))
           case Failure(e) => throw e
         })
-      })
+      }
+    )
   }
 
   def createSignInForm = Action {
@@ -66,19 +81,22 @@ class AccountController @Inject()(member_dao: MemberDataAccess, val messagesApi:
 
   def signin = Action { implicit request =>
     signin_form.bindFromRequest.fold(
-      hasErrors =>
-        Ok(views.html.Account.signin(hasErrors)),
+      hasErrors => Ok(views.html.Account.signin(hasErrors)),
       form => {
         Logger.debug(form.toString)
 
-        Redirect(routes.HomeController.index()).withSession("connected" -> form.email)
+        Redirect(routes.HomeController.index())
+          .withSession(AccountController.CONNECTED_KEY -> form.email)
       }
     )
   }
 
-  def memberInsert = Action {
-    implicit request =>
-      Ok("Hello")
+  def signout = Action { request =>
+    Redirect(routes.HomeController.index()).withNewSession
+  }
+
+  def memberInsert = Action { implicit request =>
+    Ok("Hello")
   }
 
 }

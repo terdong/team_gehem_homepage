@@ -13,13 +13,18 @@ import play.api.mvc._
 
 import scala.concurrent.ExecutionContext;
 
-
 /**
   * This controller creates an `Action` to handle HTTP requests to the
   * application's home page.
   */
 @Singleton
-class HomeController @Inject()(implicit exec: ExecutionContext, errorHandler: HttpErrorHandler, val messagesApi: MessagesApi, config: play.api.Configuration) extends Controller with I18nSupport {
+class HomeController @Inject()(implicit exec: ExecutionContext,
+                               errorHandler: HttpErrorHandler,
+                               val messagesApi: MessagesApi,
+                               config: play.api.Configuration)
+    extends Controller
+    with I18nSupport
+    with Accounts {
 
   /**
     * Create an Action to render an HTML page with a welcome message.
@@ -27,11 +32,11 @@ class HomeController @Inject()(implicit exec: ExecutionContext, errorHandler: Ht
     * will be called when the application receives a `GET` request with
     * a path of `/`.
     */
-
-  val writeForm = Form(tuple(
-    "title" -> nonEmptyText(maxLength = 20),
-    "contents" -> nonEmptyText
-  ))
+  val writeForm = Form(
+    tuple(
+      "title" -> nonEmptyText(maxLength = 20),
+      "contents" -> nonEmptyText
+    ))
 
   def flash = Action {
     Ok.flashing(("hi" -> "안녕하세요?"))
@@ -52,46 +57,43 @@ class HomeController @Inject()(implicit exec: ExecutionContext, errorHandler: Ht
     Ok(page.toString)
   }
 
-  def index = Action {
-    implicit request =>
-      Logger.debug(request.headers.headers.mkString("\n"))
-      Ok(views.html.index("Your new application is ready."))
-    //Ok("Index")
+  def index = Action { implicit request =>
+    Logger.debug(request.headers.headers.mkString("\n"))
+    Ok(views.html.index("Your new application is ready."))
+  //Ok("Index")
   }
 
-  def session = Action {
-    implicit request =>
-      Logger.debug(ConfigFactory.load().getString("version"))
-      Ok(views.html.session("Your new application is ready.")).withSession("connected" -> "동희")
+  def session = Action { implicit request =>
+    Logger.debug(ConfigFactory.load().getString("version"))
+    Ok(views.html.session("Your new application is ready."))
+      .withSession("connected" -> "동희")
   }
 
-  def authorized = Action {
-    implicit request =>
-      request.session.get("connected").map {
-        user =>
-          Ok("Hello " + user)
-      }.getOrElse {
+  def authorized = Action { implicit request =>
+    request.session
+      .get("connected")
+      .map { user =>
+        Ok("Hello " + user)
+      }
+      .getOrElse {
         Unauthorized("Oops, you are not connected")
       }
   }
-
 
   def list = Action {
     Ok(views.html.Board.list())
   }
 
-  def write = Action {
-    implicit request =>
-      val new_form = writeForm.bindFromRequest
+  def write = Action { implicit request =>
+    val new_form = writeForm.bindFromRequest
 
-      Ok(views.html.Board.write(writeForm))
+    Ok(views.html.Board.write(writeForm))
   }
 
-  def writeResult = Action {
-    implicit request =>
-      val new_form = writeForm.bindFromRequest
+  def writeResult = Action { implicit request =>
+    val new_form = writeForm.bindFromRequest
 
-      Ok(views.html.Board.write(new_form))
+    Ok(views.html.Board.write(new_form))
   }
 
   /*  def formtest = Action {
@@ -105,16 +107,13 @@ class HomeController @Inject()(implicit exec: ExecutionContext, errorHandler: Ht
         Ok(views.html.form_test(login_form))
     }*/
 
-  def str2 = Action {
-    request =>
-      Ok(request.queryString.mkString("\n"))
+  def str2 = Action { request =>
+    Ok(request.queryString.mkString("\n"))
   }
 
-  def str(str: String) = Action {
-    request =>
+  def str(str: String) = Action { request =>
+    Logger.debug(request.queryString.mkString("\n"))
 
-      Logger.debug(request.queryString.mkString("\n"))
-
-      Ok(request.queryString.mkString("\n"))
+    Ok(request.queryString.mkString("\n"))
   }
 }

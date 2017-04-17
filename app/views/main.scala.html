@@ -1,4 +1,4 @@
-@(title: String, tab: String = "", styles: Html = Html(""), scripts: Html = Html(""), modals: Html = Html(""), session: play.api.mvc.Session = null)(content: Html)
+@(title: String, tab: String = "", styles: Html = Html(""), scripts: Html = Html(""), modals: Html = Html(""))(content: Html)(implicit account: Option[String] = None)
 <!DOCTYPE html>
 <html>
     <head>
@@ -29,7 +29,7 @@
     <![endif]-->
     </head>
     <body>
-        @Layout.navbar(tab)(session)
+        @Layout.navbar(tab)
         <!-- Page Content -->
     <div class="container">
         @content
