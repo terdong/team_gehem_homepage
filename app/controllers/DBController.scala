@@ -5,6 +5,7 @@ import javax.inject.Inject
 import models.MemberDataAccess
 import org.postgresql.util.PSQLException
 import play.api.Logger
+import play.api.http.HttpErrorHandler
 import play.api.mvc.{Action, Controller}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -13,7 +14,7 @@ import scala.util.{Failure, Success}
 /**
   * Created by terdong on 2017-03-19 019.
   */
-class DBController @Inject()(member_dao: MemberDataAccess) extends Controller {
+class DBController @Inject()(member_dao: MemberDataAccess, errorHandler: HttpErrorHandler) extends Controller {
 
 
   def memberCreate = Action {
@@ -24,7 +25,10 @@ class DBController @Inject()(member_dao: MemberDataAccess) extends Controller {
   def memberInsert = Action.async { implicit request =>
     member_dao.insertSample map (m => m match {
       case Success(user) => Ok(user.toString)
-      case Failure(e: PSQLException) if (e.getSQLState == "23505") => InternalServerError(s"Some sort of unique key violation.. ${e.getMessage}")
+      case Failure(e: PSQLException) if (e.getSQLState == "23505") =>
+        //        errorHandler.onClientError(request, FORBIDDEN)
+        //        errorHandler.onServerError(request, e).map(s => Ok("hleo"))
+        InternalServerError(s"Some sort of unique key violation.. ${e.getMessage}")
       case Failure(e: PSQLException) => InternalServerError("Some sort of psql error..")
       case Failure(_) => InternalServerError("Something else happened.. it was bad..")
     })

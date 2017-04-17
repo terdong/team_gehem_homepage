@@ -1,2 +1,3 @@
 board.name.notice=공지사항
 greeting=반가워요
+account.exists.email=이미 존재하는 이메일입니다.

@@ -1,15 +1,18 @@
-@(login_form: Form[Login])(implicit messages: Messages)
+@(login_form: Form[SignIn])(implicit messages: Messages)
 
 @import b3.vertical.fieldConstructor  // Declares a vertical field constructor as default
 
 @main("form_test", tab = "styles") {
-    <p>
+<p>
     @Messages("greeting")
-    </p>
-    @b3.form(routes.HomeController.formTestResult()) {
-        @b3.email(login_form("email"), '_label -> "Email", 'placeholder -> "example@mail.com")
-        @b3.password(login_form("password"), '_label -> "Password", 'placeholder -> "Password")
-        @b3.checkbox(login_form("remember"), '_text -> "Remember me", 'value -> true)
-        @b3.submit('class -> "btn btn-default") { Sign in }
-    }
+</p>
+@*
+@b3.form(routes.HomeController.formTestResult()) {
+@b3.email(login_form("email"), '_label -> "Email", 'placeholder -> "example@mail.com")
+@b3.password(login_form("password"), '_label -> "Password", 'placeholder -> "Password")
+@b3.checkbox(login_form("remember"), '_text -> "Remember me", 'value -> true)
+@b3.submit('class -> "btn btn-default") { Sign in }
+`
+}
+*@
 }

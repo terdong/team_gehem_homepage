@@ -1,2 +1,3 @@
 board.name.notice=Notice
 greeting=Welcome!
+account.exists.email=Thie Email already exists

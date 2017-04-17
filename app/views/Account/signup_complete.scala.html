@@ -1,0 +1,6 @@
+@(name: String, form:Form[SignIn])(implicit messages: Messages)
+
+@main("signup complete") {
+<p class="lead text-success text-center">@{name}님의 회원가입이 완료되었습니다.</p>
+@Account.tags.signin_form(form)
+}

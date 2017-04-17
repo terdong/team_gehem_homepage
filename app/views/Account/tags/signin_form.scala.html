@@ -1,0 +1,21 @@
+@(signinForm: Form[SignIn])(implicit messages: Messages)
+@import b3.vertical.fieldConstructor
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-4 col-md-offset-4">
+            <div class="login-panel panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Please Sign In</h3>
+                </div>
+                <div class="panel-body">
+                    @b3.form(routes.AccountController.signin) {
+                    @b3.text(signinForm("email"), 'placeholder -> "E-mail", 'type -> "email", 'autofocus -> true)
+                    @b3.checkbox(signinForm("checkbox"), '_text -> "Remember Me", 'checked -> false)
+                    @b3.submit('class -> "btn btn-lg btn-success btn-block") {SignIn}
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

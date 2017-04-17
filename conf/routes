@@ -3,34 +3,41 @@
 # ~~~~
 
 # An example controller showing a sample home page
-GET         /                      controllers.HomeController.index
-GET         /session               controllers.HomeController.session
+GET         /                       controllers.HomeController.index
+GET         /error                  controllers.HomeController.error
+GET         /session                controllers.HomeController.session
 
-GET         /authorized            controllers.HomeController.authorized
+GET         /json                   controllers.HomeController.json
+GET         /flash                  controllers.HomeController.flash
 
-GET         /str2                  controllers.HomeController.str2
+GET         /authorized             controllers.HomeController.authorized
 
-GET         /str                   controllers.HomeController.str(str:String)
+GET         /testparam              controllers.HomeController.testparam(page: Int ?=9)
 
-GET         /formtest              controllers.HomeController.formtest
+GET         /testparam/:page        controllers.HomeController.testparam(page: Int)
 
-POST        /formtestresult        controllers.HomeController.formTestResult
+GET         /str2                   controllers.HomeController.str2
 
-GET         /login                 controllers.HomeController.login
-POST        /login                 controllers.HomeController.login
+GET         /str                    controllers.HomeController.str(str:String)
 
-GET         /list                  controllers.HomeController.list
+GET         /list                   controllers.HomeController.list
 
-GET         /write                 controllers.HomeController.write
+GET         /write                  controllers.HomeController.write
 
-POST        /writeResult           controllers.HomeController.writeResult
+POST        /writeResult            controllers.HomeController.writeResult
 
-GET         /memberInsert          controllers.DBController.memberInsert
+GET         /memberInsert           controllers.DBController.memberInsert
+
+POST        /signup                 controllers.AccountController.signup
+GET         /signup                 controllers.AccountController.createSignUpForm
+
+POST        /signin                  controllers.AccountController.signin
+GET         /signin                  controllers.AccountController.createSignInForm
 
 # An example controller showing how to use dependency injection
-GET         /count                 controllers.CountController.count
+GET         /count                  controllers.CountController.count
 # An example controller showing how to write asynchronous code
-GET         /message               controllers.AsyncController.message
+GET         /message                controllers.AsyncController.message
 
 # Map static resources from the /public folder to the /assets URL path
-GET         /assets/*file          controllers.Assets.versioned(path="/public", file: Asset)
+GET         /assets/*file           controllers.Assets.versioned(path="/public", file: Asset)

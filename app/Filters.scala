@@ -32,7 +32,8 @@ class Filters @Inject()(
     // we're running in production or test mode then don't use any
     // filters at all.
     if (env.mode == Mode.Dev) {
-      Seq(exampleFilter)
+      //Seq(exampleFilter)
+      Nil
     }
     else {
       Seq(htmlCompressorFilter,

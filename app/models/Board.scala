@@ -15,7 +15,8 @@ import scala.language.postfixOps
 /**
   * Created by terdong on 2017-03-25 019.
   */
-case class Board(userSeq: Int, userId: String, password: String, name: String, email: String, nickName: String, level: Int, exp: Int, regdate: Timestamp)
+case class Board(seq: Int, name: String, password: String, email: String, nickName: String, level: Int, exp: Int,
+                 regdate: Timestamp)
 
 @Singleton
 class BoardDataAccess @Inject()(protected val dbConfigProvider: DatabaseConfigProvider) extends HasDatabaseConfigProvider[JdbcProfile] {
@@ -37,16 +38,14 @@ class BoardDataAccess @Inject()(protected val dbConfigProvider: DatabaseConfigPr
 
   def insert(board: Board): Future[Unit] = db run (boards += board) map (_ => ())
 
-  def insertSample: Future[Int] = db run (boards += Board(1, "admin", "12345", "김동희", "terdong@gmail.com", "ThePresident", 100, 20, new Timestamp(Calendar.getInstance().getTimeInMillis())))
+  def insertSample: Future[Int] = db run (boards += Board(1, "admin", "12345", "terdong@gmail.com", "ThePresident", 100, 20, new Timestamp(Calendar.getInstance().getTimeInMillis())))
 
   class BoardsTable(tag: Tag) extends Table[Board](tag, "BOARD") {
-    def userSeq = column[Int]("userSeq", O.PrimaryKey, O.AutoInc)
-
-    def userId = column[String]("userId")
-
-    def password = column[String]("password")
+    def seq = column[Int]("seq", O.PrimaryKey, O.AutoInc)
 
     def name = column[String]("name")
+
+    def password = column[String]("password")
 
     def email = column[String]("email")
 
@@ -58,9 +57,9 @@ class BoardDataAccess @Inject()(protected val dbConfigProvider: DatabaseConfigPr
 
     def regdate = column[Timestamp]("regdate")
 
-    def * = (userSeq, userId, password, name, email, nickName, level, exp, regdate) <> (Board.tupled, Board.unapply _)
+    def * = (seq, name, password, email, nickName, level, exp, regdate) <> (Board.tupled, Board.unapply _)
 
-    def userId_idx = index("userId_idx", userId, unique = true)
+    def board_name_idx = index("board_name_idx", name, unique = true)
   }
 
 }
