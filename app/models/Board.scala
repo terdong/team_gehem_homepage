@@ -1,66 +1,60 @@
 package models
 
 import java.sql.Timestamp
-import java.util.Calendar
-import javax.inject.{Inject, Singleton}
 
-import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import slick.driver.JdbcProfile
-import slick.driver.PostgresDriver.api._
+import slick.jdbc.PostgresProfile.api._
 
-import scala.concurrent.Future
 import scala.language.postfixOps
 
 /**
   * Created by terdong on 2017-03-25 019.
   */
-case class Board(seq: Int, name: String, password: String, email: String, nickName: String, level: Int, exp: Int,
-                 regdate: Timestamp)
+case class Board(seq: Long,
+                 name: String,
+                 description: Option[String],
+                 status: Boolean,
+                 list_permission: String,
+                 read_permission: String,
+                 write_permission: String,
+                 author: String,
+                 register_date: Timestamp = null)
 
-@Singleton
-class BoardDataAccess @Inject()(protected val dbConfigProvider: DatabaseConfigProvider) extends HasDatabaseConfigProvider[JdbcProfile] {
+trait BoardsTable {
+  protected val boards = TableQuery[Boards]
 
-  private val boards = TableQuery[BoardsTable]
+  protected class Boards(tag: Tag) extends Table[Board](tag, "Boards") {
+    def seq = column[Long]("seq", O.PrimaryKey, O.AutoInc)
 
-  //def idx = ("unique_username", (username), unique = true)
+    def name = column[String]("name", O.Unique, O.Length(30))
 
-  def all: Future[Seq[Board]] = db run boards.result
+    def description = column[Option[String]]("description", O.Length(2000))
 
-  def create: Future[Unit] = {
-    db run (boards.schema create)
-  }
+    def status = column[Boolean]("status")
 
-  def dropTable = {
-    db run (boards.schema drop)
+    def list_permission =
+      column[String]("list_permission", O.Length(4, varying = false))
 
-  }
+    def read_permission =
+      column[String]("read_permission", O.Length(4, varying = false))
 
-  def insert(board: Board): Future[Unit] = db run (boards += board) map (_ => ())
+    def write_permission =
+      column[String]("write_permission", O.Length(4, varying = false))
 
-  def insertSample: Future[Int] = db run (boards += Board(1, "admin", "12345", "terdong@gmail.com", "ThePresident", 100, 20, new Timestamp(Calendar.getInstance().getTimeInMillis())))
+    def author = column[String]("author", O.Length(80))
 
-  class BoardsTable(tag: Tag) extends Table[Board](tag, "BOARD") {
-    def seq = column[Int]("seq", O.PrimaryKey, O.AutoInc)
+    def register_date =
+      column[Timestamp]("register_date", O.SqlType("timestamp default now()"))
 
-    def name = column[String]("name")
-
-    def password = column[String]("password")
-
-    def email = column[String]("email")
-
-    def nickName = column[String]("nickName")
-
-    def level = column[Int]("level", O.Default(0))
-
-    def exp = column[Int]("exp", O.Default(0))
-
-    def regdate = column[Timestamp]("regdate")
-
-    def * = (seq, name, password, email, nickName, level, exp, regdate) <> (Board.tupled, Board.unapply _)
-
-    def board_name_idx = index("board_name_idx", name, unique = true)
+    def * =
+      (seq,
+       name,
+       description,
+       status,
+       list_permission,
+       read_permission,
+       write_permission,
+       author,
+       register_date) <> (Board.tupled, Board.unapply _)
   }
 
 }
-

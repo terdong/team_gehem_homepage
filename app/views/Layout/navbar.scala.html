@@ -1,4 +1,4 @@
-@(tab: String)(implicit account : Option[String])
+@(tab: String)(implicit account : Option[(String, String)])
 <!-- Navigation -->
 <nav tab="@tab" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
     <div class="container">
@@ -56,6 +56,16 @@
                 <li>
                     <a href=@routes.AccountController.signup()>signup</a>
                 </li>
+                @tags.account_contents {
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a href=@routes.BoardController.createBoard()>create board</a>
+                            </li>
+                        </ul>
+                    </li>
+                }()
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li class="dropdown">
@@ -63,20 +73,20 @@
                         <i class="fa fa-user fa-fw"></i> <i class="fa fa-caret-down"></i>
                     </a>
                     <ul class="dropdown-menu dropdown-user">
-                        @account match {
-                            case Some(account) => {
-                                <li><a href="#"><i class="fa fa-user fa-fw"></i> User Profile</a>
-                                </li>
-                                <li><a href="#"><i class="fa fa-gear fa-fw"></i> Settings</a>
-                                </li>
-                                <li class="divider"></li>
-                                <li><a href="@routes.AccountController.signout"><i class="fa fa-sign-out fa-fw"></i> Sign Out</a></li>
-                            }
-                            case None => {
+                        @tags.account_contents {
+                            <li><a>@{account.getOrElse(("", ""))._1} 님</a></li>
+                            <li><a href="#"><i class="fa fa-user fa-fw"></i> User Profile</a>
+                            </li>
+                            <li><a href="#"><i class="fa fa-gear fa-fw"></i> Settings</a>
+                            </li>
+                            <li class="divider"></li>
+                            <li><a href="@routes.AccountController.signout"><i class="fa fa-sign-out fa-fw"></i>
+                                Sign Out</a></li>
+                        }{
                                 <li><a href="@routes.AccountController.signin"><i class="fa fa-sign-in fa-fw"></i> Sign In</a></li>
                                 <li class="divider"></li>
                                 <li><a href="@routes.AccountController.signup"><i class="fa fa-user-plus fa-fw"></i> Sign Up</a></li>
-                            }
+
                         }
                     </ul>
                     <!-- /.dropdown-user -->

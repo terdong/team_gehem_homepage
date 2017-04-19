@@ -2,12 +2,11 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 
-import models.MemberDataAccess
-import play.api.Logger
 import play.api.data.Form
 import play.api.data.Forms.{nonEmptyText, _}
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
-import play.api.mvc.{Action, Controller, Session}
+import play.api.mvc.{Action, Controller}
+import repositories.MembersRepository
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
@@ -19,24 +18,19 @@ import scala.util.{Failure, Success}
   */
 case class SignIn(email: String, checkbox: Boolean)
 
-trait Accounts {
-  implicit def account(implicit session: Session): Option[String] = {
-    for (name <- session.get(AccountController.CONNECTED_KEY)) yield name
-  }
-}
-
 object AccountController {
-  val CONNECTED_KEY = "connected"
+  val EMAIL_KEY = "email"
+  val PERMISSION_KEY = "permission"
 }
 
 @Singleton
-class AccountController @Inject()(member_dao: MemberDataAccess,
+class AccountController @Inject()(member_rep: MembersRepository,
                                   val messagesApi: MessagesApi)
     extends Controller
     with I18nSupport {
 
   def emailExists(email: String): Boolean = {
-    Await.result(member_dao.existsEmail(email), Duration.Inf)
+    Await.result(member_rep.existsEmail(email), Duration.Inf)
   }
 
   val signin_form: Form[SignIn] = Form {
@@ -66,9 +60,10 @@ class AccountController @Inject()(member_dao: MemberDataAccess,
       hasErrors =>
         Future.successful(BadRequest(views.html.Account.signup(hasErrors))),
       (form: (String, String, String)) => {
-        member_dao.insert(form) map (_ match {
-          case Success(result) =>
-            Ok(views.html.Account.signup_complete(result.email, signin_form))
+        //Future.successful(Ok("test"))
+        member_rep.insert(form) map (_ match {
+          case Success(member) =>
+            Ok(views.html.Account.signup_complete(member.email, signin_form))
           case Failure(e) => throw e
         })
       }
@@ -79,14 +74,17 @@ class AccountController @Inject()(member_dao: MemberDataAccess,
     Ok(views.html.Account.signin(signin_form))
   }
 
-  def signin = Action { implicit request =>
+  def signin = Action.async { implicit request =>
     signin_form.bindFromRequest.fold(
-      hasErrors => Ok(views.html.Account.signin(hasErrors)),
+      hasErrors => Future.successful(Ok(views.html.Account.signin(hasErrors))),
       form => {
-        Logger.debug(form.toString)
-
-        Redirect(routes.HomeController.index())
-          .withSession(AccountController.CONNECTED_KEY -> form.email)
+        member_rep.finByEmail(form.email) map (_ match {
+          case Success(member) =>
+            Redirect(routes.HomeController.index()).withSession(
+              AccountController.EMAIL_KEY -> form.email,
+              AccountController.PERMISSION_KEY -> member.permission)
+          case Failure(e) => throw e
+        })
       }
     )
   }

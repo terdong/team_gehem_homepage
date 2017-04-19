@@ -11,7 +11,9 @@ import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.JsValue
 import play.api.mvc._
 
-import scala.concurrent.ExecutionContext;
+import scala.concurrent.ExecutionContext
+
+import traits.AccountInfo
 
 /**
   * This controller creates an `Action` to handle HTTP requests to the
@@ -24,7 +26,7 @@ class HomeController @Inject()(implicit exec: ExecutionContext,
                                config: play.api.Configuration)
     extends Controller
     with I18nSupport
-    with Accounts {
+    with AccountInfo {
 
   /**
     * Create an Action to render an HTML page with a welcome message.

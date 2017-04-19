@@ -1,0 +1,10 @@
+@(content: Html)(none:Html = Html(""))(implicit account : Option[(String, String)])
+
+@account match {
+    case Some(account) => {
+       @content
+    }
+    case None => {
+        @none
+    }
+}

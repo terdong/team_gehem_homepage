@@ -4,6 +4,22 @@
 
 # An example controller showing a sample home page
 GET         /                       controllers.HomeController.index
+
+# Account
+POST        /signup                 controllers.AccountController.signup
+GET         /signup                 controllers.AccountController.createSignUpForm
+
+POST        /signin                  controllers.AccountController.signin
+GET         /signin                  controllers.AccountController.createSignInForm
+
+GET         /signout                controllers.AccountController.signout
+
+# Admin
+GET         /createBoard           controllers.BoardController.createBoard
+
+
+
+
 GET         /error                  controllers.HomeController.error
 GET         /session                controllers.HomeController.session
 
@@ -28,13 +44,10 @@ POST        /writeResult            controllers.HomeController.writeResult
 
 GET         /memberInsert           controllers.DBController.memberInsert
 
-POST        /signup                 controllers.AccountController.signup
-GET         /signup                 controllers.AccountController.createSignUpForm
+GET         /sampleBoardInsert           controllers.DBController.sampleBoardInsert
+GET         /samplePostInsert controllers.DBController.samplePostInsert
 
-POST        /signin                  controllers.AccountController.signin
-GET         /signin                  controllers.AccountController.createSignInForm
 
-GET         /signout                controllers.AccountController.signout
 
 # An example controller showing how to use dependency injection
 GET         /count                  controllers.CountController.count

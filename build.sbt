@@ -8,7 +8,10 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
 scalaVersion := "2.11.9"
 
-scalacOptions += "-feature"
+scalacOptions ++= Seq(
+  "-feature",
+  "-language:postfixOps"
+)
 
 libraryDependencies ++= Seq(
   cache,
@@ -20,8 +23,8 @@ libraryDependencies += "org.scala-lang.modules" %% "scala-async" % "0.9.6"
 
 // slick
 libraryDependencies ++= Seq(
-  "com.typesafe.play" %% "play-slick" % "2.0.2",
-  "com.typesafe.play" %% "play-slick-evolutions" % "2.0.2",
+  "com.typesafe.play" %% "play-slick" % "2.1.0",
+  "com.typesafe.play" %% "play-slick-evolutions" % "2.1.0",
   "org.postgresql" % "postgresql" % "42.0.0"
 )
 
