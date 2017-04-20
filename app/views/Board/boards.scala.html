@@ -1,0 +1,76 @@
+@(boards:Seq[Board], form:Form[_])(implicit account: Option[(String,String)], messages: Messages)
+
+@implicitFieldConstructor = @{ b3.vertical.fieldConstructor }
+
+@sample_permission = @{ Seq("MP00"->"손님","MP02"->"가입자","MP03"->"멤버", "MP09"->"관리자") }
+@main("boards") {
+
+    <div class="panel panel-default">
+        <div class="panel-heading">게시판 생성</div>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover table-condensed">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>이름</th>
+                        <th>상태</th>
+                        <th>목록권한</th>
+                        <th>읽기권한</th>
+                        <th>쓰기권한</th>
+                        <th>작성자</th>
+                        <th>작성일</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for(board <- boards){
+                        <tr>
+                            <th scope="row">@{board.seq}</th>
+                            <td>@{board.name}</td>
+                            <td>@{board.status}</td>
+                            <td>@{board.list_permission}</td>
+                            <td>@{board.read_permission}</td>
+                            <td>@{board.write_permission}</td>
+                            <td>@{board.author}</td>
+                            <td>@{
+                                val date = board.register_date.toString
+                                val index = date.indexOf('.')
+                                date.substring(0, index)
+                            }</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @b3.form(routes.BoardController.createBoard) {
+        <div class="row">
+            <div class="col-md-6">
+            @b3.text(form("name"), '_label -> "Title")
+        </div>
+            <div class="col-md-6">
+            @b3.checkbox(form("status"), '_text -> "status", 'checked -> true )
+            </div>
+        </div>
+        @b3.textarea(form("description"), '_label -> "Contents")
+        <div class="row">
+            <div class="col-md-4">
+            @b3.select( form("list_perm"), options = sample_permission, '_label -> "List Permission")
+            </div>
+            <div class="col-md-4">
+            @b3.select( form("read_perm"), options = sample_permission, '_label -> "Read Permission")
+            </div>
+            <div class="col-md-4">
+            @b3.select( form("write_perm"), options = sample_permission, '_label -> "Write Permission")
+            </div>
+        </div>
+
+        @*
+        @defining(b3.inline.fieldConstructorSpecific) { implicit ifc =>
+            @b3.text( form("list_perm"), '_label -> "Inline input text" )
+            @b3.text( form("read_perm"), '_label -> "Inline input text" )
+        }
+        *@
+        @b3.submit('class -> "btn btn-default") {
+            <span class="glyphicon glyphicon-ok"></span> Create }
+    }
+}

@@ -24,7 +24,7 @@ class MembersRepository @Inject()(
 
   def all: Future[Seq[Member]] = db run members.result
 
-  def finByEmail(email: String) = {
+  def findByEmail(email: String) = {
 
     /*    val query = for {
       email_ <- Parameters[String]
@@ -32,6 +32,10 @@ class MembersRepository @Inject()(
     } yield member*/
 
     db run members.filter(_.email === email).result.head.asTry
+  }
+
+  def findByEmail2(email: String): Future[Member] = {
+    db run members.filter(_.email === email).result.head
   }
 
   def create: Future[Unit] = {

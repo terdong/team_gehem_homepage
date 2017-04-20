@@ -2,3 +2,4 @@ board.name.notice=Notice
 greeting=Welcome!
 account.signup.exists.email=Thie Email already exists
 account.signin.exists.email=
+board.create.exists.name=

@@ -25,12 +25,34 @@ class BoardsRepository @Inject()(
     db run (boards.schema create)
   }
 
+  def existsName(name: String): Future[Boolean] =
+    db run (boards.filter(i => i.name === name).exists.result)
+
   def dropTable = {
     db run (boards.schema drop)
   }
 
   def insert(board: Board): Future[Unit] =
     db run (boards += board) map (_ => ())
+
+  def insert(form_data: (String, String, Boolean, String, String, String),
+             name: String): Future[Int] = {
+    val action = boards map (b =>
+      (b.name,
+       b.description,
+       b.status,
+       b.list_permission,
+       b.read_permission,
+       b.write_permission,
+       b.author)) += (form_data._1,
+    Some(form_data._2),
+    form_data._3,
+    form_data._4,
+    form_data._5,
+    form_data._6,
+    name)
+    db run action
+  }
 
   def insertSample: Future[Int] = {
     val action = boards map (b =>
@@ -43,9 +65,9 @@ class BoardsRepository @Inject()(
        b.author)) += ("noti",
     Some("notification board"),
     true,
-    "admin",
-    "admin",
-    "admin",
+    "MP09",
+    "MP09",
+    "MP09",
     "terdong")
     db run action
   }

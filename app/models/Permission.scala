@@ -10,7 +10,7 @@ import scala.language.postfixOps
   * M: Member
   * P: Permission
   * 00: default number
-  * 01: unuseless
+  * 01: useless
   * 02: guest
   * 03: member
   * 04 ~ 08: spare

@@ -78,7 +78,7 @@ class AccountController @Inject()(member_rep: MembersRepository,
     signin_form.bindFromRequest.fold(
       hasErrors => Future.successful(Ok(views.html.Account.signin(hasErrors))),
       form => {
-        member_rep.finByEmail(form.email) map (_ match {
+        member_rep.findByEmail(form.email) map (_ match {
           case Success(member) =>
             Redirect(routes.HomeController.index()).withSession(
               AccountController.EMAIL_KEY -> form.email,

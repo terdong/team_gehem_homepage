@@ -53,15 +53,12 @@
                 <li>
                     <a href=@routes.DBController.memberInsert()>memberInsert</a>
                 </li>
-                <li>
-                    <a href=@routes.AccountController.signup()>signup</a>
-                </li>
                 @tags.account_contents {
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin <b class="caret"></b></a>
                         <ul class="dropdown-menu">
                             <li>
-                                <a href=@routes.BoardController.createBoard()>create board</a>
+                                <a href=@routes.BoardController.boards()>boards</a>
                             </li>
                         </ul>
                     </li>

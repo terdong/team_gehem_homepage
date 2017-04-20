@@ -1,0 +1,50 @@
+@(head_title:String)
+@script = {
+    <script src="@routes.Assets.versioned("javascripts/click_event.js")" type="text/javascript"></script>
+}
+
+<div class="panel panel-default">
+        <!-- Default panel contents -->
+    <div class="panel-heading">@head_title</div>
+
+        <!-- Table -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover table-condensed">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>제목</th>
+                    <th>작성자</th>
+                    <th>작성일</th>
+                    <th>조회</th>
+                </tr>
+            </thead>
+            <tbody id="clickEvent">
+                <tr url="@routes.HomeController.index()">
+                    <th scope="row">1</th>
+                    <td>Mark</td>
+                    <td>Otto</td>
+                    <td>@@amdo"</td>
+                </tr>
+                <tr>
+                    <th scope="row">2</th>
+                    <td>Jacob</td>
+                    <td>Thornton</td>
+                    <td>"afat"</td>
+                </tr>
+                <tr>
+                    <th scope="row">3</th>
+                    <td colspan="2">Larry the Bird</td>
+                    <td>"atwitter"</td>
+                </tr>
+                @for(i <- 4 to 6) {
+                    <tr>
+                        <th scope="row">@i</th>
+                        @*<td colspan="2">@(Random.alphanumeric take 10 mkString (""))</td>
+                        <td>@(Random.alphanumeric take 5 mkString (""))</td>*@
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

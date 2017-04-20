@@ -15,7 +15,9 @@ GET         /signin                  controllers.AccountController.createSignInF
 GET         /signout                controllers.AccountController.signout
 
 # Admin
-GET         /createBoard           controllers.BoardController.createBoard
+POST        /createBoard           controllers.BoardController.createBoard
+GET         /boards                 controllers.BoardController.boards
+
 
 
 
