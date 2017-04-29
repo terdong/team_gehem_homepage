@@ -3,58 +3,67 @@
 # ~~~~
 
 # An example controller showing a sample home page
-GET         /                       controllers.HomeController.index
+GET         /                                 controllers.HomeController.index
 
 # Account
-POST        /signup                 controllers.AccountController.signup
-GET         /signup                 controllers.AccountController.createSignUpForm
+POST        /signup                           controllers.AccountController.signup
+GET         /signup                           controllers.AccountController.createSignUpForm
 
-POST        /signin                  controllers.AccountController.signin
-GET         /signin                  controllers.AccountController.createSignInForm
+POST        /signin                           controllers.AccountController.signin
+GET         /signin                           controllers.AccountController.createSignInForm
 
-GET         /signout                controllers.AccountController.signout
+GET         /signout                          controllers.AccountController.signout
 
 # Admin
-POST        /createBoard           controllers.BoardController.createBoard
-GET         /boards                 controllers.BoardController.boards
+POST        /createBoard                      controllers.BoardController.createBoard
+GET         /boards                           controllers.BoardController.boards
+GET         /boards/:board_seq/delete         controllers.BoardController.deleteBoard(board_seq:Long)
+
+
+# Post
+#GET         /showPostList/all                         controllers.PostController.showPostListAll
+GET         /list/all                         controllers.PostController.listAll(page:Int = 1)
+GET         /list/all/write                   controllers.PostController.writePostForm(board_seq :Long = 0)
+GET         /list/all/:page                   controllers.PostController.listAll(page:Int)
+POST        /list/:board_seq/write            controllers.PostController.writePost(board_seq :Long)
+GET         /list/:board_seq/write            controllers.PostController.writePostForm(board_seq :Long)
+GET         /list/:board_seq                  controllers.PostController.list(board_seq:Long, page:Int = 1)
+GET         /list/:board_seq/:page            controllers.PostController.list(board_seq:Long, page:Int)
+#GET         /showPostList/:board_seq                  controllers.PostController.showPostList(board_seq :Long)
+GET         /post/:board_seq/:post_seq        controllers.PostController.showPost(board_seq :Long, post_seq:Long)
 
 
 
+GET         /error                            controllers.HomeController.error
 
+GET         /json                             controllers.HomeController.json
+GET         /flash                            controllers.HomeController.flash
 
-GET         /error                  controllers.HomeController.error
-GET         /session                controllers.HomeController.session
+GET         /authorized                       controllers.HomeController.authorized
 
-GET         /json                   controllers.HomeController.json
-GET         /flash                  controllers.HomeController.flash
+GET         /testparam                        controllers.HomeController.testparam(page: Int ?=9)
 
-GET         /authorized             controllers.HomeController.authorized
+GET         /testparam/:page                  controllers.HomeController.testparam(page: Int)
 
-GET         /testparam              controllers.HomeController.testparam(page: Int ?=9)
+GET         /str2                             controllers.HomeController.str2
 
-GET         /testparam/:page        controllers.HomeController.testparam(page: Int)
+GET         /str                              controllers.HomeController.str(str:String)
 
-GET         /str2                   controllers.HomeController.str2
+GET         /write                            controllers.HomeController.write
 
-GET         /str                    controllers.HomeController.str(str:String)
+POST        /writeResult                      controllers.HomeController.writeResult
 
-GET         /list                   controllers.HomeController.list
+GET         /memberInsert                     controllers.DBController.memberInsert
 
-GET         /write                  controllers.HomeController.write
-
-POST        /writeResult            controllers.HomeController.writeResult
-
-GET         /memberInsert           controllers.DBController.memberInsert
-
-GET         /sampleBoardInsert           controllers.DBController.sampleBoardInsert
-GET         /samplePostInsert controllers.DBController.samplePostInsert
+GET         /sampleBoardInsert                controllers.DBController.sampleBoardInsert
+GET         /samplePostInsert                 controllers.DBController.samplePostInsert
 
 
 
 # An example controller showing how to use dependency injection
-GET         /count                  controllers.CountController.count
+GET         /count                            controllers.CountController.count
 # An example controller showing how to write asynchronous code
-GET         /message                controllers.AsyncController.message
+GET         /message                          controllers.AsyncController.message
 
 # Map static resources from the /public folder to the /assets URL path
-GET         /assets/*file           controllers.Assets.versioned(path="/public", file: Asset)
+GET         /assets/*file                     controllers.Assets.versioned(path="/public", file: Asset)

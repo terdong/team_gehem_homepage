@@ -1,4 +1,4 @@
-@(tab: String)(implicit account : Option[(String, String)])
+@(tab: String)(implicit header: controllers.traits.Header)
 <!-- Navigation -->
 <nav tab="@tab" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
     <div class="container">
@@ -25,27 +25,19 @@
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">Board <b class="caret"></b></a>
                     <ul class="dropdown-menu">
                         <li>
-                            <a href="#">1 Column Portfolio</a>
+                            <a href="@routes.PostController.listAll(1)">all</a>
                         </li>
-                        <li>
-                            <a href="#">2 Column Portfolio</a>
-                        </li>
-                        <li>
-                            <a href="#">3 Column Portfolio</a>
-                        </li>
-                        <li>
-                            <a href="#">4 Column Portfolio</a>
-                        </li>
-                        <li>
-                            <a href="#">Single Portfolio Item</a>
-                        </li>
+                        @header.board_list.map{list =>
+                          @for(board_info <- list){
+                            <li>
+                                <a href="@routes.PostController.list(board_info._1, 1)">@{board_info._2}</a>
+                            </li>
+                            }
+                        }
                     </ul>
                 </li>
                 <li>
                     <a href="#">Contact</a>
-                </li>
-                <li>
-                    <a href=@routes.HomeController.list()>List_Temp</a>
                 </li>
                 <li>
                     <a href=@routes.HomeController.write()>Write_Temp</a>
@@ -71,7 +63,9 @@
                     </a>
                     <ul class="dropdown-menu dropdown-user">
                         @tags.account_contents {
-                            <li><a>@{account.getOrElse(("", ""))._1} 님</a></li>
+                            @header.member_info.map { member_info =>
+                            <li><a>@{member_info._1} 님</a></li>
+                            }
                             <li><a href="#"><i class="fa fa-user fa-fw"></i> User Profile</a>
                             </li>
                             <li><a href="#"><i class="fa fa-gear fa-fw"></i> Settings</a>

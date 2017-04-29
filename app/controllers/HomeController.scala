@@ -2,8 +2,9 @@ package controllers
 
 import javax.inject._
 
-import com.typesafe.config.ConfigFactory
+import controllers.traits._
 import play.api._
+import play.api.cache.CacheApi
 import play.api.data.Form
 import play.api.data.Forms.{nonEmptyText, _}
 import play.api.http.HttpErrorHandler
@@ -13,8 +14,6 @@ import play.api.mvc._
 
 import scala.concurrent.ExecutionContext
 
-import traits.AccountInfo
-
 /**
   * This controller creates an `Action` to handle HTTP requests to the
   * application's home page.
@@ -22,11 +21,12 @@ import traits.AccountInfo
 @Singleton
 class HomeController @Inject()(implicit exec: ExecutionContext,
                                errorHandler: HttpErrorHandler,
+                               cache: CacheApi,
                                val messagesApi: MessagesApi,
                                config: play.api.Configuration)
     extends Controller
     with I18nSupport
-    with AccountInfo {
+    with ProvidesHeader {
 
   /**
     * Create an Action to render an HTML page with a welcome message.
@@ -61,14 +61,9 @@ class HomeController @Inject()(implicit exec: ExecutionContext,
 
   def index = Action { implicit request =>
     Logger.debug(request.headers.headers.mkString("\n"))
+
     Ok(views.html.index("Your new application is ready."))
   //Ok("Index")
-  }
-
-  def session = Action { implicit request =>
-    Logger.debug(ConfigFactory.load().getString("version"))
-    Ok(views.html.session("Your new application is ready."))
-      .withSession("connected" -> "동희")
   }
 
   def authorized = Action { implicit request =>
@@ -80,10 +75,6 @@ class HomeController @Inject()(implicit exec: ExecutionContext,
       .getOrElse {
         Unauthorized("Oops, you are not connected")
       }
-  }
-
-  def list = Action {
-    Ok(views.html.Board.list())
   }
 
   def write = Action { implicit request =>

@@ -1,0 +1,49 @@
+@(page: Int, page_length: Int, count: Int, board_seq: Long, route: Int => Call, bound: Int = 5)(implicit messages: Messages)
+@import b3.clear.fieldConstructor
+
+<nav aria-label="Page navigation">
+    <a href="@routes.PostController.writePostForm(board_seq)">
+    @b3.button('class -> "btn btn-default pull-right") {
+        <span class="glyphicon glyphicon-pencil"></span> Write
+    }</a>
+
+
+    <div class="text-center">
+        <ul class="pagination justify-content-center">
+            @if(page == 1) {
+                <li class="disabled">
+                    <a href="#" aria-label="Previous">
+            } else {
+                <li><a href="@route(1)">Newer</a></li>
+                <li>
+                    <a href="@route(page - 1)" aria-label="Previous">
+                    }
+            <span aria-hidden="true">&laquo;</span>
+        </a>
+        </li>
+
+            @defining(((page.toDouble / bound).floor * bound).toInt) { low_bound =>
+                @defining(if((low_bound + bound) * page_length >= count) count / page_length + 1 else low_bound + bound) { high_bount =>
+
+                    @for(i <- low_bound.max(1) until page) {
+                        <li><a href="@route(i)">@i</a></li>
+                    }
+                <li class="active"><a href="#">@page</a></li>
+                    @for(i <- page + 1 to high_bount) {
+                        <li><a href="@route(i)">@i</a></li>
+                    }
+
+                    @if(page < high_bount) {
+                        <li><a href="@route(page + 1)" aria-label="Next">
+                    } else {
+                        <li class="disabled"><a href="#" aria-label="Next">
+                        }
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+                </li>
+
+                }
+            }
+        </ul>
+    </div>
+</nav>

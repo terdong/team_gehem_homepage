@@ -16,7 +16,8 @@ scalacOptions ++= Seq(
 libraryDependencies ++= Seq(
   cache,
   ws,
-  "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0" % Test
+  "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0" % Test,
+  evolutions
 )
 
 libraryDependencies += "org.scala-lang.modules" %% "scala-async" % "0.9.6"

@@ -1,6 +1,6 @@
-@(content: Html)(none:Html = Html(""))(implicit account : Option[(String, String)])
+@(content: Html)(none:Html = Html(""))(implicit header: controllers.traits.Header)
 
-@account match {
+@header.member_info match {
     case Some(account) => {
        @content
     }

@@ -21,6 +21,21 @@ class BoardsRepository @Inject()(
 
   def all: Future[Seq[Board]] = db run boards.result
 
+  def allName: Future[Seq[String]] = {
+    db run boards.map(_.name).result
+  }
+
+  def allSeqAndName = {
+    val query = for {
+      board <- boards
+    } yield (board.seq, board.name)
+    db run (query.result)
+  }
+
+  def getNameBySeq(board_seq: Long) = {
+    db run boards.filter(_.seq === board_seq).map(_.name).result.headOption
+  }
+
   def create: Future[Unit] = {
     db run (boards.schema create)
   }
@@ -52,6 +67,12 @@ class BoardsRepository @Inject()(
     form_data._6,
     name)
     db run action
+  }
+
+  def delete(board_seq: Long) = {
+    val q = boards filter (_.seq === board_seq)
+    val action = q.delete
+    db run (action)
   }
 
   def insertSample: Future[Int] = {

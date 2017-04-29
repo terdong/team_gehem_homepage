@@ -1,4 +1,5 @@
-@(title: String, tab: String = "", styles: Html = Html(""), scripts: Html = Html(""), modals: Html = Html(""))(content: Html)(implicit account: Option[(String, String)] = None)
+@import controllers.traits.Header
+@(title: String, tab: String = "", styles: Html = Html(""), scripts: Html = Html(""), modals: Html = Html(""))(content: Html)(implicit header: Header)
 <!DOCTYPE html>
 <html>
     <head>

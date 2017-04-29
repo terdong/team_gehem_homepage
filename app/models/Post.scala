@@ -59,14 +59,14 @@ trait PostsTable extends BoardsTable with MembersTable {
        write_date,
        update_date) <> (Post.tupled, Post.unapply)
 
-    def board_seq_fk =
-      foreignKey("board_seq_fk", board_seq, boards)(
+    def posts_boards_seq_fk =
+      foreignKey("posts_boards_seq_fk", board_seq, boards)(
         _.seq,
         onUpdate = ForeignKeyAction.Restrict,
         onDelete = ForeignKeyAction.Cascade)
 
-    def author_seq_fk =
-      foreignKey("author_seq_fk", author, members)(
+    def posts_members_email_fk =
+      foreignKey("posts_members_email_fk", author, members)(
         _.email,
         onUpdate = ForeignKeyAction.Restrict,
         onDelete = ForeignKeyAction.Cascade)

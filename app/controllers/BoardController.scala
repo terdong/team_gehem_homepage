@@ -2,7 +2,8 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 
-import controllers.traits.AccountInfo
+import controllers.traits.ProvidesHeader
+import play.api.cache.CacheApi
 import play.api.data.Forms._
 import play.api.data._
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -17,13 +18,14 @@ import scala.concurrent.duration.Duration
   * Created by terdo on 2017-04-20 020.
   */
 @Singleton
-class BoardController @Inject()(members_repo: MembersRepository,
+class BoardController @Inject()(implicit cache: CacheApi,
+                                members_repo: MembersRepository,
                                 boards_repo: BoardsRepository,
                                 posts_repo: PostsRepository,
                                 val messagesApi: MessagesApi)
     extends Controller
     with I18nSupport
-    with AccountInfo {
+    with ProvidesHeader {
 
   def boardExists(name: String): Boolean = {
     Await.result(boards_repo.existsName(name), Duration.Inf)
@@ -52,12 +54,24 @@ class BoardController @Inject()(members_repo: MembersRepository,
         boards_repo.all map (boards =>
           Ok(views.html.Board.boards(boards, hasErrors))),
       form => {
-        val email = account.get._1
-        for {
+        val email = request.session.get(AccountController.EMAIL_KEY).get
+        val result = for {
           member <- members_repo.findByEmail2(email)
           r <- boards_repo.insert(form, member.name)
+          _ <- setCacheBoardList
         } yield Redirect(routes.BoardController.boards())
+        result
       }
     )
+  }
+
+  def deleteBoard(board_seq: Long) = Action.async { implicit request =>
+    boards_repo
+      .delete(board_seq)
+      .map(_ => Redirect(routes.BoardController.boards()))
+  }
+
+  private def setCacheBoardList = {
+    boards_repo.allSeqAndName.map(cache.set("board_list", _))
   }
 }

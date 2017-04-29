@@ -1,4 +1,4 @@
-@(boards:Seq[Board], form:Form[_])(implicit account: Option[(String,String)], messages: Messages)
+@(boards:Seq[Board], form:Form[_])(implicit header: controllers.traits.Header, messages: Messages)
 
 @implicitFieldConstructor = @{ b3.vertical.fieldConstructor }
 
@@ -19,6 +19,7 @@
                         <th>쓰기권한</th>
                         <th>작성자</th>
                         <th>작성일</th>
+                        <th>삭제</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -36,6 +37,12 @@
                                 val index = date.indexOf('.')
                                 date.substring(0, index)
                             }</td>
+                            <td>
+                                <a href="@routes.BoardController.deleteBoard(board.seq)" data-method="DELETE">
+                                @b3.reset('class -> "btn btn-danger") {
+                                    <span class="glyphicon glyphicon-remove"></span> Delete }
+                                </a>
+                            </td>
                         </tr>
                     }
                 </tbody>

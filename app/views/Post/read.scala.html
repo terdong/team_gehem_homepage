@@ -1,0 +1,36 @@
+@(tuple: (Post, Member))(implicit messages: Messages, header: controllers.traits.Header)
+
+@main("read") {
+
+    @{
+        val post = tuple._1
+        val member = tuple._2
+            <p>
+            subject:
+            {post.subject}
+            </p>
+            <p>
+            content:
+            {post.content.getOrElse("")}
+            </p>
+            <p>
+            date:
+            {post.write_date}
+            </p>
+            <p>
+            author:
+            {member.name}
+            </p>
+            <p>
+            hit_count:
+            {post.hit_count + 1}
+            </p>
+            <p>
+            author_ip:
+            {post.author_ip}
+            </p>
+
+
+    }
+
+}

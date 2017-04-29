@@ -2,6 +2,8 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 
+import controllers.traits.ProvidesHeader
+import play.api.cache.CacheApi
 import play.api.data.Form
 import play.api.data.Forms.{nonEmptyText, _}
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
@@ -24,9 +26,11 @@ object AccountController {
 }
 
 @Singleton
-class AccountController @Inject()(member_rep: MembersRepository,
+class AccountController @Inject()(implicit cache: CacheApi,
+                                  member_rep: MembersRepository,
                                   val messagesApi: MessagesApi)
     extends Controller
+    with ProvidesHeader
     with I18nSupport {
 
   def emailExists(email: String): Boolean = {
@@ -50,7 +54,7 @@ class AccountController @Inject()(member_rep: MembersRepository,
     )
   }
 
-  def createSignUpForm = Action {
+  def createSignUpForm = Action { implicit request =>
     Ok(views.html.Account.signup(signup_form))
   }
 
@@ -70,7 +74,7 @@ class AccountController @Inject()(member_rep: MembersRepository,
     )
   }
 
-  def createSignInForm = Action {
+  def createSignInForm = Action { implicit request =>
     Ok(views.html.Account.signin(signin_form))
   }
 
@@ -89,12 +93,11 @@ class AccountController @Inject()(member_rep: MembersRepository,
     )
   }
 
-  def signout = Action { request =>
+  def signout = Action { implicit request =>
     Redirect(routes.HomeController.index()).withNewSession
   }
 
   def memberInsert = Action { implicit request =>
     Ok("Hello")
   }
-
 }
