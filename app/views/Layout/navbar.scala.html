@@ -68,8 +68,8 @@
                     </a>
                     <ul class="dropdown-menu dropdown-user">
                         @tags.account_contents {
-                            @header.member_info.map { member_info =>
-                            <li><a>@{member_info._1} 님</a></li>
+                            @if(header.member_email.isDefined){
+                            <li><a>@{header.member_email} 님</a></li>
                             }
                             <li><a href="#"><i class="fa fa-user fa-fw"></i> User Profile</a>
                             </li>

@@ -1,10 +1,7 @@
 @(content: Html)(none:Html = Html(""))(implicit header: controllers.traits.Header)
 
-@header.member_info match {
-    case Some(account) => {
-       @content
-    }
-    case None => {
-        @none
-    }
+@if(header.member_email.isDefined) {
+    @content
+}else {
+    @none
 }

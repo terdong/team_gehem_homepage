@@ -1,11 +1,13 @@
-@(page: Int, page_length: Int, count: Int, board_seq: Long, route: Int => Call, bound: Int = 5)(implicit messages: Messages)
+@(page: Int, page_length: Int, count: Int, board_seq: Long, route: Int => Call, bound: Int = 5)(implicit messages: Messages, header:controllers.traits.Header)
 @import b3.clear.fieldConstructor
 
 <nav aria-label="Page navigation">
-    <a href="@routes.PostController.writePostForm(board_seq)">
-    @b3.button('class -> "btn btn-default pull-right") {
-        <span class="glyphicon glyphicon-pencil"></span> Write
-    }</a>
+    @if(header.member_email.isDefined) {
+        <a href="@routes.PostController.writePostForm(board_seq)">
+        @b3.button('class -> "btn btn-default pull-right") {
+            <span class="glyphicon glyphicon-pencil"></span> Write
+        }</a>
+    }
 
 
     <div class="text-center">

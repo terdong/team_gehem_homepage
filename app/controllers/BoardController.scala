@@ -7,7 +7,7 @@ import play.api.cache.CacheApi
 import play.api.data.Forms._
 import play.api.data._
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, Controller}
+import play.api.mvc.Controller
 import repositories.{BoardsRepository, MembersRepository, PostsRepository}
 
 import scala.concurrent.Await
@@ -43,18 +43,18 @@ class BoardController @Inject()(implicit cache: CacheApi,
     )
   )
 
-  def boards = Action.async { implicit request =>
+  def boards = Authenticated.async { implicit request =>
     boards_repo.all map (boards =>
       Ok(views.html.Board.boards(boards, boardForm)))
   }
 
-  def createBoard = Action.async { implicit request =>
+  def createBoard = Authenticated.async { implicit request =>
     boardForm.bindFromRequest.fold(
       hasErrors =>
         boards_repo.all map (boards =>
           Ok(views.html.Board.boards(boards, hasErrors))),
       form => {
-        val email = request.session.get(AccountController.EMAIL_KEY).get
+        val email = request.auth.email
         val result = for {
           member <- members_repo.findByEmail2(email)
           r <- boards_repo.insert(form, member.name)
@@ -65,7 +65,7 @@ class BoardController @Inject()(implicit cache: CacheApi,
     )
   }
 
-  def deleteBoard(board_seq: Long) = Action.async { implicit request =>
+  def deleteBoard(board_seq: Long) = Authenticated.async { implicit request =>
     for {
       _ <- boards_repo.delete(board_seq)
       _ <- setCacheBoardList

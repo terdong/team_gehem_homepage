@@ -20,11 +20,6 @@ import scala.util.{Failure, Success}
   */
 case class SignIn(email: String, checkbox: Boolean)
 
-object AccountController {
-  val EMAIL_KEY = "email"
-  val PERMISSION_KEY = "permission"
-}
-
 @Singleton
 class AccountController @Inject()(implicit cache: CacheApi,
                                   member_rep: MembersRepository,
@@ -85,15 +80,15 @@ class AccountController @Inject()(implicit cache: CacheApi,
         member_rep.findByEmail(form.email) map (_ match {
           case Success(member) =>
             Redirect(routes.HomeController.index()).withSession(
-              AccountController.EMAIL_KEY -> form.email,
-              AccountController.PERMISSION_KEY -> member.permission)
+              Authenticated.email -> member.email,
+              Authenticated.permission -> member.permission)
           case Failure(e) => throw e
         })
       }
     )
   }
 
-  def signout = Action { implicit request =>
+  def signout = Authenticated { implicit request =>
     Redirect(routes.HomeController.index()).withNewSession
   }
 

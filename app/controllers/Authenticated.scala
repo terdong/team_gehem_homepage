@@ -1,6 +1,7 @@
-package controllers.traits
+package controllers
 
-import controllers.routes
+import play.api.mvc
+import play.api.mvc.Security.{AuthenticatedBuilder, AuthenticatedRequest}
 import play.api.mvc._
 
 import scala.concurrent.Future
@@ -8,35 +9,75 @@ import scala.concurrent.Future
 /**
   * Created by terdo on 2017-04-21 021.
   */
-trait Security {
+case class Authentication(email: String, permission: String)
+class CustomAuthenticatedRequest[A](val auth: Authentication,
+                                    request: Request[A])
+    extends WrappedRequest[A](request)
 
-  def memberEmail(request: RequestHeader) =
-    request.session.get(Security.username)
+object Authenticated extends mvc.ActionBuilder[CustomAuthenticatedRequest] {
+  lazy val email: String = "email"
+  lazy val permission: String = "permission"
+
+  def getAuthentication(request: RequestHeader) = {
+    for {
+      email <- request.session.get(email)
+      permission <- request.session.get(permission)
+    } yield Authentication(email, permission)
+  }
+
   def onUnauthorized(request: RequestHeader) =
     Results.Redirect(routes.AccountController.createSignInForm)
-  def isAuthenticated(f: => String => Request[AnyContent] => Result) = {
-    Security.Authenticated(memberEmail, onUnauthorized) { user =>
-      Action(request => f(user)(request))
-    }
-  }
 
-  def isAuthenticatedAsync(
-      f: => String => Request[AnyContent] => Future[Result]) = {
-    Action.async { request =>
-      memberEmail(request)
-        .map { login =>
-          f(login)(request)
-        }
-        .getOrElse(Future.successful(onUnauthorized(request)))
-    }
+  def invokeBlock[A](
+      request: Request[A],
+      block: (CustomAuthenticatedRequest[A]) => Future[Result]) = {
+    AuthenticatedBuilder(req => getAuthentication(req), onUnauthorized)
+      .authenticate(request, {
+        authRequest: AuthenticatedRequest[A, Authentication] =>
+          block(new CustomAuthenticatedRequest[A](authRequest.user, request))
+      })
   }
+}
 
-  /*   def isAuthenticated(f: => String => Request[AnyContent] => Result) = {
+/*object Authenticated {
+
+  trait Authenticated {
+
+    def getAuthentication(request: RequestHeader) = {
+      for {
+        email <- request.session.get(email)
+        permission <- request.session.get(permission)
+      } yield Authentication(email, permission)
+    }
+
+    def onUnauthorized(request: RequestHeader) =
+      Results.Redirect(routes.AccountController.createSignInForm)
+
+    def isAuthenticated(
+        f: => Authentication => Request[AnyContent] => Result) = {
+      play.api.mvc.Security.Authenticated(getAuthentication, onUnauthorized) {
+        auth =>
+          Action(request => f(auth)(request))
+      }
+    }
+
+    def isAuthenticatedAsync(
+        f: => Authentication => Request[AnyContent] => Future[Result]) = {
+      Action.async { request =>
+        getAuthentication(request)
+          .map { auth =>
+            f(auth)(request)
+          }
+          .getOrElse(Future.successful(onUnauthorized(request)))
+      }
+    }
+  }*/
+/*   def isAuthenticated(f: => String => Request[AnyContent] => Result) = {
       Security.Authenticated { user =>
         Action(request => f(user)(request))
       }
     }*/
-  /*  def memberInfo(request: RequestHeader): Option[(String, String)] = {
+/*  def memberInfo(request: RequestHeader): Option[(String, String)] = {
     for {
       email <- request.session.get(AccountController.EMAIL_KEY)
       permission <- request.session.get(AccountController.PERMISSION_KEY)
@@ -54,8 +95,8 @@ trait Security {
     Security.Authenticated(username, onUnauthorized) { user =>
       Action(request => f(user)(request))
     }
-  }*/
-}
+  }
+}*/
 
 /*class AuthenticatedDbRequest[A](val user: User,
                                 val conn: Connection,
