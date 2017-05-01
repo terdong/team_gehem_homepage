@@ -57,29 +57,47 @@ class PostController @Inject()(implicit cache: CacheApi,
   //Future.successful(Ok(""))
   }
 
-  /*  def showPostList(board_seq: Long) = Action.async { implicit request =>
-    for {
-      name_op <- boards_repo.getNameBySeq(board_seq)
-      posts <- posts_repo.allByBoard(board_seq)
-    } yield Ok(views.html.Post.list(name_op, posts))
-  }
-
-  def showPostListAll = Action.async { implicit request =>
-    posts_repo.all.map(posts => Ok(views.html.Post.list(Some("All"), posts)))
-  }*/
-
   def showPost(board_seq: Long, post_seq: Long) = Action.async {
     implicit request =>
       posts_repo
         .showPost(board_seq, post_seq)
-        .map(
-          op =>
-            op.map(tuple => {
-                posts_repo.updateHitCount(tuple._1)
-                Ok(views.html.Post.read(tuple))
-              })
-              .getOrElse(NotFound))
+        .map(_.map(tuple => {
+          posts_repo.updateHitCount(tuple._1)
+          Ok(
+            views.html.Post.read(tuple,
+                                 request2session
+                                   .get(AccountController.EMAIL_KEY)
+                                   .map(tuple._2.email.equals(_))
+                                   .getOrElse(false)))
+        }).getOrElse(NotFound))
   }
+
+  def editPost(board_seq: Long, post_seq: Long) = Action.async {
+    implicit request =>
+      posts_repo
+        .showPost(board_seq, post_seq)
+        .map(_.map(tuple => {
+          val post = tuple._1
+          val form_data = (board_seq, post.subject, post.content.getOrElse(""))
+          Ok(views.html.Post
+            .edit(postForm.fill(form_data), board_seq, post_seq))
+        }).getOrElse(NotFound))
+  }
+
+  def updatePost(board_seq: Long, post_seq: Long) = Action.async {
+    implicit request =>
+      val form = postForm.bindFromRequest
+      form.fold(
+        hasErrors =>
+          Future.successful(
+            BadRequest(views.html.Post.edit(hasErrors, board_seq, post_seq))),
+        form => {
+          posts_repo.update(form, post_seq) map (_ =>
+            Redirect(routes.PostController.showPost(board_seq, post_seq)))
+        }
+      )
+  }
+
   def writePostForm(implicit board_seq: Long) = Action { implicit request =>
     Ok(views.html.Post.write(postForm))
   }
@@ -92,10 +110,17 @@ class PostController @Inject()(implicit cache: CacheApi,
       form => {
         posts_repo.insert(form,
                           request.session.get(AccountController.EMAIL_KEY).get,
-                          request.remoteAddress) map (_ =>
-          Redirect(routes.PostController.list(form._1, 1)))
+                          request.remoteAddress) map (post =>
+          Redirect(routes.PostController.showPost(post.board_seq, post.seq)))
       }
     )
+  }
+
+  def deletePost(board_seq: Long, post_seq: Long) = Action.async {
+    implicit request =>
+      posts_repo
+        .delete(post_seq)
+        .map(_ => Redirect(routes.PostController.list(board_seq, 1)))
   }
 
 }

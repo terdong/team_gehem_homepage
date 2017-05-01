@@ -1,36 +1,47 @@
-@(tuple: (Post, Member))(implicit messages: Messages, header: controllers.traits.Header)
+@(tuple: (Post, Member), is_own: Boolean = false)(implicit messages: Messages, header: controllers.traits.Header)
+@import b3.clear.fieldConstructor
 
 @main("read") {
+    @defining(tuple._1) { post =>
+        @defining(tuple._2) { member =>
+            <div class="panel panel-default">
+                <div class="panel-heading">@{post.subject}
+                @if(is_own) {
 
-    @{
-        val post = tuple._1
-        val member = tuple._2
-            <p>
-            subject:
-            {post.subject}
-            </p>
-            <p>
-            content:
-            {post.content.getOrElse("")}
-            </p>
-            <p>
-            date:
-            {post.write_date}
-            </p>
-            <p>
-            author:
-            {member.name}
-            </p>
-            <p>
-            hit_count:
-            {post.hit_count + 1}
-            </p>
-            <p>
-            author_ip:
-            {post.author_ip}
-            </p>
+                    <a href="@routes.PostController.deletePost(post.board_seq, post.seq)">
+                        @b3.button('class -> "btn btn-default pull-right") {
+                            <span class="glyphicon glyphicon-remove"></span>Delete
+                        }
+                    </a>
+
+                    <a href="@routes.PostController.editPost(post.board_seq, post.seq)">
+                    @b3.button('class -> "btn btn-default pull-right") {
+                        <span class="glyphicon glyphicon-pencil"></span> Edit
+                    }</a>
+                }
+                </div>
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <div class="row">
+                            <div class="col-md-4">작성자: @{member.name}</div>
+                            <div class="col-md-4">작성일: @{post.write_date.toString.split('.')(0)}</div>
+                            <div class="col-md-4">조회수: @{post.hit_count + 1}</div>
+                        </div>
+                    </li>
+                </ul>
+
+                <div class="panel-body">
+                    <pre>@{post.content.getOrElse("")}</pre>
+                    <div class="pull-right"><small><em >ip: @{post.author_ip}</em></small></div>
+                </div>
+
+                <ul class="list-group">
+                    <li class="list-group-item">파일첨부 내용</li>
+                    <li class="list-group-item">댓글</li>
+                </ul>
+            </div>
 
 
+        }
     }
-
 }

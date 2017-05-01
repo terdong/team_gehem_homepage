@@ -94,7 +94,7 @@ class PostsRepository @Inject()(
   def insert(form: (Long, String, String), email: String, ip: String) = {
     val action = posts.map(_.thread).max.result.flatMap {
       (thread: Option[Long]) =>
-        insertQueryBase += (form._1,
+        insertQueryBase.returning(posts) += (form._1,
         thread.getOrElse[Long](0) + 100,
         0,
         email,
@@ -103,6 +103,23 @@ class PostsRepository @Inject()(
         ip)
     }
 
+    db run action
+  }
+
+  def update(form: (Long, String, String), post_seq: Long) = {
+    val action = posts
+      .filter(_.seq === post_seq)
+      .map(p => (p.subject, p.content, p.update_date))
+      .update(
+        (form._2,
+         Some(form._3),
+         new java.sql.Timestamp(System.currentTimeMillis())))
+
+    db run action
+  }
+
+  def delete(post_seq: Long) = {
+    val action = posts.filter(_.seq === post_seq).delete
     db run action
   }
 

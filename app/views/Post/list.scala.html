@@ -1,5 +1,4 @@
 @(board_name: Option[String], posts: Seq[(Post, String)], page: Int, page_length: Int, count: Int, board_seq: Long = 0)(implicit messages: Messages, header: controllers.traits.Header)
-
 @main("list") {
     <div class="panel panel-default">
             <!-- Default panel contents -->
@@ -45,9 +44,7 @@
                                 </td>
                                 <td>
                                 @{
-                                    val date = post.write_date.toString
-                                    val index = date.indexOf('.')
-                                    date.substring(0, index)
+                                    post.write_date.toString.split('.')(0)
                                 }
                                 </td>
                                 <td>

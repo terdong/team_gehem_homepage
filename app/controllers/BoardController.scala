@@ -66,9 +66,10 @@ class BoardController @Inject()(implicit cache: CacheApi,
   }
 
   def deleteBoard(board_seq: Long) = Action.async { implicit request =>
-    boards_repo
-      .delete(board_seq)
-      .map(_ => Redirect(routes.BoardController.boards()))
+    for {
+      _ <- boards_repo.delete(board_seq)
+      _ <- setCacheBoardList
+    } yield Redirect(routes.BoardController.boards())
   }
 
   private def setCacheBoardList = {

@@ -41,10 +41,12 @@ trait PostsTable extends BoardsTable with MembersTable {
     def author_ip = column[String]("author_ip", O.Length(50))
 
     def write_date =
-      column[Timestamp]("write_date", O.SqlType("timestamp default now()"))
+      column[Timestamp]("write_date",
+                        O.SqlType("timestamp default current_timestamp"))
 
     def update_date =
-      column[Timestamp]("update_date", O.SqlType("timestamp default now()"))
+      column[Timestamp]("update_date",
+                        O.SqlType("timestamp default current_timestamp"))
 
     def * =
       (seq,
