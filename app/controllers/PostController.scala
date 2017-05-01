@@ -2,7 +2,7 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 
-import controllers.traits.ProvidesHeader
+import controllers.traits.{ProvidesHeader, Security}
 import play.api.cache.CacheApi
 import play.api.data.Form
 import play.api.data.Forms._
@@ -24,7 +24,8 @@ class PostController @Inject()(implicit cache: CacheApi,
                                val messagesApi: MessagesApi)
     extends Controller
     with I18nSupport
-    with ProvidesHeader {
+    with ProvidesHeader
+    with Security {
 
   //case class PostForm("au")
 
@@ -72,8 +73,8 @@ class PostController @Inject()(implicit cache: CacheApi,
         }).getOrElse(NotFound))
   }
 
-  def editPost(board_seq: Long, post_seq: Long) = Action.async {
-    implicit request =>
+  def editPost(board_seq: Long, post_seq: Long) = isAuthenticatedAsync {
+    email => implicit request =>
       posts_repo
         .showPost(board_seq, post_seq)
         .map(_.map(tuple => {
@@ -84,8 +85,8 @@ class PostController @Inject()(implicit cache: CacheApi,
         }).getOrElse(NotFound))
   }
 
-  def updatePost(board_seq: Long, post_seq: Long) = Action.async {
-    implicit request =>
+  def updatePost(board_seq: Long, post_seq: Long) = isAuthenticatedAsync {
+    email => implicit request =>
       val form = postForm.bindFromRequest
       form.fold(
         hasErrors =>
@@ -98,26 +99,29 @@ class PostController @Inject()(implicit cache: CacheApi,
       )
   }
 
-  def writePostForm(implicit board_seq: Long) = Action { implicit request =>
-    Ok(views.html.Post.write(postForm))
+  def writePostForm(implicit board_seq: Long) = isAuthenticated {
+    email => implicit request =>
+      Ok(views.html.Post.write(postForm))
   }
 
-  def writePost(implicit board_seq: Long) = Action.async { implicit request =>
-    val form = postForm.bindFromRequest
-    form.fold(
-      hasErrors =>
-        Future.successful(BadRequest(views.html.Post.write(hasErrors))),
-      form => {
-        posts_repo.insert(form,
-                          request.session.get(AccountController.EMAIL_KEY).get,
-                          request.remoteAddress) map (post =>
-          Redirect(routes.PostController.showPost(post.board_seq, post.seq)))
-      }
-    )
+  def writePost(implicit board_seq: Long) = isAuthenticatedAsync {
+    email => implicit request =>
+      val form = postForm.bindFromRequest
+      form.fold(
+        hasErrors =>
+          Future.successful(BadRequest(views.html.Post.write(hasErrors))),
+        form => {
+          posts_repo.insert(
+            form,
+            request.session.get(AccountController.EMAIL_KEY).get,
+            request.remoteAddress) map (post =>
+            Redirect(routes.PostController.showPost(post.board_seq, post.seq)))
+        }
+      )
   }
 
-  def deletePost(board_seq: Long, post_seq: Long) = Action.async {
-    implicit request =>
+  def deletePost(board_seq: Long, post_seq: Long) = isAuthenticatedAsync {
+    email => implicit request =>
       posts_repo
         .delete(post_seq)
         .map(_ => Redirect(routes.PostController.list(board_seq, 1)))

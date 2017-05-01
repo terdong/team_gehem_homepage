@@ -63,6 +63,7 @@ class HomeController @Inject()(implicit exec: ExecutionContext,
     Logger.debug(request.headers.headers.mkString("\n"))
 
     Ok(views.html.index("Your new application is ready."))
+
   //Ok("Index")
   }
 
