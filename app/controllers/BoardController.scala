@@ -2,17 +2,23 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 
-import controllers.traits.ProvidesHeader
+import Authentication.{Authenticated, Authorized}
+import controllers.traits.{BoardInfo, Header, ProvidesHeader}
 import play.api.cache.CacheApi
 import play.api.data.Forms._
 import play.api.data._
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.Controller
-import repositories.{BoardsRepository, MembersRepository, PostsRepository}
+import play.api.mvc.{Controller, Result}
+import repositories.{
+  BoardsRepository,
+  MembersRepository,
+  PermissionsRepository,
+  PostsRepository
+}
 
-import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
 
 /**
   * Created by terdo on 2017-04-20 020.
@@ -22,6 +28,7 @@ class BoardController @Inject()(implicit cache: CacheApi,
                                 members_repo: MembersRepository,
                                 boards_repo: BoardsRepository,
                                 posts_repo: PostsRepository,
+                                permissions_repo: PermissionsRepository,
                                 val messagesApi: MessagesApi)
     extends Controller
     with I18nSupport
@@ -37,22 +44,26 @@ class BoardController @Inject()(implicit cache: CacheApi,
         .verifying(messagesApi("board.create.exists.name"), !boardExists(_)),
       "description" -> text(maxLength = 2000),
       "status" -> boolean,
-      "list_perm" -> nonEmptyText(maxLength = 4),
-      "read_perm" -> nonEmptyText(maxLength = 4),
-      "write_perm" -> nonEmptyText(maxLength = 4)
+      "list_perm" -> byteNumber(min = 0, max = 99),
+      "read_perm" -> byteNumber(min = 0, max = 99),
+      "write_perm" -> byteNumber(min = 0, max = 99)
     )
   )
 
-  def boards = Authenticated.async { implicit request =>
-    boards_repo.all map (boards =>
-      Ok(views.html.Board.boards(boards, boardForm)))
+  def boards_(form: Form[_])(implicit header: Header): Future[Result] = {
+    for {
+      boards <- boards_repo.all
+      permissions <- permissions_repo.all
+    } yield Ok(views.html.Board.boards(boards, permissions, form))
+  }
+
+  def boards = Authorized(9).async { implicit request =>
+    boards_(boardForm)
   }
 
   def createBoard = Authenticated.async { implicit request =>
     boardForm.bindFromRequest.fold(
-      hasErrors =>
-        boards_repo.all map (boards =>
-          Ok(views.html.Board.boards(boards, hasErrors))),
+      hasErrors => boards_(hasErrors),
       form => {
         val email = request.auth.email
         val result = for {
@@ -73,6 +84,10 @@ class BoardController @Inject()(implicit cache: CacheApi,
   }
 
   private def setCacheBoardList = {
-    boards_repo.allSeqAndName.map(cache.set("board_list", _))
+    val r: Future[Seq[BoardInfo]] = for {
+      r: Seq[(Long, String, Byte)] <- boards_repo.allSeqAndNameAndListPermission
+    } yield r.map(BoardInfo tupled)
+
+    r.map(cache.set("board_list", _))
   }
 }

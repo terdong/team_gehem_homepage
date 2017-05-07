@@ -26,18 +26,17 @@
                     <ul class="dropdown-menu">
 
                     @header.board_list.map { list =>
-                        @if(list.size > 0) {
-                            <li>
-                                <a href="@routes.PostController.listAll(1)">All</a>
-                            </li>
-                        }
-                        @for(board_info <- list) {
-                            <li>
-                                <a href="@routes.PostController.list(board_info._1, 1)">@{
-                                    board_info._2
-                                }</a>
-                            </li>
-                        }
+                        <li>
+                            <a href="@routes.PostController.listAll(1)">All</a>
+                        </li>
+                    @for(board_info <- list) {
+
+                        <li>
+                            <a href="@routes.PostController.list(board_info.seq, 1)">@{
+                                board_info.name
+                            }</a>
+                        </li>
+                    }
                     }
                     </ul>
                 </li>
@@ -50,12 +49,15 @@
                 <li>
                     <a href=@routes.DBController.memberInsert()>memberInsert</a>
                 </li>
-                @tags.account_contents {
+                @tags.account_contents(9){
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin <b class="caret"></b></a>
                         <ul class="dropdown-menu">
                             <li>
                                 <a href=@routes.BoardController.boards()>boards</a>
+                            </li>
+                            <li>
+                                <a href=@routes.AdminController.permissions()>permissions</a>
                             </li>
                         </ul>
                     </li>
@@ -67,10 +69,8 @@
                         <i class="fa fa-user fa-fw"></i> <i class="fa fa-caret-down"></i>
                     </a>
                     <ul class="dropdown-menu dropdown-user">
-                        @tags.account_contents {
-                            @if(header.member_email.isDefined){
+                        @tags.account_contents(){
                             <li><a>@{header.member_email} 님</a></li>
-                            }
                             <li><a href="#"><i class="fa fa-user fa-fw"></i> User Profile</a>
                             </li>
                             <li><a href="#"><i class="fa fa-gear fa-fw"></i> Settings</a>

@@ -2,6 +2,7 @@ package services
 
 import javax.inject.{Inject, Singleton}
 
+import controllers.traits.BoardInfo
 import play.api.Logger
 import play.api.cache.CacheApi
 import play.api.inject.ApplicationLifecycle
@@ -29,12 +30,11 @@ class TableManager @Inject()(appLifecycle: ApplicationLifecycle,
   Logger.info(s"TableManager start")
   // This code is called when the application starts.
 
-  members_repo.insertSample
+  //members_repo.insertSample
 
-  def cache_board_list =
-    boards_repo.allSeqAndName.map(cache.set("board_list", _))
-
-  cache_board_list
+  val cache_board_list: Future[Seq[BoardInfo]] =
+    boards_repo.allSeqAndNameAndListPermission.map(_.map(BoardInfo tupled))
+  cache_board_list.map(cache.set("board_list", _))
 
   /*val result = boards_repo.insertSample
   result onComplete {

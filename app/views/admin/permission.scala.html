@@ -1,0 +1,53 @@
+@(permissions:Seq[Permission], form:Form[Permission])(implicit messages: Messages,header: controllers.traits.Header)
+
+@implicitFieldConstructor = @{ b3.vertical.fieldConstructor }
+
+@main("boards") {
+
+    <div class="panel panel-default">
+        <div class="panel-heading">게시판 생성</div>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover table-condensed">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>permission_code</th>
+                        <th>active</th>
+                        <th>content</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @for((permission,i ) <- permissions zipWithIndex){
+                    <tr>
+                        <th scope="row">@{i}</th>
+                        <td>@{permission.permission_code}</td>
+                        <td>@{permission.active}</td>
+                        <td>@{permission.content}</td>
+                        <td>
+                            <a href="@routes.AdminController.deletePermission(permission.permission_code)" >
+                                <button type="button" class="btn btn-danger btn-sm"> <span class="glyphicon glyphicon-remove"></span> Delete</button>
+                            </a>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+    @b3.form(routes.AdminController.createPermission) {
+        <div class="row">
+            <div class="col-md-6">
+            @b3.text(form("permission_code"), '_label -> "Title")
+            </div>
+            <div class="col-md-6">
+            @b3.checkbox(form("active"), '_text -> "status", 'checked -> true )
+            </div>
+        </div>
+        @b3.textarea(form("content"), '_label -> "Contents")
+
+        @b3.submit('class -> "btn btn-default") {
+            <span class="glyphicon glyphicon-ok"></span> Create }
+    }
+}

@@ -19,9 +19,7 @@ import scala.language.postfixOps
   * example: (permission_code -> MP09)
   *
   */
-case class Permission(permission_code: String,
-                      active: Boolean,
-                      content: String)
+case class Permission(permission_code: Byte, active: Boolean, content: String)
 
 trait PermissionsTable {
   protected val permissions = TableQuery[Permissions]
@@ -30,9 +28,7 @@ trait PermissionsTable {
       extends Table[Permission](tag, "Permissions") {
 
     def permission_code =
-      column[String]("permission_code",
-                     O.PrimaryKey,
-                     O.Length(4, varying = false))
+      column[Byte]("permission_code", O.PrimaryKey)
 
     def active = column[Boolean]("active", O.Default(true))
 

@@ -9,7 +9,7 @@ create table "Members"
 			primary key,
 	name varchar(30) not null,
 	nick varchar(12) not null,
-	permission char(4) default 'MP02'::bpchar not null,
+	permission SMALLINT default 2 not null,
 	level integer default 0 not null,
 	exp integer default 0 not null,
 	register_date timestamp default now() not null,
@@ -26,9 +26,9 @@ create table "Boards"
 			unique,
 	description varchar(2000),
 	status boolean not null,
-	list_permission char(4) not null,
-	read_permission char(4) not null,
-	write_permission char(4) not null,
+	list_permission SMALLINT not null,
+	read_permission SMALLINT not null,
+	write_permission SMALLINT not null,
 	author varchar(80) not null,
 	register_date timestamp default now() not null
 );
@@ -56,7 +56,7 @@ create table "Posts"
 );
 create table "Permissions"
 (
-  permission_code char(4) not null
+  permission_code SMALLINT not null
     constraint "Permissions_pkey"
     primary key,
   active boolean default true not null,

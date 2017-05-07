@@ -10,7 +10,7 @@ import scala.language.postfixOps
 case class Member(email: String,
                   name: String,
                   nick: String,
-                  permission: String = null,
+                  permission: Byte,
                   level: Int = 0,
                   exp: Int = 0,
                   register_date: Timestamp = null,
@@ -29,9 +29,7 @@ trait MembersTable {
     def nick = column[String]("nick", O.Length(12))
 
     def permission =
-      column[String]("permission",
-                     O.Length(4, varying = false),
-                     O.Default("MP02"))
+      column[Byte]("permission", O.Length(2), O.Default(2))
 
     def level = column[Int]("level", O.Default(0))
 

@@ -1,11 +1,10 @@
+import scala.concurrent.Promise
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent._
-
 
 /**
-  * Created by terdong on 2017-03-24 024.
+  * Created by terdo on 2017-05-06 006.
   */
-object FuterAndPromise extends App {
+object FutureAndPromise extends App {
 
   def simple() = {
     val promise = Promise[String]()

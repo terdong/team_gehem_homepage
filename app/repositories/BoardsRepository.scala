@@ -25,10 +25,10 @@ class BoardsRepository @Inject()(
     db run boards.map(_.name).result
   }
 
-  def allSeqAndName = {
+  def allSeqAndNameAndListPermission = {
     val query = for {
       board <- boards
-    } yield (board.seq, board.name)
+    } yield (board.seq, board.name, board.list_permission)
     db run (query.result)
   }
 
@@ -43,6 +43,28 @@ class BoardsRepository @Inject()(
   def existsName(name: String): Future[Boolean] =
     db run (boards.filter(i => i.name === name).exists.result)
 
+  def isListValidBoard(board_seq: Long, permission: Byte) = {
+    val query = boards
+      .filter(b => b.seq === board_seq && b.list_permission <= permission)
+      .exists
+      .result
+    db run query
+  }
+  def isReadValidBoard(board_seq: Long, permission: Byte) = {
+    val query = boards
+      .filter(b => b.seq === board_seq && b.read_permission <= permission)
+      .exists
+      .result
+    db run query
+  }
+  def isWriteValidBoard(board_seq: Long, permission: Byte) = {
+    val query = boards
+      .filter(b => b.seq === board_seq && b.write_permission <= permission)
+      .exists
+      .result
+    db run query
+  }
+
   def dropTable = {
     db run (boards.schema drop)
   }
@@ -50,7 +72,7 @@ class BoardsRepository @Inject()(
   def insert(board: Board): Future[Unit] =
     db run (boards += board) map (_ => ())
 
-  def insert(form_data: (String, String, Boolean, String, String, String),
+  def insert(form_data: (String, String, Boolean, Byte, Byte, Byte),
              name: String): Future[Int] = {
     val action = boards map (b =>
       (b.name,
@@ -86,9 +108,9 @@ class BoardsRepository @Inject()(
        b.author)) += ("noti",
     Some("notification board"),
     true,
-    "MP09",
-    "MP09",
-    "MP09",
+    99,
+    99,
+    99,
     "terdong")
     db run action
   }

@@ -13,9 +13,9 @@ case class Board(seq: Long,
                  name: String,
                  description: Option[String],
                  status: Boolean,
-                 list_permission: String,
-                 read_permission: String,
-                 write_permission: String,
+                 list_permission: Byte,
+                 read_permission: Byte,
+                 write_permission: Byte,
                  author: String,
                  register_date: Timestamp = null)
 
@@ -32,13 +32,13 @@ trait BoardsTable {
     def status = column[Boolean]("status")
 
     def list_permission =
-      column[String]("list_permission", O.Length(4, varying = false))
+      column[Byte]("list_permission", O.Length(2))
 
     def read_permission =
-      column[String]("read_permission", O.Length(4, varying = false))
+      column[Byte]("read_permission", O.Length(2))
 
     def write_permission =
-      column[String]("write_permission", O.Length(4, varying = false))
+      column[Byte]("write_permission", O.Length(2))
 
     def author = column[String]("author", O.Length(80))
 

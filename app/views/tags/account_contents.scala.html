@@ -1,7 +1,11 @@
-@(content: Html)(none:Html = Html(""))(implicit header: controllers.traits.Header)
+@(permission: Byte = 2)(content: Html)(none:Html = Html(""))(implicit header: controllers.traits.Header)
 
-@if(header.member_email.isDefined) {
-    @content
-}else {
-    @none
+@defining(header.request_header.session.get("permission")){ p =>
+    @if(p.isDefined && p.get.toByte >= permission) {
+        @content
+    }else {
+        @none
+    }
 }
+
+

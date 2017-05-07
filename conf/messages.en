@@ -3,3 +3,4 @@ greeting=Welcome!
 account.signup.exists.email=Thie Email already exists
 account.signin.exists.email=
 board.create.exists.name=
+admin.permission.exists=

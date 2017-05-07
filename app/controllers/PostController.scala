@@ -2,10 +2,12 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 
+import Authentication.Authenticated
 import controllers.traits.ProvidesHeader
+import models.{Member, Post}
 import play.api.cache.CacheApi
 import play.api.data.Form
-import play.api.data.Forms._
+import play.api.data.Forms.{tuple, _}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, Controller}
 import repositories.{BoardsRepository, MembersRepository, PostsRepository}
@@ -40,15 +42,16 @@ class PostController @Inject()(implicit cache: CacheApi,
 
   def listAll(page: Int) = Action.async { implicit request =>
     for {
-      posts <- posts_repo.all(page, page_length)
+      posts <- posts_repo.all(page, page_length, permission)
       count <- posts_repo.getPostCount()
     } yield Ok(views.html.Post.list(None, posts, page, page_length, count))
   }
 
   def list(board_seq: Long, page: Int) = Action.async { implicit request =>
     for {
+      b <- boards_repo.isListValidBoard(board_seq, permission) if b == true
       name_op <- boards_repo.getNameBySeq(board_seq)
-      posts <- posts_repo.allByBoard(board_seq, page, page_length)
+      posts <- posts_repo.listByBoard(board_seq, page, page_length)
       count <- posts_repo.getPostCount(board_seq)
     } yield
       Ok(
@@ -59,28 +62,32 @@ class PostController @Inject()(implicit cache: CacheApi,
 
   def showPost(board_seq: Long, post_seq: Long) = Action.async {
     implicit request =>
-      posts_repo
-        .showPost(board_seq, post_seq)
-        .map(_.map(tuple => {
-          posts_repo.updateHitCount(tuple._1)
-          Ok(
-            views.html.Post.read(tuple,
-                                 header.member_email
-                                   .map(tuple._2.email.equals(_))
-                                   .getOrElse(false)))
-        }).getOrElse(NotFound))
+      for {
+        r <- boards_repo.isListValidBoard(board_seq, permission) if r == true
+        post <- posts_repo
+          .getPost(board_seq, post_seq)
+      } yield {
+        posts_repo.updateHitCount(post._1)
+        Ok(
+          views.html.Post.read(post,
+                               header.member_email
+                                 .map(post._2.email.equals(_))
+                                 .getOrElse(false)))
+      }
   }
 
   def editPost(board_seq: Long, post_seq: Long) = Authenticated.async {
     implicit request =>
-      posts_repo
-        .showPost(board_seq, post_seq)
-        .map(_.map(tuple => {
-          val post = tuple._1
-          val form_data = (board_seq, post.subject, post.content.getOrElse(""))
-          Ok(views.html.Post
+      for {
+        r <- posts_repo.isOwnPost(post_seq, member_email.get) if r == true
+        tuple: (Post, Member) <- posts_repo.getPost(board_seq, post_seq)
+      } yield {
+        val post = tuple._1
+        val form_data = (board_seq, post.subject, post.content.getOrElse(""))
+        Ok(
+          views.html.Post
             .edit(postForm.fill(form_data), board_seq, post_seq))
-        }).getOrElse(NotFound))
+      }
   }
 
   def updatePost(board_seq: Long, post_seq: Long) = Authenticated.async {

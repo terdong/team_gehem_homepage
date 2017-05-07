@@ -2,6 +2,7 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 
+import Authentication.Authenticated
 import controllers.traits.ProvidesHeader
 import play.api.cache.CacheApi
 import play.api.data.Form
@@ -81,7 +82,7 @@ class AccountController @Inject()(implicit cache: CacheApi,
           case Success(member) =>
             Redirect(routes.HomeController.index()).withSession(
               Authenticated.email -> member.email,
-              Authenticated.permission -> member.permission)
+              Authenticated.permission -> member.permission.toString)
           case Failure(e) => throw e
         })
       }

@@ -28,7 +28,15 @@ class PermissionsRepository @Inject()(
     db run (permissions.schema drop)
   }
 
-  /*def insertSample = {
-    db run
-  }*/
+  def insert(permission: Permission) = {
+    db run (permissions += permission)
+  }
+
+  def delete(permission_code: Byte): Future[Int] = {
+    db run (permissions filter (_.permission_code === permission_code) delete)
+  }
+
+  def existsCode(code: Byte): Future[Boolean] =
+    db run (permissions.filter(_.permission_code === code).exists.result)
+
 }

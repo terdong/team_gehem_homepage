@@ -1,8 +1,12 @@
-@(boards:Seq[Board], form:Form[_])(implicit header: controllers.traits.Header, messages: Messages)
+@(boards:Seq[Board], permissions:Seq[Permission], form:Form[_])(implicit header: controllers.traits.Header, messages: Messages)
 
 @implicitFieldConstructor = @{ b3.vertical.fieldConstructor }
 
-@sample_permission = @{ Seq("MP00"->"손님","MP02"->"가입자","MP03"->"멤버", "MP09"->"관리자") }
+@option_permissions = @{
+    for{
+        permission <- permissions
+    }yield (permission.permission_code.toString -> permission.content)
+}
 @main("boards") {
 
     <div class="panel panel-default">
@@ -39,8 +43,7 @@
                             }</td>
                             <td>
                                 <a href="@routes.BoardController.deleteBoard(board.seq)" data-method="DELETE">
-                                @b3.reset('class -> "btn btn-danger") {
-                                    <span class="glyphicon glyphicon-remove"></span> Delete }
+                                    <button type="button" class="btn btn-danger btn-sm"> <span class="glyphicon glyphicon-remove"></span> Delete</button>
                                 </a>
                             </td>
                         </tr>
@@ -61,13 +64,13 @@
         @b3.textarea(form("description"), '_label -> "Contents")
         <div class="row">
             <div class="col-md-4">
-            @b3.select( form("list_perm"), options = sample_permission, '_label -> "List Permission")
+            @b3.select( form("list_perm"), options = option_permissions, '_label -> "List Permission")
             </div>
             <div class="col-md-4">
-            @b3.select( form("read_perm"), options = sample_permission, '_label -> "Read Permission")
+            @b3.select( form("read_perm"), options = option_permissions, '_label -> "Read Permission")
             </div>
             <div class="col-md-4">
-            @b3.select( form("write_perm"), options = sample_permission, '_label -> "Write Permission")
+            @b3.select( form("write_perm"), options = option_permissions, '_label -> "Write Permission")
             </div>
         </div>
 

@@ -2,7 +2,7 @@ package repositories
 
 import javax.inject.{Inject, Singleton}
 
-import models.{Member, Post, PostsTable}
+import models.{Post, PostsTable}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 import slick.jdbc.PostgresProfile.api._
@@ -19,11 +19,6 @@ class PostsRepository @Inject()(
     extends HasDatabaseConfigProvider[JdbcProfile]
     with PostsTable {
 
-  /*  val tupledJoin = posts join members on (_.author === _.email) sortBy (_._1.seq.desc.nullsFirst)
-
-  def tupledJoinFilter(board_seq: Long) =
-    posts.filter(_.board_seq === board_seq) join members on (_.author === _.email) sortBy (_._1.seq.desc.nullsFirst)*/
-
   def getPostCount(board_seq: Long = 0) = {
     val query =
       if (board_seq == 0) posts.length
@@ -31,16 +26,19 @@ class PostsRepository @Inject()(
     db run query.result
   }
 
-  def getAllPostQuery(page: Int, page_length: Int) =
-    for {
-      p <- posts
-        .sortBy(_.seq.desc.nullsFirst)
-        .drop((page - 1) * page_length)
-        .take(page_length)
+  private def all_(page: Int, page_length: Int, permission: Byte) = {
+    val query = for {
+      b <- boards.filter(_.list_permission <= permission)
+      p <- posts.filter(_.board_seq === b.seq)
       m <- members if p.author === m.email
     } yield (p, m.name)
+    query
+      .sortBy(_._1.seq.desc.nullsFirst)
+      .drop((page - 1) * page_length)
+      .take(page_length)
+  }
 
-  def getPostQuery(board_seq: Long, page: Int, page_length: Int) =
+  def listByBoard_(board_seq: Long, page: Int, page_length: Int) =
     for {
       p <- posts
         .filter(_.board_seq === board_seq)
@@ -50,20 +48,31 @@ class PostsRepository @Inject()(
       m <- members if p.author === m.email
     } yield (p, m.name)
 
-  def all(page: Int, page_length: Int) = {
-    db run getAllPostQuery(page, page_length).result
+  def all(page: Int, page_length: Int, permission: Byte) = {
+    db run all_(page, page_length, permission).result
   }
 
-  def allByBoard(board_seq: Long, page: Int, page_length: Int) = {
-    db run getPostQuery(board_seq, page, page_length).result
+  def listByBoard(board_seq: Long, page: Int, page_length: Int) = {
+    db run listByBoard_(board_seq, page, page_length).result
   }
 
-  def showPost(board_seq: Long,
-               post_seq: Long): Future[Option[(Post, Member)]] = {
+  def getPost(board_seq: Long, post_seq: Long) = {
     val query = posts.filter(p =>
       p.board_seq === board_seq && p.seq === post_seq) join members on (_.author === _.email)
 
-    db run query.result.headOption
+    db run query.result.head
+  }
+  def getPost(post_seq: Long) = {
+    val query = posts.filter(_.seq === post_seq) join members on (_.author === _.email)
+
+    db run query.result.head
+  }
+
+  def isOwnPost(post_seq: Long, email: String) = {
+    db run posts
+      .filter(p => p.seq === post_seq && p.author === email)
+      .exists
+      .result
   }
 
   def updateHitCount(post: Post) = {
@@ -140,28 +149,3 @@ class PostsRepository @Inject()(
 
   }
 }
-/*
-object Paging {
-  case class PageReq(
-                      page: Int = 1,
-                      size: Int = DefaultPageSize,
-                      sortFields: Option[List[String]] = None,
-                      sortDirections: Option[List[String]] = None) {
-    def offset = (page - 1) * size
-  }
-
-  case class PageRes[T](items: Seq[T], total: Long)
-
-}
-
-UsersDao {
-  val users: TableQuery[UsersTable] = UsersTable.query
-
-  def findBySomeParam(params: A, pageReq: PageReq): Future[PageRes[User]] = {
-  db.run(users.result)
-  .filter(params)
-  .map { r =>
-  PageRes(items = r.slice(pageReq.offset, pageReq.offset + pageReq.size), total = r.size)
-}
-}
-}*/

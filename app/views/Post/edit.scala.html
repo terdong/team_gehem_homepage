@@ -11,7 +11,7 @@
                     "All"
                 }else {
                     header.board_list.map(list => {
-                        list.find(p => p._1 == board_seq).head._2
+                        list.find(p => p.seq == board_seq).head.name
                     })
                 }
             }</h3>
@@ -22,7 +22,7 @@
             @if(board_seq == 0 && header.board_list.isDefined) {
                 @defining(for {
                     tuple <- header.board_list.get
-                } yield (tuple._1.toString, tuple._2)) { board_list =>
+                } yield (tuple.seq.toString, tuple.name)) { board_list =>
                     @b3.select(writeForm("board_seq"), options = board_list, '_label -> "Board")
                 }
             } else {
