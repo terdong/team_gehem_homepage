@@ -1,4 +1,4 @@
-package Authentication
+package com.teamgehem.authentication
 
 import controllers.routes
 import play.api.mvc

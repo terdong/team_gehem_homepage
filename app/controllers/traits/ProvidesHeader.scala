@@ -1,6 +1,6 @@
 package controllers.traits
 
-import Authentication.Authenticated
+import com.teamgehem.authentication.Authenticated
 import play.api.cache.CacheApi
 import play.api.mvc.{Request, RequestHeader}
 
@@ -11,7 +11,6 @@ case class Header(member_email: Option[(String)],
                   permission: Option[(String)],
                   board_list: Option[Seq[BoardInfo]],
                   request_header: RequestHeader)
-case class MenuItem(url: String, name: String)
 case class BoardInfo(seq: Long, name: String, list_perm: Byte)
 
 trait ProvidesHeader {
@@ -23,7 +22,7 @@ trait ProvidesHeader {
     request.session.get(Authenticated.permission).getOrElse("0").toByte
 
   implicit def header[A](implicit request: Request[A], cache: CacheApi) = {
-    val email = request.session.get(Authenticated.email)
+    val email = member_email
     val permission = request.session.get(Authenticated.permission)
     val board_list: Option[Seq[BoardInfo]] =
       cache.get[Seq[BoardInfo]]("board_list")

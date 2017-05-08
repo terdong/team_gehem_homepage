@@ -2,7 +2,7 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 
-import Authentication.Authenticated
+import com.teamgehem.authentication.Authenticated
 import controllers.traits.ProvidesHeader
 import play.api.cache.CacheApi
 import play.api.data.Form

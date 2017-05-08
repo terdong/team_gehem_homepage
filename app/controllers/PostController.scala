@@ -2,7 +2,7 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 
-import Authentication.Authenticated
+import com.teamgehem.authentication.Authenticated
 import controllers.traits.ProvidesHeader
 import models.{Member, Post}
 import play.api.cache.CacheApi
@@ -70,13 +70,13 @@ class PostController @Inject()(implicit cache: CacheApi,
         posts_repo.updateHitCount(post._1)
         Ok(
           views.html.Post.read(post,
-                               header.member_email
+                               member_email
                                  .map(post._2.email.equals(_))
                                  .getOrElse(false)))
       }
   }
 
-  def editPost(board_seq: Long, post_seq: Long) = Authenticated.async {
+  def editPostForm(board_seq: Long, post_seq: Long) = Authenticated.async {
     implicit request =>
       for {
         r <- posts_repo.isOwnPost(post_seq, member_email.get) if r == true
@@ -90,7 +90,7 @@ class PostController @Inject()(implicit cache: CacheApi,
       }
   }
 
-  def updatePost(board_seq: Long, post_seq: Long) = Authenticated.async {
+  def editPost(board_seq: Long, post_seq: Long) = Authenticated.async {
     implicit request =>
       val form = postForm.bindFromRequest
       form.fold(

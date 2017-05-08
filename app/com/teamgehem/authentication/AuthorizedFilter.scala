@@ -1,4 +1,5 @@
-package Authentication
+package com.teamgehem.authentication
+
 import play.api.mvc.{ActionFilter, Results}
 
 import scala.concurrent.Future

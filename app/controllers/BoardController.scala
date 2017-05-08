@@ -2,7 +2,8 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 
-import Authentication.{Authenticated, Authorized}
+import com.teamgehem.authentication.Authorized
+import com.teamgehem.authentication.PermissionProvider._
 import controllers.traits.{BoardInfo, Header, ProvidesHeader}
 import play.api.cache.CacheApi
 import play.api.data.Forms._
@@ -34,34 +35,11 @@ class BoardController @Inject()(implicit cache: CacheApi,
     with I18nSupport
     with ProvidesHeader {
 
-  def boardExists(name: String): Boolean = {
-    Await.result(boards_repo.existsName(name), Duration.Inf)
-  }
-
-  val boardForm = Form(
-    tuple(
-      "name" -> nonEmptyText(maxLength = 30)
-        .verifying(messagesApi("board.create.exists.name"), !boardExists(_)),
-      "description" -> text(maxLength = 2000),
-      "status" -> boolean,
-      "list_perm" -> byteNumber(min = 0, max = 99),
-      "read_perm" -> byteNumber(min = 0, max = 99),
-      "write_perm" -> byteNumber(min = 0, max = 99)
-    )
-  )
-
-  def boards_(form: Form[_])(implicit header: Header): Future[Result] = {
-    for {
-      boards <- boards_repo.all
-      permissions <- permissions_repo.all
-    } yield Ok(views.html.Board.boards(boards, permissions, form))
-  }
-
-  def boards = Authorized(9).async { implicit request =>
+  def boards = Authorized(Admin).async { implicit request =>
     boards_(boardForm)
   }
 
-  def createBoard = Authenticated.async { implicit request =>
+  def createBoard = Authorized(Admin).async { implicit request =>
     boardForm.bindFromRequest.fold(
       hasErrors => boards_(hasErrors),
       form => {
@@ -76,11 +54,35 @@ class BoardController @Inject()(implicit cache: CacheApi,
     )
   }
 
-  def deleteBoard(board_seq: Long) = Authenticated.async { implicit request =>
+  def deleteBoard(board_seq: Long) = Authorized(Admin).async {
+    implicit request =>
+      for {
+        _ <- boards_repo.delete(board_seq)
+        _ <- setCacheBoardList
+      } yield Redirect(routes.BoardController.boards())
+  }
+
+  private def boardExists(name: String): Boolean = {
+    Await.result(boards_repo.existsName(name), Duration.Inf)
+  }
+
+  private val boardForm = Form(
+    tuple(
+      "name" -> nonEmptyText(maxLength = 30)
+        .verifying(messagesApi("board.create.exists.name"), !boardExists(_)),
+      "description" -> text(maxLength = 2000),
+      "status" -> boolean,
+      "list_perm" -> byteNumber(min = 0, max = 99),
+      "read_perm" -> byteNumber(min = 0, max = 99),
+      "write_perm" -> byteNumber(min = 0, max = 99)
+    )
+  )
+
+  private def boards_(form: Form[_])(implicit header: Header): Future[Result] = {
     for {
-      _ <- boards_repo.delete(board_seq)
-      _ <- setCacheBoardList
-    } yield Redirect(routes.BoardController.boards())
+      boards <- boards_repo.all
+      permissions <- permissions_repo.all
+    } yield Ok(views.html.Board.boards(boards, permissions, form))
   }
 
   private def setCacheBoardList = {

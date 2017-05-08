@@ -20,7 +20,9 @@ import scala.concurrent.{ExecutionContext, Future, Promise}
   *                    asynchronous code.
   */
 @Singleton
-class AsyncController @Inject()(actorSystem: ActorSystem)(implicit exec: ExecutionContext) extends Controller {
+class AsyncController @Inject()(actorSystem: ActorSystem)(
+    implicit exec: ExecutionContext)
+    extends Controller {
 
   /**
     * Create an Action that returns a plain text message after a delay
@@ -31,10 +33,11 @@ class AsyncController @Inject()(actorSystem: ActorSystem)(implicit exec: Executi
     * a path of `/message`.
     */
   def message = Action.async {
-    getFutureMessage(1.second) map { msg => {
-      Logger.debug("msg = ")
-      Ok(msg)
-    }
+    getFutureMessage(1.second) map { msg =>
+      {
+        Logger.debug("msg = ")
+        Ok(msg)
+      }
     }
   }
 
@@ -43,6 +46,7 @@ class AsyncController @Inject()(actorSystem: ActorSystem)(implicit exec: Executi
     actorSystem.scheduler.scheduleOnce(delayTime) {
       promise.success("Hi!")
     }
-    promise.failure(new IllegalArgumentException("미안해1")).future
+//    promise.failure(new IllegalArgumentException("미안해1")).future
+    promise.future
   }
 }

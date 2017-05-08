@@ -9,12 +9,11 @@ import scala.language.postfixOps
   *
   * M: Member
   * P: Permission
-  * 00: default number
-  * 01: useless
-  * 02: guest
-  * 03: member
-  * 04 ~ 08: spare
+  * 00: guest
+  * 01: pre member
+  * 02: memeber
   * 09: administrator
+  * 99: block
   *
   * example: (permission_code -> MP09)
   *

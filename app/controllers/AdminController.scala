@@ -2,7 +2,8 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 
-import Authentication.Authenticated
+import com.teamgehem.authentication.Authorized
+import com.teamgehem.authentication.PermissionProvider._
 import controllers.traits.{Header, ProvidesHeader}
 import models.Permission
 import play.api.cache.CacheApi
@@ -35,11 +36,33 @@ class AdminController @Inject()(implicit cache: CacheApi,
     with I18nSupport
     with ProvidesHeader {
 
-  def permissionExists(code: Byte): Boolean = {
+  def permissions = Authorized(Admin).async { implicit request =>
+    permissions_(permissionForm)
+  }
+
+  def createPermission = Authorized(Admin).async { implicit request =>
+    permissionForm.bindFromRequest.fold(
+      hasErrors => permissions_(hasErrors),
+      form => {
+        permission_repo
+          .insert(form)
+          .map(_ => Redirect(routes.AdminController.permissions()))
+      }
+    )
+  }
+
+  def deletePermission(permission_code: Int) = Authorized(Admin).async {
+    implicit request =>
+      permission_repo
+        .delete(permission_code.toByte)
+        .map(_ => Redirect(routes.AdminController.permissions))
+  }
+
+  private def permissionExists(code: Byte): Boolean = {
     Await.result(permission_repo.existsCode(code), Duration.Inf)
   }
 
-  val permissionForm: Form[Permission] = Form(
+  private val permissionForm: Form[Permission] = Form(
     mapping(
       "permission_code" -> byteNumber(min = 0, max = 99)
         .verifying(messagesApi("admin.permission.exists"),
@@ -55,27 +78,4 @@ class AdminController @Inject()(implicit cache: CacheApi,
       permissions <- permission_repo.all
     } yield Ok(views.html.admin.permission(permissions, form))
   }
-
-  def permissions = Authenticated.async { implicit request =>
-    permissions_(permissionForm)
-  }
-
-  def createPermission = Authenticated.async { implicit request =>
-    permissionForm.bindFromRequest.fold(
-      hasErrors => permissions_(hasErrors),
-      form => {
-        permission_repo
-          .insert(form)
-          .map(_ => Redirect(routes.AdminController.permissions()))
-      }
-    )
-  }
-
-  def deletePermission(permission_code: Int) = Authenticated.async {
-    implicit request =>
-      permission_repo
-        .delete(permission_code.toByte)
-        .map(_ => Redirect(routes.AdminController.permissions))
-  }
-
 }

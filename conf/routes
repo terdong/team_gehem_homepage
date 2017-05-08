@@ -1,8 +1,4 @@
 # Routes
-# This file defines all application routes (Higher priority routes first)
-# ~~~~
-
-# An example controller showing a sample home page
 GET         /                                           controllers.HomeController.index
 
 # Account
@@ -30,35 +26,22 @@ GET         /list/:board_seq                            controllers.PostControll
 GET         /list/:board_seq/:page                      controllers.PostController.list(board_seq:Long, page:Int)
 GET         /post/:board_seq/:post_seq                  controllers.PostController.showPost(board_seq :Long, post_seq:Long)
 GET         /post/:board_seq/:post_seq/delete           controllers.PostController.deletePost(board_seq :Long, post_seq:Long)
-POST        /post/:board_seq/:post_seq/edit             controllers.PostController.updatePost(board_seq :Long, post_seq:Long)
-GET         /post/:board_seq/:post_seq/edit             controllers.PostController.editPost(board_seq :Long, post_seq:Long)
+POST        /post/:board_seq/:post_seq/edit             controllers.PostController.editPost(board_seq :Long, post_seq:Long)
+GET         /post/:board_seq/:post_seq/edit             controllers.PostController.editPostForm(board_seq :Long, post_seq:Long)
 
-
-GET         /error                                      controllers.HomeController.error
-
-GET         /json                                       controllers.HomeController.json
-GET         /flash                                      controllers.HomeController.flash
-
-GET         /authorized                                 controllers.HomeController.authorized
-
-GET         /testparam                                  controllers.HomeController.testparam(page: Int ?=9)
-
-GET         /testparam/:page                            controllers.HomeController.testparam(page: Int)
-
-GET         /str2                                       controllers.HomeController.str2
-
-GET         /str                                        controllers.HomeController.str(str:String)
-
-GET         /write                                      controllers.HomeController.write
-
-POST        /writeResult                                controllers.HomeController.writeResult
-
-GET         /memberInsert                               controllers.DBController.memberInsert
-
-GET         /sampleBoardInsert                          controllers.DBController.sampleBoardInsert
-GET         /samplePostInsert                           controllers.DBController.samplePostInsert
-
-
+#Test
+GET         /test/flash                                 controllers.TestController.test_flash
+GET         /test/json                                  controllers.TestController.test_json
+GET         /test/error                                 controllers.TestController.test_error
+GET         /test/param                                 controllers.TestController.test_param(param:Int = 999999999)
+GET         /test/param/:param                          controllers.TestController.test_param(param:Int)
+GET         /test/set_authorized                        controllers.TestController.test_set_authorized
+GET         /test/get_authorized                        controllers.TestController.test_get_authorized
+GET         /test/set_cookie                            controllers.TestController.test_set_cookie
+GET         /test/remove_cookie                            controllers.TestController.test_remove_cookie
+GET         /test/get_request                           controllers.TestController.test_get_request
+GET         /test/get_headers                           controllers.TestController.test_get_headers
+GET         /test/messages                              controllers.TestController.test_messages
 
 # An example controller showing how to use dependency injection
 GET         /count                                      controllers.CountController.count
