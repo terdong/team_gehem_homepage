@@ -44,7 +44,7 @@ class PostController @Inject()(implicit cache: CacheApi,
     for {
       posts <- posts_repo.all(page, page_length, permission)
       count <- posts_repo.getPostCount()
-    } yield Ok(views.html.Post.list(None, posts, page, page_length, count))
+    } yield Ok(views.html.post.list(None, posts, page, page_length, count))
   }
 
   def list(board_seq: Long, page: Int) = Action.async { implicit request =>
@@ -55,7 +55,7 @@ class PostController @Inject()(implicit cache: CacheApi,
       count <- posts_repo.getPostCount(board_seq)
     } yield
       Ok(
-        views.html.Post
+        views.html.post
           .list(name_op, posts, page, page_length, count, board_seq))
   //Future.successful(Ok(""))
   }
@@ -64,12 +64,11 @@ class PostController @Inject()(implicit cache: CacheApi,
     implicit request =>
       for {
         r <- boards_repo.isListValidBoard(board_seq, permission) if r == true
-        post <- posts_repo
-          .getPost(board_seq, post_seq)
+        post <- posts_repo.getPost(board_seq, post_seq)
       } yield {
         posts_repo.updateHitCount(post._1)
         Ok(
-          views.html.Post.read(post,
+          views.html.post.read(post,
                                member_email
                                  .map(post._2.email.equals(_))
                                  .getOrElse(false)))
@@ -85,7 +84,7 @@ class PostController @Inject()(implicit cache: CacheApi,
         val post = tuple._1
         val form_data = (board_seq, post.subject, post.content.getOrElse(""))
         Ok(
-          views.html.Post
+          views.html.post
             .edit(postForm.fill(form_data), board_seq, post_seq))
       }
   }
@@ -96,7 +95,7 @@ class PostController @Inject()(implicit cache: CacheApi,
       form.fold(
         hasErrors =>
           Future.successful(
-            BadRequest(views.html.Post.edit(hasErrors, board_seq, post_seq))),
+            BadRequest(views.html.post.edit(hasErrors, board_seq, post_seq))),
         form => {
           posts_repo.update(form, post_seq) map (_ =>
             Redirect(routes.PostController.showPost(board_seq, post_seq)))
@@ -106,7 +105,7 @@ class PostController @Inject()(implicit cache: CacheApi,
 
   def writePostForm(implicit board_seq: Long) = Authenticated {
     implicit request =>
-      Ok(views.html.Post.write(postForm))
+      Ok(views.html.post.write(postForm))
   }
 
   def writePost(implicit board_seq: Long) = Authenticated.async {
@@ -114,7 +113,7 @@ class PostController @Inject()(implicit cache: CacheApi,
       val form = postForm.bindFromRequest
       form.fold(
         hasErrors =>
-          Future.successful(BadRequest(views.html.Post.write(hasErrors))),
+          Future.successful(BadRequest(views.html.post.write(hasErrors))),
         form => {
           posts_repo
             .insert(form, request.auth.email, request.remoteAddress) map (

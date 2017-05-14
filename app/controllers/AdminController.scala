@@ -4,6 +4,7 @@ import javax.inject.{Inject, Singleton}
 
 import com.teamgehem.authentication.Authorized
 import com.teamgehem.authentication.PermissionProvider._
+import com.teamgehem.form.PublicForm
 import controllers.traits.{Header, ProvidesHeader}
 import models.Permission
 import play.api.cache.CacheApi
@@ -36,6 +37,45 @@ class AdminController @Inject()(implicit cache: CacheApi,
     with I18nSupport
     with ProvidesHeader {
 
+  def members = Authorized(Admin).async { implicit request =>
+    members_
+  }
+
+  def editMember(email: String) = Authorized(Admin).async { implicit request =>
+    val form = member_form.bindFromRequest
+    form.fold(
+      has_errors =>
+        for {
+          member <- members_repo.findByEmail(email)
+          permissions <- permission_repo.allwithActive
+        } yield
+          BadRequest(
+            views.html.admin
+              .members_edit(has_errors, member, permissions)),
+      form => {
+        members_repo.update(email, form) map (_ =>
+          Redirect(routes.AdminController.members()))
+      }
+    )
+  }
+
+  def editMemberForm(email: String) = Authorized(Admin).async {
+    implicit request =>
+      for {
+        member <- members_repo.findByEmail(email)
+        permissions <- permission_repo.allwithActive
+      } yield {
+        val form = (member.name,
+                    member.nick,
+                    member.permission,
+                    member.level,
+                    member.exp)
+        Ok(
+          views.html.admin
+            .members_edit(member_form.fill(form), member, permissions))
+      }
+  }
+
   def permissions = Authorized(Admin).async { implicit request =>
     permissions_(permissionForm)
   }
@@ -58,6 +98,16 @@ class AdminController @Inject()(implicit cache: CacheApi,
         .map(_ => Redirect(routes.AdminController.permissions))
   }
 
+  private val member_form = Form(
+    tuple(
+      "name" -> nonEmptyText(2, 30),
+      "nick" -> nonEmptyText(2, 12),
+      "permission" -> byteNumber,
+      "level" -> number,
+      "exp" -> number
+    )
+  )
+
   private def permissionExists(code: Byte): Boolean = {
     Await.result(permission_repo.existsCode(code), Duration.Inf)
   }
@@ -76,6 +126,12 @@ class AdminController @Inject()(implicit cache: CacheApi,
       implicit header: Header): Future[Result] = {
     for {
       permissions <- permission_repo.all
-    } yield Ok(views.html.admin.permission(permissions, form))
+    } yield Ok(views.html.admin.permissions(permissions, form))
+  }
+
+  private def members_()(implicit header: Header): Future[Result] = {
+    for {
+      members <- members_repo.allWithPermission
+    } yield Ok(views.html.admin.members("members", members))
   }
 }

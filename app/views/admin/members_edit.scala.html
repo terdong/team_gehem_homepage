@@ -1,0 +1,34 @@
+@(editForm: Form[_], member:Member, permission:Seq[Permission] )(implicit messages: Messages, header: controllers.traits.Header)
+@implicitFC = @{
+    b3.horizontal.fieldConstructor("col-md-2", "col-md-10")
+}
+
+@main("members_edit") {
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">member edit</h3>
+        </div>
+        <div class="panel-body">
+
+        @b3.form(routes.AdminController.editMember(member.email)) {
+            @tags.form_input_disabled("Email",member.email, "email")
+            @b3.text(editForm("name"), '_label -> "Name")
+            @b3.text(editForm("nick"), '_label -> "Nick")
+            @defining(for{
+                p <- permission
+            }yield (p.permission_code.toString, p.content)){ permission_list =>
+                @b3.select(editForm("permission"), options = permission_list, '_label -> "Permission")
+            }
+
+            @b3.number(editForm("level"), '_label -> "Level")
+            @b3.number(editForm("exp"), '_label -> "Exp")
+            @tags.form_input_disabled("register_date", member.register_date.toString.split('.')(0))
+            @tags.form_input_disabled("updated_date", member.update_date.toString.split('.')(0))
+            @tags.form_input_disabled("last_logged", member.last_logged.toString.split('.')(0))
+
+            @b3.submit('class -> "btn btn-default") {
+                <span class="glyphicon glyphicon-ok"></span> Edit}
+        }
+        </div>
+    </div>
+}

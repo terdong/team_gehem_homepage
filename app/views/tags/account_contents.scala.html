@@ -1,6 +1,6 @@
 @(permission: Byte = 2)(content: Html)(none:Html = Html(""))(implicit header: controllers.traits.Header)
 
-@defining(header.request_header.session.get("permission")){ p =>
+@defining(header.request_header.session.get("permissions")){ p =>
     @if(p.isDefined && p.get.toByte >= permission) {
         @content
     }else {

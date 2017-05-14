@@ -17,13 +17,13 @@ class CustomAuthenticatedRequest[A](val auth: Authentication,
 
 object Authenticated extends mvc.ActionBuilder[CustomAuthenticatedRequest] {
   lazy val email: String = "email"
-  lazy val permission: String = "permission"
+  lazy val permission: String = "permissions"
 
   private def getAuthentication(request: RequestHeader) = {
     val result = for {
       email <- request.session.get(email)
       permission <- request.session.get(permission)
-      //if permission.equals("MP00")
+      //if permissions.equals("MP00")
     } yield Authentication(email, permission.toByte)
     result
   }

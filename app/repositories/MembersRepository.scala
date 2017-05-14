@@ -24,17 +24,17 @@ class MembersRepository @Inject()(
 
   def all: Future[Seq[Member]] = db run members.result
 
-  def findByEmail(email: String) = {
+  def allWithPermission: Future[Seq[(Member, String)]] = {
 
-    /*    val query = for {
-      email_ <- Parameters[String]
-      member <- members if member.email === email_
-    } yield member*/
+    val query = for {
+      m <- members
+      p <- permissions.filter(_.permission_code === m.permission)
+    } yield (m, p.content)
 
-    db run members.filter(_.email === email).result.head.asTry
+    db run query.result
   }
 
-  def findByEmail2(email: String): Future[Member] = {
+  def findByEmail(email: String) = {
     db run members.filter(_.email === email).result.head
   }
 
@@ -58,6 +58,31 @@ class MembersRepository @Inject()(
       (m.email, m.name, m.nick)) returning members
       += (member._1, member._2, member._3))
     db run (action.asTry)
+  }
+
+  def update(email: String, form: (String, String, Byte, Int, Int)) = {
+    val action = members
+      .filter(_.email === email)
+      .map(m => (m.name, m.nick, m.permission, m.level, m.exp, m.update_date))
+      .update(
+        (form._1,
+         form._2,
+         form._3,
+         form._4,
+         form._5,
+         new java.sql.Timestamp(System.currentTimeMillis())))
+
+    db run action
+  }
+
+  def update(email: String, form: (String, String)) = {
+    val action = members
+      .filter(_.email === email)
+      .map(m => (m.name, m.nick, m.update_date))
+      .update(
+        (form._1, form._2, new java.sql.Timestamp(System.currentTimeMillis())))
+
+    db run action
   }
 
   def insertSample = {

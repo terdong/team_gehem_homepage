@@ -20,6 +20,14 @@ class PermissionsRepository @Inject()(
 
   def all: Future[Seq[Permission]] = db run permissions.result
 
+  def allwithActive: Future[Seq[Permission]] =
+    db run (permissions.filter(_.active === true) result)
+
+  def getContentByCode(code: Byte) = {
+    val query = permissions.filter(_.permission_code === code).map(_.content)
+    db run (query result).head
+  }
+
   def create: Future[Unit] = {
     db run (permissions.schema create)
   }

@@ -5,3 +5,6 @@ account.signin.exists.email=
 board.create.exists.name=
 admin.permission.exists=
 test.messages=This is message for test.
+account.edit.title=
+result.button=
+account.edit.success=

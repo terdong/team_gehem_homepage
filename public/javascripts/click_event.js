@@ -3,7 +3,11 @@
  */
 $(function () {
     $("#clickEvent tr").on("click", function () {
-        location.href = $(this).attr("url");
+        var p = $(this).attr("url");
+        if(p != undefined){
+            location.href = p;
+        }else{
+            console.error("url= " + p);
+        }
     });
-
 });

@@ -1,6 +1,7 @@
 import java.time.Clock
 
 import com.google.inject.AbstractModule
+import com.teamgehem.form.PublicForm
 import services._
 
 /**
@@ -25,5 +26,4 @@ class Module extends AbstractModule {
     // Set AtomicCounter as the implementation for Counter.
     bind(classOf[Counter]).to(classOf[AtomicCounter])
   }
-
 }

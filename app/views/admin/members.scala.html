@@ -1,0 +1,38 @@
+@import tags._
+@(menu_name:String, members:Seq[(Member, String)])(implicit messages: Messages,header: controllers.traits.Header)
+
+@implicitFieldConstructor = @{ b3.vertical.fieldConstructor }
+
+@main(menu_name) {
+    @tags.table_layout(menu_name){
+        <tr>
+            <th>#</th>
+            <th>email</th>
+            <th>name</th>
+            <th>nick</th>
+            <th>permission</th>
+            <th>level</th>
+            <th>exp</th>
+            <th>register_date</th>
+            <th>update_date</th>
+            <th>last_logged</th>
+        </tr>
+    }{
+        @for((m, i) <- members zipWithIndex){
+            @defining(m._1){ member =>
+                <tr url= @{routes.AdminController.editMemberForm(member.email)}>
+                    <th scope="row">@{i}</th>
+                    <td>@{member.email}</td>
+                    <td>@{member.name}</td>
+                    <td>@{member.nick}</td>
+                    <td>@{m._2}</td>
+                    <td>@{member.level}</td>
+                    <td>@{member.exp}</td>
+                    <td>@tag_cleanly_date(member.register_date)</td>
+                    <td>@tag_cleanly_date(member.update_date)</td>
+                    <td>@tag_cleanly_date(member.last_logged)</td>
+                </tr>
+            }
+        }
+    }
+}

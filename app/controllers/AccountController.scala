@@ -9,7 +9,7 @@ import play.api.data.Form
 import play.api.data.Forms.{nonEmptyText, _}
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.{Action, Controller}
-import repositories.MembersRepository
+import repositories.{MembersRepository, PermissionsRepository}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
@@ -21,49 +21,69 @@ import scala.util.{Failure, Success}
   */
 case class SignIn(email: String, checkbox: Boolean)
 
+/**
+  * @param cache
+  * @param members_repo
+  * @param messagesApi
+  */
 @Singleton
 class AccountController @Inject()(implicit cache: CacheApi,
-                                  member_rep: MembersRepository,
+                                  members_repo: MembersRepository,
+                                  permission_repo: PermissionsRepository,
                                   val messagesApi: MessagesApi)
     extends Controller
     with ProvidesHeader
     with I18nSupport {
 
-  def emailExists(email: String): Boolean = {
-    Await.result(member_rep.existsEmail(email), Duration.Inf)
-  }
-
-  val signin_form: Form[SignIn] = Form {
-    mapping(
-      "email" -> email.verifying(Messages("account.signin.exists.email"),
-                                 emailExists(_)),
-      "remember" -> boolean
-    )(SignIn.apply)(SignIn.unapply)
-  }
-
-  val signup_form = Form {
-    tuple(
-      "email" -> email.verifying(Messages("account.signup.exists.email"),
-                                 !emailExists(_)),
-      "name" -> nonEmptyText(2),
-      "nickName" -> nonEmptyText(2)
+  def edit = Authenticated.async { implicit request =>
+    val email = member_email.get
+    val form = member_form.bindFromRequest
+    form.fold(
+      has_errors =>
+        for {
+          member <- members_repo.findByEmail(email)
+          permission_content <- permission_repo.getContentByCode(permission)
+        } yield
+          BadRequest(
+            views.html.account.edit(has_errors, member, permission_content)),
+      form => {
+        members_repo.update(email, form) map (_ =>
+          Redirect(routes.HomeController.result())
+            .flashing("success" -> Messages("account.edit.success")))
+      }
     )
+  }
+  def editForm = Authenticated.async { implicit request =>
+    for {
+      member <- members_repo.findByEmail(member_email.get)
+      permission_content <- permission_repo.getContentByCode(permission)
+    } yield {
+      val form =
+        (member.name, member.nick)
+      Ok(
+        views.html.account
+          .edit(member_form.fill(form), member, permission_content))
+    }
   }
 
   def createSignUpForm = Action { implicit request =>
-    Ok(views.html.Account.signup(signup_form))
+    Ok(views.html.account.signup(signup_form))
   }
 
+  /**
+    * 회원가입
+    * @return
+    */
   def signup = Action.async { implicit request =>
     val form = signup_form.bindFromRequest
     form.fold(
       hasErrors =>
-        Future.successful(BadRequest(views.html.Account.signup(hasErrors))),
+        Future.successful(BadRequest(views.html.account.signup(hasErrors))),
       (form: (String, String, String)) => {
         //Future.successful(Ok("test"))
-        member_rep.insert(form) map (_ match {
+        members_repo.insert(form) map (_ match {
           case Success(member) =>
-            Ok(views.html.Account.signup_complete(member.email, signin_form))
+            Ok(views.html.account.signup_complete(member.email, signin_form))
           case Failure(e) => throw e
         })
       }
@@ -71,20 +91,22 @@ class AccountController @Inject()(implicit cache: CacheApi,
   }
 
   def createSignInForm = Action { implicit request =>
-    Ok(views.html.Account.signin(signin_form))
+    Ok(views.html.account.signin(signin_form))
   }
 
+  /**
+    * 회원인증
+    * @return
+    */
   def signin = Action.async { implicit request =>
     signin_form.bindFromRequest.fold(
-      hasErrors => Future.successful(Ok(views.html.Account.signin(hasErrors))),
+      hasErrors => Future.successful(Ok(views.html.account.signin(hasErrors))),
       form => {
-        member_rep.findByEmail(form.email) map (_ match {
-          case Success(member) =>
-            Redirect(routes.HomeController.index()).withSession(
-              Authenticated.email -> member.email,
-              Authenticated.permission -> member.permission.toString)
-          case Failure(e) => throw e
-        })
+        members_repo.findByEmail(form.email) map (
+            member =>
+              Redirect(routes.HomeController.index()).withSession(
+                Authenticated.email -> member.email,
+                Authenticated.permission -> member.permission.toString))
       }
     )
   }
@@ -93,7 +115,31 @@ class AccountController @Inject()(implicit cache: CacheApi,
     Redirect(routes.HomeController.index()).withNewSession
   }
 
-  def memberInsert = Action { implicit request =>
-    Ok("Hello")
+  private def emailExists(email: String): Boolean = {
+    Await.result(members_repo.existsEmail(email), Duration.Inf)
   }
+
+  private val signin_form: Form[SignIn] = Form {
+    mapping(
+      "email" -> email.verifying(Messages("account.signin.exists.email"),
+                                 emailExists(_)),
+      "remember" -> boolean
+    )(SignIn.apply)(SignIn.unapply)
+  }
+
+  private val signup_form = Form {
+    tuple(
+      "email" -> email.verifying(Messages("account.signup.exists.email"),
+                                 !emailExists(_)),
+      "name" -> nonEmptyText(2),
+      "nickName" -> nonEmptyText(2)
+    )
+  }
+
+  private val member_form = Form(
+    tuple(
+      "name" -> nonEmptyText(2, 30),
+      "nick" -> nonEmptyText(2, 12)
+    )
+  )
 }

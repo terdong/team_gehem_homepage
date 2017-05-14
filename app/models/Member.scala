@@ -17,7 +17,7 @@ case class Member(email: String,
                   update_date: Timestamp = null,
                   last_logged: Timestamp = null)
 
-trait MembersTable {
+trait MembersTable extends PermissionsTable {
 
   protected val members = TableQuery[Members]
 

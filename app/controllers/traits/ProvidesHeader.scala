@@ -15,7 +15,7 @@ case class BoardInfo(seq: Long, name: String, list_perm: Byte)
 
 trait ProvidesHeader {
 
-  def member_email[A](implicit request: Request[A]) =
+  def member_email[A](implicit request: Request[A]): Option[String] =
     request.session.get(Authenticated.email)
 
   def permission[A](implicit request: Request[A]) =

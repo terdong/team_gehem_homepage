@@ -45,7 +45,7 @@ class BoardController @Inject()(implicit cache: CacheApi,
       form => {
         val email = request.auth.email
         val result = for {
-          member <- members_repo.findByEmail2(email)
+          member <- members_repo.findByEmail(email)
           r <- boards_repo.insert(form, member.name)
           _ <- setCacheBoardList
         } yield Redirect(routes.BoardController.boards())
@@ -82,7 +82,7 @@ class BoardController @Inject()(implicit cache: CacheApi,
     for {
       boards <- boards_repo.all
       permissions <- permissions_repo.all
-    } yield Ok(views.html.Board.boards(boards, permissions, form))
+    } yield Ok(views.html.board.boards(boards, permissions, form))
   }
 
   private def setCacheBoardList = {

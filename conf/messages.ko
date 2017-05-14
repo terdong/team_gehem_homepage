@@ -5,3 +5,6 @@ account.signup.exists.email=이미 존재하는 이메일입니다.
 board.create.exists.name=이미 존재하는 게시판 이름입니다.
 admin.permission.exists=이미 존재하는 권한 코드입니다.
 test.messages=테스트용 메세지입니다.
+account.edit.title=계정 수정
+result.button=홈으로
+account.edit.success=회원정보 변경을 성공했습니다.

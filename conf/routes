@@ -1,5 +1,6 @@
 # Routes
 GET         /                                           controllers.HomeController.index
+GET /result controllers.HomeController.result
 
 # Account
 POST        /signup                                     controllers.AccountController.signup
@@ -8,6 +9,10 @@ POST        /signin                                     controllers.AccountContr
 GET         /signin                                     controllers.AccountController.createSignInForm
 GET         /signout                                    controllers.AccountController.signout
 
+POST    /edit controllers.AccountController.edit
+GET    /edit controllers.AccountController.editForm
+
+
 # Admin
 POST        /createBoard                                controllers.BoardController.createBoard
 GET         /boards                                     controllers.BoardController.boards
@@ -15,6 +20,10 @@ GET         /boards/:board_seq/delete                   controllers.BoardControl
 POST        /createPermission                           controllers.AdminController.createPermission
 GET         /permissions                                controllers.AdminController.permissions
 GET         /permissions/:permission_code/delete        controllers.AdminController.deletePermission(permission_code:Int)
+
+GET         /members                                    controllers.AdminController.members
+POST         /members/:member_email/edit controllers.AdminController.editMember(member_email:String)
+GET         /members/:member_email/edit controllers.AdminController.editMemberForm(member_email:String)
 
 # Post
 GET         /list/all                                   controllers.PostController.listAll(page:Int = 1)
@@ -38,7 +47,7 @@ GET         /test/param/:param                          controllers.TestControll
 GET         /test/set_authorized                        controllers.TestController.test_set_authorized
 GET         /test/get_authorized                        controllers.TestController.test_get_authorized
 GET         /test/set_cookie                            controllers.TestController.test_set_cookie
-GET         /test/remove_cookie                            controllers.TestController.test_remove_cookie
+GET         /test/remove_cookie                         controllers.TestController.test_remove_cookie
 GET         /test/get_request                           controllers.TestController.test_get_request
 GET         /test/get_headers                           controllers.TestController.test_get_headers
 GET         /test/messages                              controllers.TestController.test_messages

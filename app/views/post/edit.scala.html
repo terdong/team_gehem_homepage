@@ -18,7 +18,7 @@
         </div>
         <div class="panel-body">
 
-        @b3.form(routes.PostController.updatePost(board_seq, post_seq)) {
+        @b3.form(routes.PostController.editPost(board_seq, post_seq)) {
             @if(board_seq == 0 && header.board_list.isDefined) {
                 @defining(for {
                     tuple <- header.board_list.get

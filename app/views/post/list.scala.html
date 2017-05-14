@@ -1,0 +1,54 @@
+@(board_name: Option[String], posts: Seq[(Post, String)], page: Int, page_length: Int, count: Int, board_seq: Long = 0)(implicit messages: Messages, header: controllers.traits.Header)
+    @main("list") {
+        @tags.table_layout(board_name.getOrElse("All")) {
+            <tr>
+                <th class="col-md-1">#</th>
+                <th class="col-md-6">제목</th>
+                <th class="col-md-2">작성자</th>
+                <th class="col-md-2">작성일</th>
+                <th class="col-md-1">조회수</th>
+            </tr>
+        } {
+            @for(p <- posts) {
+                @defining(p._1) { post =>
+                    @defining(p._2) { member_name =>
+                        <tr url= @{
+                            routes.PostController.showPost({
+                                post.board_seq
+                            }, {
+                                post.seq
+                            })
+                        }>
+                            <th scope="row">
+                            @{
+                                post.seq
+                            }
+                            </th>
+                            <td>
+                            @{
+                                post.subject
+                            }
+                            </td>
+                            <td>
+                            @{
+                                member_name
+                            }
+                            </td>
+                            <td>
+                            @{
+                                post.write_date.toString.split('.')(0)
+                            }
+                            </td>
+                            <td>
+                            @{
+                                post.hit_count
+                            }
+                            </td>
+                        </tr>
+                    }
+                }
+            }
+        }
+
+        @tags.tag_paginate(page, page_length, count, board_seq, if(board_name.isDefined) routes.PostController.list(board_seq, _) else routes.PostController.listAll(_))
+    }

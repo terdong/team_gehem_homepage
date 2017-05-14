@@ -1,0 +1,10 @@
+@()(implicit flash: Flash, header: controllers.traits.Header, messages: Messages)
+@main("Result") {
+
+        <div class="row text-center">
+                @defining(flash.get("success")) { str =>
+                    <p>@str</p>
+                }
+                <a href="@routes.HomeController.index()" class="btn btn-success" role="button"><span class="glyphicon glyphicon-repeat">@Messages("result.button") </span></a>
+        </div>
+}
