@@ -31,6 +31,7 @@ GET         /list/all/write                             controllers.PostControll
 GET         /list/all/:page                             controllers.PostController.listAll(page:Int)
 POST        /list/:board_seq/write                      controllers.PostController.writePost(board_seq :Long)
 GET         /list/:board_seq/write                      controllers.PostController.writePostForm(board_seq :Long)
+POST /upload/image controllers.PostController.uploadImage
 GET         /list/:board_seq                            controllers.PostController.list(board_seq:Long, page:Int = 1)
 GET         /list/:board_seq/:page                      controllers.PostController.list(board_seq:Long, page:Int)
 GET         /post/:board_seq/:post_seq                  controllers.PostController.showPost(board_seq :Long, post_seq:Long)

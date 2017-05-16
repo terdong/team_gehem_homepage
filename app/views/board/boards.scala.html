@@ -7,7 +7,7 @@
         permission <- permissions
     }yield (permission.permission_code.toString -> permission.content)
 }
-@main("boards") {
+@main("boards", "admin") {
 
     <div class="panel panel-default">
         <div class="panel-heading">게시판 생성</div>

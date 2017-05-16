@@ -2,9 +2,11 @@
 @(menu_name:String, members:Seq[(Member, String)])(implicit messages: Messages,header: controllers.traits.Header)
 
 @implicitFieldConstructor = @{ b3.vertical.fieldConstructor }
-
-@main(menu_name) {
-    @tags.table_layout(menu_name){
+@scripts = {
+    <script src="@routes.Assets.versioned("javascripts/click_event.js")" type="text/javascript"></script>
+}
+@main(menu_name,"admin", scripts) {
+    @tags.tag_table_layout(menu_name){
         <tr>
             <th>#</th>
             <th>email</th>

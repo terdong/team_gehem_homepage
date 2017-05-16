@@ -1,7 +1,7 @@
 @(tuple: (Post, Member), is_own: Boolean = false)(implicit messages: Messages, header: controllers.traits.Header)
 @import b3.clear.fieldConstructor
 
-@main("read") {
+@main("read", "board") {
     @defining(tuple._1) { post =>
         @defining(tuple._2) { member =>
             <div class="panel panel-default">
@@ -30,10 +30,13 @@
                     </li>
                 </ul>
 
-                <div class="panel-body">
-                    <pre>@{post.content.getOrElse("")}</pre>
-                    <div class="pull-right"><small><em >ip: @{post.author_ip}</em></small></div>
-                </div>
+                @defining(post.content.get){ content =>
+                    <div class="panel-body">
+                        @Html(content)
+                    </div>
+                }
+
+                <div class="pull-right"><small><em >ip: @{post.author_ip}</em></small></div>
 
                 <ul class="list-group">
                     <li class="list-group-item">파일첨부 내용</li>

@@ -9,11 +9,13 @@ import play.api.cache.CacheApi
 import play.api.data.Form
 import play.api.data.Forms.{tuple, _}
 import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.libs.json.Json
 import play.api.mvc.{Action, Controller}
 import repositories.{BoardsRepository, MembersRepository, PostsRepository}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.reflect.io.Path
 
 /**
   * Created by terdo on 2017-04-22 022.
@@ -75,8 +77,8 @@ class PostController @Inject()(implicit cache: CacheApi,
       }
   }
 
-  def editPostForm(board_seq: Long, post_seq: Long) = Authenticated.async {
-    implicit request =>
+  def editPostForm(board_seq: Long, post_seq: Long) =
+    Authenticated.async { implicit request =>
       for {
         r <- posts_repo.isOwnPost(post_seq, member_email.get) if r == true
         tuple: (Post, Member) <- posts_repo.getPost(board_seq, post_seq)
@@ -87,10 +89,10 @@ class PostController @Inject()(implicit cache: CacheApi,
           views.html.post
             .edit(postForm.fill(form_data), board_seq, post_seq))
       }
-  }
+    }
 
-  def editPost(board_seq: Long, post_seq: Long) = Authenticated.async {
-    implicit request =>
+  def editPost(board_seq: Long, post_seq: Long) =
+    Authenticated.async { implicit request =>
       val form = postForm.bindFromRequest
       form.fold(
         hasErrors =>
@@ -101,27 +103,46 @@ class PostController @Inject()(implicit cache: CacheApi,
             Redirect(routes.PostController.showPost(board_seq, post_seq)))
         }
       )
+    }
+
+  def writePostForm(board_seq: Long) = Authenticated { implicit request =>
+    Ok(views.html.post.write(postForm, board_seq))
   }
 
-  def writePostForm(implicit board_seq: Long) = Authenticated {
-    implicit request =>
-      Ok(views.html.post.write(postForm))
+  def writePost(board_seq: Long) = Authenticated.async { implicit request =>
+    val form = postForm.bindFromRequest
+    form.fold(
+      hasErrors =>
+        Future.successful(
+          BadRequest(views.html.post.write(hasErrors, board_seq))),
+      form => {
+        posts_repo
+          .insert(form, request.auth.email, request.remoteAddress) map (post =>
+          Redirect(routes.PostController.showPost(post.board_seq, post.seq)))
+      }
+    )
   }
 
-  def writePost(implicit board_seq: Long) = Authenticated.async {
+  def uploadImage = Authenticated(parse.multipartFormData) {
     implicit request =>
-      val form = postForm.bindFromRequest
-      form.fold(
-        hasErrors =>
-          Future.successful(BadRequest(views.html.post.write(hasErrors))),
-        form => {
-          posts_repo
-            .insert(form, request.auth.email, request.remoteAddress) map (
-              post =>
-                Redirect(
-                  routes.PostController.showPost(post.board_seq, post.seq)))
+      request.body
+        .file("file")
+        .map { picture =>
+          val date = java.time.LocalDate.now
+          val path = Path(s"public/upload/images/${date}/")
+          if (!path.exists) { path.createDirectory() }
+
+          import java.io.File
+          val filename = picture.filename
+          //val contentType = picture.contentType
+          val file_path = s"${path.path}/$filename"
+          picture.ref.moveTo(new File(file_path))
+          Ok(Json.obj("location" -> s"$date/$filename"))
         }
-      )
+        .getOrElse {
+          Redirect(routes.HomeController.index)
+            .flashing("error" -> "Missing file")
+        }
   }
 
   def deletePost(board_seq: Long, post_seq: Long) = Authenticated.async {
