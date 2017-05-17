@@ -32,4 +32,5 @@ class HomeController @Inject()(implicit exec: ExecutionContext,
   def result() = Action { implicit request =>
     Ok(views.html.result())
   }
+
 }

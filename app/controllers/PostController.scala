@@ -136,7 +136,7 @@ class PostController @Inject()(implicit cache: CacheApi,
           val filename = picture.filename
           //val contentType = picture.contentType
           val file_path = s"${path.path}/$filename"
-          picture.ref.moveTo(new File(file_path))
+          val file = picture.ref.moveTo(new File(file_path))
           Ok(Json.obj("location" -> s"$date/$filename"))
         }
         .getOrElse {

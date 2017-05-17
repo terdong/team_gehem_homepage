@@ -18,6 +18,21 @@ class TestController @Inject()(implicit errorHandler: HttpErrorHandler,
     extends Controller
     with I18nSupport {
 
+  def test_assets = Action {
+
+    val asset =
+      Assets.versioned("public",
+                       "upload/images/2017-05-17/img_14949593930301.jpg")
+
+    val asset2: Call = routes.Assets.versioned(
+      "upload/images/2017-05-17/img_14949593930301.jpg")
+
+    val url = asset2.url
+    val a = asset2.path()
+
+    Ok(a)
+  }
+
   def test_flash = Action { implicit request =>
     Ok(views.html.test.test_flash()).flashing("hi" -> "안녕ㅎ?")
   }

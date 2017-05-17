@@ -1,4 +1,4 @@
-@(boards:Seq[Board], permissions:Seq[Permission], form:Form[_])(implicit header: controllers.traits.Header, messages: Messages)
+@(boards:Seq[Board], permissions:Seq[Permission], form:Form[_], url : Call)(implicit header: controllers.traits.Header, messages: Messages)
 
 @implicitFieldConstructor = @{ b3.vertical.fieldConstructor }
 
@@ -23,6 +23,8 @@
                         <th>쓰기권한</th>
                         <th>작성자</th>
                         <th>작성일</th>
+                        <th>수정</th>
+                        <th>상태</th>
                         <th>삭제</th>
                     </tr>
                 </thead>
@@ -31,7 +33,11 @@
                         <tr>
                             <th scope="row">@{board.seq}</th>
                             <td>@{board.name}</td>
-                            <td>@{board.status}</td>
+                            <td>
+                                <a href="#" class="btn btn-primary btn-xs disabled" role="button">
+                                <span class="glyphicon @if(board.status) {glyphicon-ok} else {glyphicon-remove}"></span>
+                                </a>
+                            </td>
                             <td>@{board.list_permission}</td>
                             <td>@{board.read_permission}</td>
                             <td>@{board.write_permission}</td>
@@ -42,17 +48,31 @@
                                 date.substring(0, index)
                             }</td>
                             <td>
-                                <a href="@routes.BoardController.deleteBoard(board.seq)" data-method="DELETE">
-                                    <button type="button" class="btn btn-danger btn-sm"> <span class="glyphicon glyphicon-remove"></span> Delete</button>
-                                </a>
+                                <a title = "edit" href="@routes.BoardController.editBoardForm(board.seq)" class="btn btn-info btn-xs active" role="button"><span class="glyphicon glyphicon-edit"></span></a>
                             </td>
+                            <td>
+                            @defining(board.status) { status =>
+                                <a title = "active" href="@routes.BoardController.setActiveBoard(board.seq, true)" class="btn btn-warning btn-xs @if(status){disabled}else{active}" role="button"><span class="glyphicon glyphicon-ok"></span></a>
+                                <a title = "inactive" href="@routes.BoardController.setActiveBoard(board.seq, false)" class="btn btn-warning btn-xs @if(status){active}else{disabled}" role="button"><span class="glyphicon glyphicon-remove"></span></a>
+                            }
+                            </td>
+                            <td>
+                                <button type="button" title = "remove" data-toggle="modal" data-target="#remove_modal" class="btn btn-danger btn-xs" ><span class="glyphicon glyphicon-trash"></span></button>
+
+                            </td>
+                            @tags.tag_modal_simple("Warnning", routes.BoardController.deleteBoard(board.seq)){
+                                Are you sure you want to remove this board?
+                            }
                         </tr>
                     }
                 </tbody>
             </table>
         </div>
     </div>
-    @b3.form(routes.BoardController.createBoard) {
+    @b3.form(url) {
+        @defining(form.data.get("seq")){ seq =>
+            @b3.hidden("seq", seq)
+        }
         <div class="row">
             <div class="col-md-6">
             @b3.text(form("name"), '_label -> "Title")
@@ -74,12 +94,6 @@
             </div>
         </div>
 
-        @*
-        @defining(b3.inline.fieldConstructorSpecific) { implicit ifc =>
-            @b3.text( form("list_perm"), '_label -> "Inline input text" )
-            @b3.text( form("read_perm"), '_label -> "Inline input text" )
-        }
-        *@
         @b3.submit('class -> "btn btn-default") {
             <span class="glyphicon glyphicon-ok"></span> Create }
     }

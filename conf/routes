@@ -1,6 +1,6 @@
 # Routes
 GET         /                                           controllers.HomeController.index
-GET /result controllers.HomeController.result
+GET         /result                                     controllers.HomeController.result
 
 # Account
 POST        /signup                                     controllers.AccountController.signup
@@ -9,21 +9,27 @@ POST        /signin                                     controllers.AccountContr
 GET         /signin                                     controllers.AccountController.createSignInForm
 GET         /signout                                    controllers.AccountController.signout
 
-POST    /edit controllers.AccountController.edit
-GET    /edit controllers.AccountController.editForm
+POST        /edit                                       controllers.AccountController.edit
+GET         /edit                                       controllers.AccountController.editForm
 
 
 # Admin
 POST        /createBoard                                controllers.BoardController.createBoard
 GET         /boards                                     controllers.BoardController.boards
+POST        /boards/edit                     controllers.BoardController.editBoard
+GET         /boards/:board_seq/edit                     controllers.BoardController.editBoardForm(board_seq:Long)
 GET         /boards/:board_seq/delete                   controllers.BoardController.deleteBoard(board_seq:Long)
+
+GET         /boards/:board_seq/active                   controllers.BoardController.setActiveBoard(board_seq:Long, is_active:Boolean)
+
+
 POST        /createPermission                           controllers.AdminController.createPermission
 GET         /permissions                                controllers.AdminController.permissions
 GET         /permissions/:permission_code/delete        controllers.AdminController.deletePermission(permission_code:Int)
 
 GET         /members                                    controllers.AdminController.members
-POST         /members/:member_email/edit controllers.AdminController.editMember(member_email:String)
-GET         /members/:member_email/edit controllers.AdminController.editMemberForm(member_email:String)
+POST        /members/:member_email/edit                 controllers.AdminController.editMember(member_email:String)
+GET         /members/:member_email/edit                 controllers.AdminController.editMemberForm(member_email:String)
 
 # Post
 GET         /list/all                                   controllers.PostController.listAll(page:Int = 1)
@@ -31,7 +37,7 @@ GET         /list/all/write                             controllers.PostControll
 GET         /list/all/:page                             controllers.PostController.listAll(page:Int)
 POST        /list/:board_seq/write                      controllers.PostController.writePost(board_seq :Long)
 GET         /list/:board_seq/write                      controllers.PostController.writePostForm(board_seq :Long)
-POST /upload/image controllers.PostController.uploadImage
+POST        /upload/image                               controllers.PostController.uploadImage
 GET         /list/:board_seq                            controllers.PostController.list(board_seq:Long, page:Int = 1)
 GET         /list/:board_seq/:page                      controllers.PostController.list(board_seq:Long, page:Int)
 GET         /post/:board_seq/:post_seq                  controllers.PostController.showPost(board_seq :Long, post_seq:Long)
@@ -40,6 +46,7 @@ POST        /post/:board_seq/:post_seq/edit             controllers.PostControll
 GET         /post/:board_seq/:post_seq/edit             controllers.PostController.editPostForm(board_seq :Long, post_seq:Long)
 
 #Test
+GET         /test/assets                                controllers.TestController.test_assets
 GET         /test/flash                                 controllers.TestController.test_flash
 GET         /test/json                                  controllers.TestController.test_json
 GET         /test/error                                 controllers.TestController.test_error

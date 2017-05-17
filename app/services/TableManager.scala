@@ -6,12 +6,7 @@ import controllers.traits.BoardInfo
 import play.api.Logger
 import play.api.cache.CacheApi
 import play.api.inject.ApplicationLifecycle
-import repositories.{
-  BoardsRepository,
-  MembersRepository,
-  PermissionsRepository,
-  PostsRepository
-}
+import repositories._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -25,6 +20,7 @@ class TableManager @Inject()(appLifecycle: ApplicationLifecycle,
                              posts_repo: PostsRepository,
                              boards_repo: BoardsRepository,
                              permissions_repo: PermissionsRepository,
+                             attachments_repo: AttachmentsRepository,
                              cache: CacheApi) {
 
   Logger.info(s"TableManager start")

@@ -62,6 +62,21 @@ create table "Permissions"
   active boolean default true not null,
   content varchar(80) not null
 );
+create table "Attachements"
+(
+	seq bigserial not null
+		constraint "Attachements_pkey"
+			primary key,
+	file_name varchar(127) not null,
+	file_path varchar(255) not null,
+	mime_type varchar(255) not null,
+	size bigint not null,
+	container_seq bigint not null
+		constraint attachments_container_seq_fk
+			references "Posts"
+				on update restrict on delete cascade,
+	uploaded_date timestamp default now() not null
+);
 
 
 # --- !Downs
