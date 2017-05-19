@@ -22,8 +22,42 @@ tinymce.init({
     automatic_uploads: false,
     relative_urls : false,
     // URL of our upload handler (for more details check: https://www.tinymce.com/docs/configure/file-image-upload/#images_upload_url)
-    images_upload_url: '/upload/image',
-    images_upload_base_path: '/assets/upload/images',
+    //images_upload_url: '/upload/image',
+    images_upload_base_path: '/images',
+    images_upload_handler: function (blobInfo, success, failure) {
+        console.log("images_upload_handler")
+
+        var xhr, formData;
+        xhr = new XMLHttpRequest();
+        xhr.withCredentials = false;
+        xhr.open('POST', '/upload/image');
+        xhr.onload = function() {
+            var json;
+
+            if (xhr.status != 200) {
+                failure('HTTP Error: ' + xhr.status);
+                return;
+            }
+            json = JSON.parse(xhr.responseText);
+
+            if (!json || (typeof json.location != 'string' && typeof json.attachment_seq != 'Number')) {
+                failure('Invalid JSON: ' + xhr.responseText);
+                return;
+            }
+            console.log(json.location);
+            console.log(json.attachment_seq);
+
+            var form = $('form');
+
+            $("<input></input>").attr({ type: "hidden", name:"attachments[]", value:json.attachment_seq}).appendTo(form);
+
+            success('/images/' + json.location);
+        };
+        formData = new FormData();
+        formData.append('file', blobInfo.blob(), blobInfo.filename());
+        xhr.send(formData);
+    },
+
     // here we add custom filepicker only to Image dialog
     file_picker_types: 'image',
     // and here's our custom image picker
@@ -47,13 +81,14 @@ tinymce.init({
                 // Note: Now we need to register the blob in TinyMCEs image blob
                 // registry. In the next release this part hopefully won't be
                 // necessary, as we are looking to handle it internally.
-                var id = 'img_' + $.now();
+                var file_name = file.name.split(".")[0];
+                //var id = 'img_' + $.now();
                 var blobCache = tinymce.activeEditor.editorUpload.blobCache;
-                var blobInfo = blobCache.create(id, file, reader.result);
+                var blobInfo = blobCache.create(file_name, file, reader.result);
                 blobCache.add(blobInfo);
 
                 // call the callback and populate the Title field with the file name
-                cb(blobInfo.blobUri(), {title: file.name});
+                cb(blobInfo.blobUri(), {title: file_name});
             };
         };
         input.click();

@@ -100,7 +100,9 @@ class PostsRepository @Inject()(
   def insert(post: Post): Future[Unit] =
     db run (posts += post) map (_ => ())
 
-  def insert(form: (Long, String, String), email: String, ip: String) = {
+  def insert(form: (Long, String, String, Seq[Long]),
+             email: String,
+             ip: String) = {
     val action = posts.map(_.thread).max.result.flatMap {
       (thread: Option[Long]) =>
         insertQueryBase.returning(posts) += (form._1,
@@ -115,7 +117,7 @@ class PostsRepository @Inject()(
     db run action
   }
 
-  def update(form: (Long, String, String), post_seq: Long) = {
+  def update(form: (Long, String, String, Seq[Long]), post_seq: Long) = {
     val action = posts
       .filter(_.seq === post_seq)
       .map(p => (p.subject, p.content, p.update_date))

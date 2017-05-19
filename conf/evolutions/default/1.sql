@@ -66,21 +66,20 @@ create table "Attachements"
 (
 	seq bigserial not null
 		constraint "Attachements_pkey"
-			primary key,
-	file_name varchar(127) not null,
-	file_path varchar(255) not null,
+		primary key,
+	hash varchar(32) not null,
+	name varchar(255) not null,
+	sub_path varchar(64) not null,
 	mime_type varchar(255) not null,
 	size bigint not null,
-	container_seq bigint not null
-		constraint attachments_container_seq_fk
-			references "Posts"
-				on update restrict on delete cascade,
+	container_seq bigint default 0 not null,
+	download_count int default 0 not null,
 	uploaded_date timestamp default now() not null
 );
 
-
 # --- !Downs
 
+DROP TABLE "Attachements";
 DROP TABLE "Permissions";
 DROP TABLE "Posts";
 DROP TABLE "Boards";

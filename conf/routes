@@ -16,7 +16,7 @@ GET         /edit                                       controllers.AccountContr
 # Admin
 POST        /createBoard                                controllers.BoardController.createBoard
 GET         /boards                                     controllers.BoardController.boards
-POST        /boards/edit                     controllers.BoardController.editBoard
+POST        /boards/edit                                controllers.BoardController.editBoard
 GET         /boards/:board_seq/edit                     controllers.BoardController.editBoardForm(board_seq:Long)
 GET         /boards/:board_seq/delete                   controllers.BoardController.deleteBoard(board_seq:Long)
 
@@ -46,6 +46,10 @@ POST        /post/:board_seq/:post_seq/edit             controllers.PostControll
 GET         /post/:board_seq/:post_seq/edit             controllers.PostController.editPostForm(board_seq :Long, post_seq:Long)
 
 #Test
+
+GET         /test/sendFile controllers.TestController.test_sendFile
+GET         /test/sendFile2/*name controllers.TestController.test_sendFile2(name:String)
+GET         /test/configuration                         controllers.TestController.test_configuration
 GET         /test/assets                                controllers.TestController.test_assets
 GET         /test/flash                                 controllers.TestController.test_flash
 GET         /test/json                                  controllers.TestController.test_json
@@ -67,3 +71,5 @@ GET         /message                                    controllers.AsyncControl
 
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file                               controllers.Assets.versioned(path="/public", file: Asset)
+GET         /images/:hash                               controllers.AttachmentController.images(hash: String)
+#GET         /images/:hash                               controllers.AttachmentController.versioned(path="/uploads/images", hash: Asset)

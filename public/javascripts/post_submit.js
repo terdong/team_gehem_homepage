@@ -8,7 +8,9 @@ $(document).ready(function () {
             form.find(':submit').click();
             return ;
         }
+
         tinymce.activeEditor.uploadImages(function(success) {
+            console.log("tinymce.activeEditor.uploadImages")
             $('button[type="button"]').unbind('click');
             form.submit();
         });

@@ -18,19 +18,38 @@ class TestController @Inject()(implicit errorHandler: HttpErrorHandler,
     extends Controller
     with I18nSupport {
 
+  def test_sendFile2(name: String) = Action {
+    val image_path = config.getString("uploads.path.images").get
+    val file = new java.io.File(s"${image_path}/$name")
+
+    Ok.sendFile(file).withHeaders(CONTENT_TYPE -> "image/jpeg")
+  }
+
+  def test_sendFile = Action {
+    val image_path = config.getString("uploads.path.images").get
+    Ok.sendFile(new java.io.File(s"${image_path}/욕 신고.png"))
+  }
+
+  def test_configuration = Action {
+    Ok(config.getString("uploads.path.files").get)
+  }
+
   def test_assets = Action {
 
-    val asset =
-      Assets.versioned("public",
-                       "upload/images/2017-05-17/img_14949593930301.jpg")
+    /*    val asset =
+      routes.Assets
+        .versioned("public", "upload/images/2017-05-17/img_14949593930301.jpg")*/
 
-    val asset2: Call = routes.Assets.versioned(
-      "upload/images/2017-05-17/img_14949593930301.jpg")
+    /*   val asset2: Call = routes.Assets
+      .versioned("upload/images/2017-05-17/img_14949593930301.jpg")*/
 
-    val url = asset2.url
-    val a = asset2.path()
+    //val url = asset2.url
+    //val a = asset2.path()
+    /*
+    routes.Assets.versioned("public",
+                            "upload/images/2017-05-17/img_14949593930301.jpg")*/
 
-    Ok(a)
+    Ok("ok")
   }
 
   def test_flash = Action { implicit request =>

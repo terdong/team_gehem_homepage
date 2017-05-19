@@ -20,11 +20,11 @@ class BoardsRepository @Inject()(
     with BoardsTable {
 
   def all: Future[Seq[Board]] =
-    db run boards.sortBy(_.seq.desc.nullsFirst).result
+    db run boards.sortBy(_.seq.nullsFirst).result
 
   def allSeqAndNameAndListPermission = {
     val query = for {
-      board <- boards.filter(_.status === true)
+      board <- boards.filter(_.status === true).sortBy(_.seq.nullsFirst)
     } yield (board.seq, board.name, board.list_permission)
     db run (query.result)
   }
