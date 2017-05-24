@@ -1,12 +1,13 @@
-# Users schema
-
 # --- !Ups
 
 create table "Members"
 (
-	email varchar(80) not null
+  seq bigserial not null
 		constraint "Members_pkey"
 			primary key,
+	email varchar(80) not null
+	constraint "Members_email_key"
+			unique,
 	name varchar(30) not null,
 	nick varchar(12) not null,
 	permission SMALLINT default 2 not null,
@@ -43,8 +44,8 @@ create table "Posts"
 				on delete cascade,
 	thread bigint not null,
 	depth integer not null,
-	author varchar(80) not null
-		constraint posts_members_email_fk
+	author_seq bigint not null
+		constraint posts_members_seq_fk
 			references "Members"
 				on delete cascade,
 	subject varchar(80) not null,
@@ -76,9 +77,29 @@ create table "Attachements"
 	download_count int default 0 not null,
 	uploaded_date timestamp default now() not null
 );
+create table "Comments"
+(
+	seq bigserial not null
+		constraint "Comments_pkey"
+			primary key,
+	post_seq bigint not null
+		constraint comments_posts_seq_fk
+			references "Posts"
+				on update restrict on delete cascade,
+	thread int not null,
+	author_seq bigint not null
+		constraint comments_members_seq_fk
+		references "Members"
+			on delete cascade,
+	reply_comment_seq bigint,
+	content varchar(4000) not null,
+	author_ip varchar(50) not null,
+	write_date timestamp default now() not null
+);
 
 # --- !Downs
 
+DROP TABLE "Comments";
 DROP TABLE "Attachements";
 DROP TABLE "Permissions";
 DROP TABLE "Posts";

@@ -30,7 +30,7 @@ class PostsRepository @Inject()(
     val query = for {
       b <- boards.filter(_.list_permission <= permission)
       p <- posts.filter(_.board_seq === b.seq)
-      m <- members if p.author === m.email
+      m <- members if p.author_seq === m.seq
     } yield (p, m.name)
     query
       .sortBy(_._1.seq.desc.nullsFirst)
@@ -45,7 +45,7 @@ class PostsRepository @Inject()(
         .sortBy(_.seq.desc.nullsFirst)
         .drop((page - 1) * page_length)
         .take(page_length)
-      m <- members if p.author === m.email
+      m <- members if p.author_seq === m.seq
     } yield (p, m.name)
 
   def all(page: Int, page_length: Int, permission: Byte) = {
@@ -58,19 +58,19 @@ class PostsRepository @Inject()(
 
   def getPost(board_seq: Long, post_seq: Long) = {
     val query = posts.filter(p =>
-      p.board_seq === board_seq && p.seq === post_seq) join members on (_.author === _.email)
+      p.board_seq === board_seq && p.seq === post_seq) join members on (_.author_seq === _.seq)
 
     db run query.result.head
   }
   def getPost(post_seq: Long) = {
-    val query = posts.filter(_.seq === post_seq) join members on (_.author === _.email)
+    val query = posts.filter(_.seq === post_seq) join members on (_.author_seq === _.seq)
 
     db run query.result.head
   }
 
-  def isOwnPost(post_seq: Long, email: String) = {
+  def isOwnPost(post_seq: Long, author_seq: Long) = {
     db run posts
-      .filter(p => p.seq === post_seq && p.author === email)
+      .filter(p => p.seq === post_seq && p.author_seq === author_seq)
       .exists
       .result
   }
@@ -92,7 +92,7 @@ class PostsRepository @Inject()(
       (p.board_seq,
        p.thread,
        p.depth,
-       p.author,
+       p.author_seq,
        p.subject,
        p.content,
        p.author_ip))
@@ -101,14 +101,14 @@ class PostsRepository @Inject()(
     db run (posts += post) map (_ => ())
 
   def insert(form: (Long, String, String, Seq[Long]),
-             email: String,
+             author_seq: Long,
              ip: String) = {
     val action = posts.map(_.thread).max.result.flatMap {
       (thread: Option[Long]) =>
         insertQueryBase.returning(posts) += (form._1,
         thread.getOrElse[Long](0) + 100,
         0,
-        email,
+        author_seq,
         form._2,
         Some(form._3),
         ip)
@@ -141,7 +141,7 @@ class PostsRepository @Inject()(
         insertQueryBase += (17,
         thread.getOrElse[Long](0) + 100,
         0,
-        "terdong@gmail.com",
+        1,
         "subject",
         Some("content"),
         "127.0.0.1")

@@ -57,10 +57,10 @@
                             }
                             </td>
                             <td>
-                                <button type="button" title = "remove" data-toggle="modal" data-target="#remove_modal" class="btn btn-danger btn-xs" ><span class="glyphicon glyphicon-trash"></span></button>
+                                <button type="button" title = "remove" data-toggle="modal" data-target="#remove_board" class="btn btn-danger btn-xs" ><span class="glyphicon glyphicon-trash"></span></button>
 
                             </td>
-                            @tags.tag_modal_simple("Warnning", routes.BoardController.deleteBoard(board.seq)){
+                            @tags.tag_modal_simple("remove_board", "Warnning", routes.BoardController.deleteBoard(board.seq)){
                                 Are you sure you want to remove this board?
                             }
                         </tr>

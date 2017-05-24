@@ -30,24 +30,22 @@ class AttachmentController @Inject()(implicit val messagesApi: MessagesApi,
     attachments_repo
       .getAttachment(hash)
       .map { attachment =>
-        val e_tag = s""""${DigestUtils.md5Hex(
-          s"${attachment.hash}${attachment.seq}")}""""
+        val e_tag =
+          s""""${DigestUtils
+            .md5Hex(s"${attachment.hash}${attachment.seq}")}""""
 
         val cache_value = if (play.Environment.simple().isProd) {
           default_cache_control
-        } else { "no-store" }
+        } else {
+          "no-cache"
+        }
         val header_cache_control = (CACHE_CONTROL -> cache_value)
         val header_etag = (ETAG -> e_tag)
 
-        val result = request.headers.get(IF_NONE_MATCH) match {
+        request.headers.get(IF_NONE_MATCH) match {
           case Some(etags) if etags == e_tag =>
-            Some(NotModified.withHeaders(header_cache_control, header_etag))
-          case None => None
-        }
-
-        result match {
-          case Some(not_modified) => not_modified
-          case _ => {
+            NotModified.withHeaders(header_cache_control, header_etag)
+          case None => {
             val full_path =
               s"${images_path}/${attachment.sub_path}/${attachment.hash}"
             val file = new java.io.File(full_path)
@@ -57,17 +55,12 @@ class AttachmentController @Inject()(implicit val messagesApi: MessagesApi,
                 s"Attachment Seq: ${attachment.seq} ($full_path) does not exist on storage")
               InternalServerError("The file does not exist")
             } else {
-
               Ok.sendFile(file, true, _ => attachment.name)
                 .as(attachment.mime_type)
                 .withHeaders(header_cache_control, header_etag)
-
             }
-
           }
         }
-
       }
-
   }
 }

@@ -16,11 +16,7 @@
             @defining(p._1) { post =>
                 @defining(p._2) { member_name =>
                     <tr url= @{
-                        routes.PostController.showPost({
-                            post.board_seq
-                        }, {
-                            post.seq
-                        })
+                        routes.PostController.showPost(post.board_seq, post.seq, page)
                     }>
                         <th scope="row">
                         @{

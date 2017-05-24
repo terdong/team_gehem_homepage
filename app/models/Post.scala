@@ -10,7 +10,7 @@ case class Post(seq: Long,
                 board_seq: Long,
                 thread: Long,
                 depth: Int,
-                author: String,
+                author_seq: Long,
                 subject: String,
                 hit_count: Int,
                 content: Option[String],
@@ -30,7 +30,7 @@ trait PostsTable extends BoardsTable with MembersTable {
 
     def depth = column[Int]("depth")
 
-    def author = column[String]("author", O.Length(80))
+    def author_seq = column[Long]("author_seq")
 
     def subject = column[String]("subject", O.Length(80))
 
@@ -53,7 +53,7 @@ trait PostsTable extends BoardsTable with MembersTable {
        board_seq,
        thread,
        depth,
-       author,
+       author_seq,
        subject,
        hit_count,
        content,
@@ -68,8 +68,8 @@ trait PostsTable extends BoardsTable with MembersTable {
         onDelete = ForeignKeyAction.Cascade)
 
     def posts_members_email_fk =
-      foreignKey("posts_members_email_fk", author, members)(
-        _.email,
+      foreignKey("posts_members_seq_fk", author_seq, members)(
+        _.seq,
         onUpdate = ForeignKeyAction.Restrict,
         onDelete = ForeignKeyAction.Cascade)
   }

@@ -21,6 +21,7 @@ class TableManager @Inject()(appLifecycle: ApplicationLifecycle,
                              boards_repo: BoardsRepository,
                              permissions_repo: PermissionsRepository,
                              attachments_repo: AttachmentsRepository,
+                             comments_repo: CommentsRepository,
                              cache: CacheApi) {
 
   Logger.info(s"TableManager start")

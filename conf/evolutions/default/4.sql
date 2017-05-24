@@ -10,4 +10,4 @@ INSERT INTO "Boards" (name, description, status, list_permission, read_permissio
 
 # --- !Downs
 
-TRUNCATE "Boards" CASCADE
+TRUNCATE "Boards" CASCADE;

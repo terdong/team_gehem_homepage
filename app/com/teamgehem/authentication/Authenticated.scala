@@ -10,21 +10,22 @@ import scala.concurrent.Future
 /**
   * Created by terdo on 2017-04-21 021.
   */
-case class Authentication(email: String, permission: Byte)
+case class Authentication(seq: Long, email: String, permission: Byte)
 class CustomAuthenticatedRequest[A](val auth: Authentication,
                                     request: Request[A])
     extends WrappedRequest[A](request)
 
 object Authenticated extends mvc.ActionBuilder[CustomAuthenticatedRequest] {
+  lazy val seq: String = "seq"
   lazy val email: String = "email"
   lazy val permission: String = "permissions"
 
   private def getAuthentication(request: RequestHeader) = {
     val result = for {
+      seq <- request.session.get(seq)
       email <- request.session.get(email)
       permission <- request.session.get(permission)
-      //if permissions.equals("MP00")
-    } yield Authentication(email, permission.toByte)
+    } yield Authentication(seq.toLong, email, permission.toByte)
     result
   }
 

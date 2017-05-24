@@ -37,6 +37,15 @@ class BoardsRepository @Inject()(
     db run boards.filter(_.seq === board_seq).result.head
   }
 
+  def getBoardInfoForWrite(permission: Byte): Future[Seq[(Long, String)]] = {
+
+    db run boards
+      .filter(_.write_permission <= permission)
+      .map(b => (b.seq, b.name))
+      .result
+
+  }
+
   def existsName(name: String): Future[Boolean] =
     db run (boards.filter(i => i.name === name).exists.result)
 
@@ -63,7 +72,7 @@ class BoardsRepository @Inject()(
       .result
     db run query
   }
-  def isWriteValidBoard(board_seq: Long, permission: Byte) = {
+  def isWriteValidBoard(board_seq: Long, permission: Byte): Future[Boolean] = {
     val query = boards
       .filter(b =>
         b.status === true && b.seq === board_seq && b.write_permission <= permission)

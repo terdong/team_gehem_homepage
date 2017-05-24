@@ -1,0 +1,43 @@
+.thumbnail {
+    padding:0px;
+    width: 65px;
+    height: 65px;
+}
+.list-group .panel {
+    position:relative;
+}
+.list-group .panel>.panel-heading:after,.panel>.panel-heading:before{
+    position:absolute;
+    top:11px;left:-16px;
+    right:100%;
+    width:0;
+    height:0;
+    display:block;
+    content:" ";
+    border-color:transparent;
+    border-style:solid solid outset;
+    pointer-events:none;
+}
+.list-group .panel>.panel-heading:after{
+    border-width:7px;
+    border-right-color:#f7f7f7;
+    margin-top:1px;
+    margin-left:2px;
+}
+.list-group .panel>.panel-heading:before{
+    border-right-color:#ddd;
+    border-width:8px;
+}
+
+.well {
+    margin-bottom: 0px;
+}
+
+.list-group-item textarea{
+    /*user-select: text;*/
+    /*flex-direction: column;*/
+    /*cursor: auto;*/
+    /*word-wrap: break-word;*/
+    /*white-space: pre-wrap;*/
+    /*word-spacing: normal;*/
+}

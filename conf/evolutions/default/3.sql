@@ -6,4 +6,4 @@ insert into "Members" (email, name, nick, permission, level, exp) values
 
 # --- !Downs
 
-TRUNCATE "Members" CASCADE
+TRUNCATE "Members" CASCADE;

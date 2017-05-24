@@ -9,4 +9,4 @@ insert into "Permissions" values
 
 # --- !Downs
 
-TRUNCATE "Permissions" CASCADE
+TRUNCATE "Permissions" CASCADE;

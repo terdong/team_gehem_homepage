@@ -42,7 +42,8 @@ class AccountController @Inject()(implicit cache: CacheApi,
       has_errors =>
         for {
           member <- members_repo.findByEmail(email)
-          permission_content <- permission_repo.getContentByCode(permission)
+          permission_content <- permission_repo.getContentByCode(
+            member_permission)
         } yield
           BadRequest(
             views.html.account.edit(has_errors, member, permission_content)),
@@ -56,7 +57,7 @@ class AccountController @Inject()(implicit cache: CacheApi,
   def editForm = Authenticated.async { implicit request =>
     for {
       member <- members_repo.findByEmail(member_email.get)
-      permission_content <- permission_repo.getContentByCode(permission)
+      permission_content <- permission_repo.getContentByCode(member_permission)
     } yield {
       val form =
         (member.name, member.nick)
@@ -105,6 +106,7 @@ class AccountController @Inject()(implicit cache: CacheApi,
         members_repo.findByEmail(form.email) map (
             member =>
               Redirect(routes.HomeController.index()).withSession(
+                Authenticated.seq -> member.seq.toString,
                 Authenticated.email -> member.email,
                 Authenticated.permission -> member.permission.toString))
       }

@@ -8,3 +8,4 @@ test.messages=This is message for test.
 account.edit.title=
 result.button=
 account.edit.success=
+post.write.permission.error=

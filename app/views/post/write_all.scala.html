@@ -1,4 +1,5 @@
-@(form: Form[_], board_seq: Long)(implicit messages: Messages, header: controllers.traits.Header)
+@(form: Form[_], board_seq: Long, boards_info:Seq[(Long, String)])(implicit messages: Messages, header: controllers.traits.Header)
+
 @implicitFC = @{
     b3.horizontal.fieldConstructor("col-md-1", "col-md-11")
 }
@@ -13,24 +14,23 @@
 
     <div class="panel panel-default">
         <div class="panel-heading">
-            <h3 class="panel-title">@{
-                header.board_list.map(list => {
-                    list.find(p => p.seq == board_seq).head.name
-                })
-            }</h3>
+            <h3 class="panel-title">All</h3>
         </div>
         <div class="panel-body">
 
         @b3.form(routes.PostController.writePost(board_seq), 'id -> "postForm") {
-            @b3.hidden("board_seq", board_seq)
+            @defining(for {
+                board <- boards_info
+            } yield (board._1.toString, board._2)) { board_list =>
+                @b3.select(form("board_seq"), options = board_list, '_label -> "Board")
+            }
             @b3.text(form("subject"), '_label -> "Subject")
             @b3.textarea(form("content"), '_label -> "Content", 'rows -> 5)
-            @b3.button('class -> "btn btn-default pull-right"){<span class="glyphicon glyphicon-ok"></span> Write}
-            @b3.submit('class -> "btn btn-default", 'style ->"display:none;"){Write}
+            @b3.button('class -> "btn btn-default pull-right") {
+                <span class="glyphicon glyphicon-ok"></span>
+                Write}
+            @b3.submit('class -> "btn btn-default", 'style -> "display:none;") {Write}
         }
         </div>
     </div>
-
-
-@*    @tags.tag_post_write_form(writeForm, board_seq, routes.PostController.writePost(board_seq)) *@
 }

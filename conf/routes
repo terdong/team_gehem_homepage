@@ -32,23 +32,27 @@ POST        /members/:member_email/edit                 controllers.AdminControl
 GET         /members/:member_email/edit                 controllers.AdminController.editMemberForm(member_email:String)
 
 # Post
-GET         /list/all                                   controllers.PostController.listAll(page:Int = 1)
-GET         /list/all/write                             controllers.PostController.writePostForm(board_seq :Long = 0)
-GET         /list/all/:page                             controllers.PostController.listAll(page:Int)
-POST        /list/:board_seq/write                      controllers.PostController.writePost(board_seq :Long)
-GET         /list/:board_seq/write                      controllers.PostController.writePostForm(board_seq :Long)
-POST        /upload/image                               controllers.PostController.uploadImage
-GET         /list/:board_seq                            controllers.PostController.list(board_seq:Long, page:Int = 1)
-GET         /list/:board_seq/:page                      controllers.PostController.list(board_seq:Long, page:Int)
-GET         /post/:board_seq/:post_seq                  controllers.PostController.showPost(board_seq :Long, post_seq:Long)
-GET         /post/:board_seq/:post_seq/delete           controllers.PostController.deletePost(board_seq :Long, post_seq:Long)
-POST        /post/:board_seq/:post_seq/edit             controllers.PostController.editPost(board_seq :Long, post_seq:Long)
-GET         /post/:board_seq/:post_seq/edit             controllers.PostController.editPostForm(board_seq :Long, post_seq:Long)
+GET         /board/all                                   controllers.PostController.listAll(page:Int = 1)
+GET         /board/all/write                             controllers.PostController.writePostForm(board_seq :Long = 0)
+GET         /board/all/:page                             controllers.PostController.listAll(page:Int)
+POST        /board/:board_seq/write                      controllers.PostController.writePost(board_seq :Long)
+GET         /board/:board_seq/write                      controllers.PostController.writePostForm(board_seq :Long)
+POST        /board/upload/image                               controllers.PostController.uploadImage
+GET         /board/:board_seq                            controllers.PostController.list(board_seq:Long, page:Int = 1)
+GET         /board/:board_seq/page/:page                      controllers.PostController.list(board_seq:Long, page:Int)
+GET         /board/:board_seq/page/:page/post/:post_seq            controllers.PostController.showPost(board_seq :Long, post_seq:Long, page:Int)
+GET         /board/:board_seq/post/:post_seq/delete           controllers.PostController.deletePost(board_seq :Long, post_seq:Long)
+POST        /board/:board_seq/post/:post_seq/edit             controllers.PostController.editPost(board_seq :Long, post_seq:Long)
+GET         /board/:board_seq/post/:post_seq/edit             controllers.PostController.editPostForm(board_seq :Long, post_seq:Long)
+
+POST        /board/:board_seq/post/comment/write              controllers.PostController.writeComment(board_seq:Long)
+
+GET /board/:board_seq/post/:post_seq/comment/:comment_seq/delete controllers.PostController.deleteComment(board_seq:Long, post_seq:Long, comment_seq:Long)
 
 #Test
 
-GET         /test/sendFile controllers.TestController.test_sendFile
-GET         /test/sendFile2/*name controllers.TestController.test_sendFile2(name:String)
+GET         /test/sendFile                              controllers.TestController.test_sendFile
+GET         /test/sendFile2/*name                       controllers.TestController.test_sendFile2(name:String)
 GET         /test/configuration                         controllers.TestController.test_configuration
 GET         /test/assets                                controllers.TestController.test_assets
 GET         /test/flash                                 controllers.TestController.test_flash
