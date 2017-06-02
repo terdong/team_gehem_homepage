@@ -84,12 +84,23 @@ class BoardsRepository @Inject()(
   def insert(board: Board): Future[Unit] =
     db run (boards += board) map (_ => ())
 
-  def insert(form_data: (String, String, Boolean, Byte, Byte, Byte),
+  def insert(form_data: (String,
+                         String,
+                         Boolean,
+                         Boolean,
+                         Boolean,
+                         Boolean,
+                         Byte,
+                         Byte,
+                         Byte),
              name: String): Future[Int] = {
     val action = boards map (b =>
       (b.name,
        b.description,
        b.status,
+       b.is_reply,
+       b.is_comment,
+       b.is_attachment,
        b.list_permission,
        b.read_permission,
        b.write_permission,
@@ -99,6 +110,9 @@ class BoardsRepository @Inject()(
     form_data._4,
     form_data._5,
     form_data._6,
+    form_data._7,
+    form_data._8,
+    form_data._9,
     name)
     db run action
   }

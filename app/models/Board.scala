@@ -13,6 +13,9 @@ case class Board(seq: Long,
                  name: String,
                  description: Option[String],
                  status: Boolean,
+                 is_reply: Boolean,
+                 is_comment: Boolean,
+                 is_attachment: Boolean,
                  list_permission: Byte,
                  read_permission: Byte,
                  write_permission: Byte,
@@ -22,7 +25,7 @@ case class Board(seq: Long,
 trait BoardsTable {
   protected val boards = TableQuery[Boards]
 
-  protected class Boards(tag: Tag) extends Table[Board](tag, "Boards") {
+  protected class Boards(tag: Tag) extends Table[Board](tag, "boards") {
     def seq = column[Long]("seq", O.PrimaryKey, O.AutoInc)
 
     def name = column[String]("name", O.Unique, O.Length(30))
@@ -30,6 +33,24 @@ trait BoardsTable {
     def description = column[Option[String]]("description", O.Length(2000))
 
     def status = column[Boolean]("status")
+
+    /**
+      * 답글 가능 여부
+      * @return
+      */
+    def is_reply = column[Boolean]("is_reply")
+
+    /**
+      * 댓글 가능 여부
+      * @return
+      */
+    def is_comment = column[Boolean]("is_comment")
+
+    /**
+      * 파일 첨부 가능 여부
+      * @return
+      */
+    def is_attachment = column[Boolean]("is_attachment")
 
     def list_permission =
       column[Byte]("list_permission", O.Length(2))
@@ -50,6 +71,9 @@ trait BoardsTable {
        name,
        description,
        status,
+       is_reply,
+       is_comment,
+       is_attachment,
        list_permission,
        read_permission,
        write_permission,

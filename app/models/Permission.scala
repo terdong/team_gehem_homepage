@@ -24,7 +24,7 @@ trait PermissionsTable {
   protected val permissions = TableQuery[Permissions]
 
   protected class Permissions(tag: Tag)
-      extends Table[Permission](tag, "Permissions") {
+      extends Table[Permission](tag, "permissions") {
 
     def permission_code =
       column[Byte]("permission_code", O.PrimaryKey)

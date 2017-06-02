@@ -2,7 +2,7 @@ package repositories
 
 import javax.inject.{Inject, Singleton}
 
-import models.{Attachment, AttachmentsTable}
+import models.{Attachment, AttachmentsTable, Post}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.dbio.Effect
 import slick.jdbc.JdbcProfile
@@ -62,16 +62,41 @@ class AttachmentsRepository @Inject()(
     db run insertAttachment_(form_data)
   }
 
-  def getAttachment(hash: String): Future[Attachment] = {
+  def insertAttachment(form_data: (String, String, String, String, Long, Long))
+    : Future[Long] = {
+    db run insertAttachment_(form_data)
+  }
+
+  def updateDownloadCount(post: Post) = {
+    db run (posts filter (_.seq === post.seq) map (_.hit_count) update (post.hit_count + 1))
+  }
+
+  def getAttachmentWithoutCount(hash: String) = {
     db run attachments.filter(_.hash === hash).result.head
   }
 
-  def getAttachments(post_seq: Long): Future[Seq[Attachment]] = {
-    db run (attachments.filter(_.container_seq === post_seq).result)
+  def getAttachment(hash: String) = {
+    val q1 =
+      sqlu"update attachments set download_count = download_count + 1 where hash = ${hash}"
+    val q2 = attachments.filter(_.hash === hash).result.head
+
+    val a = q1 andThen q2
+    db run a
   }
 
-  def removeAttachements(post_seq: Long) = {
+  def getAttachments(post_seq: Long): Future[Seq[Attachment]] = {
+    db run (attachments
+      .filter(_.container_seq === post_seq)
+      .sortBy(_.seq.asc.nullsFirst)
+      .result)
+  }
+
+  def deleteAttachements(post_seq: Long) = {
     db run attachments.filter(_.container_seq === post_seq).delete
+  }
+
+  def deleteAttachment(hash: String) = {
+    db run attachments.filter(_.hash === hash).delete
   }
 
   def create: Future[Unit] = {
@@ -85,6 +110,12 @@ class AttachmentsRepository @Inject()(
   private def insertAttachment_(
       form_data: (String, String, String, String, Long)) = {
     (attachments.map(a => (a.hash, a.name, a.sub_path, a.mime_type, a.size)) returning attachments
+      .map(_.seq)) += (form_data)
+  }
+  private def insertAttachment_(
+      form_data: (String, String, String, String, Long, Long)) = {
+    (attachments.map(a =>
+      (a.hash, a.name, a.sub_path, a.mime_type, a.size, a.container_seq)) returning attachments
       .map(_.seq)) += (form_data)
   }
 }

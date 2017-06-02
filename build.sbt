@@ -40,6 +40,11 @@ libraryDependencies ++= Seq(
   "org.webjars" % "bootstrap-datepicker" % "1.6.4"
 )
 
+//angularJS
+//libraryDependencies ++= Seq(
+//  "org.webjars" % "angularjs" % "1.6.4"
+//)
+
 // google'sHTML Compressor
 libraryDependencies += "com.mohiva" %% "play-html-compressor" % "0.6.3"
 

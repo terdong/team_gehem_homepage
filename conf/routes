@@ -37,17 +37,18 @@ GET         /board/all/write                             controllers.PostControl
 GET         /board/all/:page                             controllers.PostController.listAll(page:Int)
 POST        /board/:board_seq/write                      controllers.PostController.writePost(board_seq :Long)
 GET         /board/:board_seq/write                      controllers.PostController.writePostForm(board_seq :Long)
-POST        /board/upload/image                               controllers.PostController.uploadImage
 GET         /board/:board_seq                            controllers.PostController.list(board_seq:Long, page:Int = 1)
 GET         /board/:board_seq/page/:page                      controllers.PostController.list(board_seq:Long, page:Int)
 GET         /board/:board_seq/page/:page/post/:post_seq            controllers.PostController.showPost(board_seq :Long, post_seq:Long, page:Int)
 GET         /board/:board_seq/post/:post_seq/delete           controllers.PostController.deletePost(board_seq :Long, post_seq:Long)
 POST        /board/:board_seq/post/:post_seq/edit             controllers.PostController.editPost(board_seq :Long, post_seq:Long)
 GET         /board/:board_seq/post/:post_seq/edit             controllers.PostController.editPostForm(board_seq :Long, post_seq:Long)
-
 POST        /board/:board_seq/post/comment/write              controllers.PostController.writeComment(board_seq:Long)
-
 GET /board/:board_seq/post/:post_seq/comment/:comment_seq/delete controllers.PostController.deleteComment(board_seq:Long, post_seq:Long, comment_seq:Long)
+
+POST        /upload/image                               controllers.PostController.uploadImage
+POST /upload/file controllers.PostController.uploadFile
+POST /upload/file/delete controllers.PostController.deleteFile
 
 #Test
 
@@ -76,4 +77,6 @@ GET         /message                                    controllers.AsyncControl
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file                               controllers.Assets.versioned(path="/public", file: Asset)
 GET         /images/:hash                               controllers.AttachmentController.images(hash: String)
+GET        /file/:hash                                 controllers.AttachmentController.file(hash:String)
+GET        /files/:post_seq                            controllers.AttachmentController.files(post_seq:Long)
 #GET         /images/:hash                               controllers.AttachmentController.versioned(path="/uploads/images", hash: Asset)

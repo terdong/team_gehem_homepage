@@ -21,7 +21,7 @@ case class Post(seq: Long,
 trait PostsTable extends BoardsTable with MembersTable {
   protected val posts = TableQuery[Posts]
 
-  protected class Posts(tag: Tag) extends Table[Post](tag, "Posts") {
+  protected class Posts(tag: Tag) extends Table[Post](tag, "posts") {
     def seq = column[Long]("seq", O.PrimaryKey, O.AutoInc)
 
     def board_seq = column[Long]("board_seq")

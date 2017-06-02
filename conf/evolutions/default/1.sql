@@ -1,12 +1,12 @@
 # --- !Ups
 
-create table "Members"
+create table "members"
 (
   seq bigserial not null
-		constraint "Members_pkey"
+		constraint "members_pkey"
 			primary key,
 	email varchar(80) not null
-	constraint "Members_email_key"
+	constraint "members_email_key"
 			unique,
 	name varchar(30) not null,
 	nick varchar(12) not null,
@@ -17,36 +17,39 @@ create table "Members"
 	update_date timestamp default now() not null,
 	last_logged timestamp default now() not null
 );
-create table "Boards"
+create table "boards"
 (
 	seq bigserial not null
-		constraint "Boards_pkey"
+		constraint "boards_pkey"
 			primary key,
 	name varchar(30) not null
-		constraint "Boards_name_key"
+		constraint "boards_name_key"
 			unique,
 	description varchar(2000),
 	status boolean not null,
+	is_reply boolean not null,
+	is_comment boolean not null,
+	is_attachment boolean not null,
 	list_permission SMALLINT not null,
 	read_permission SMALLINT not null,
 	write_permission SMALLINT not null,
 	author varchar(80) not null,
 	register_date timestamp default now() not null
 );
-create table "Posts"
+create table "posts"
 (
 	seq bigserial not null
-		constraint "Posts_pkey"
+		constraint "posts_pkey"
 			primary key,
 	board_seq bigint not null
 		constraint posts_boards_seq_fk
-			references "Boards"
+			references "boards"
 				on delete cascade,
 	thread bigint not null,
 	depth integer not null,
 	author_seq bigint not null
 		constraint posts_members_seq_fk
-			references "Members"
+			references "members"
 				on delete cascade,
 	subject varchar(80) not null,
 	hit_count integer default 0 not null,
@@ -55,18 +58,18 @@ create table "Posts"
 	write_date timestamp default now() not null,
 	update_date timestamp default now() not null
 );
-create table "Permissions"
+create table "permissions"
 (
   permission_code SMALLINT not null
-    constraint "Permissions_pkey"
+    constraint "permissions_pkey"
     primary key,
   active boolean default true not null,
   content varchar(80) not null
 );
-create table "Attachements"
+create table "attachments"
 (
 	seq bigserial not null
-		constraint "Attachements_pkey"
+		constraint "attachments_pkey"
 		primary key,
 	hash varchar(32) not null,
 	name varchar(255) not null,
@@ -77,19 +80,19 @@ create table "Attachements"
 	download_count int default 0 not null,
 	uploaded_date timestamp default now() not null
 );
-create table "Comments"
+create table "comments"
 (
 	seq bigserial not null
-		constraint "Comments_pkey"
+		constraint "comments_pkey"
 			primary key,
 	post_seq bigint not null
 		constraint comments_posts_seq_fk
-			references "Posts"
+			references "posts"
 				on update restrict on delete cascade,
 	thread int not null,
 	author_seq bigint not null
 		constraint comments_members_seq_fk
-		references "Members"
+		references "members"
 			on delete cascade,
 	reply_comment_seq bigint,
 	content varchar(4000) not null,
@@ -99,9 +102,9 @@ create table "Comments"
 
 # --- !Downs
 
-DROP TABLE "Comments";
-DROP TABLE "Attachements";
-DROP TABLE "Permissions";
-DROP TABLE "Posts";
-DROP TABLE "Boards";
-DROP TABLE "Members";
+DROP TABLE "comments";
+DROP TABLE "attachments";
+DROP TABLE "permissions";
+DROP TABLE "posts";
+DROP TABLE "boards";
+DROP TABLE "members";

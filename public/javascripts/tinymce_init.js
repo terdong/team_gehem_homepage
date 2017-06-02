@@ -47,7 +47,7 @@ tinymce.init({
             console.log(json.location);
             console.log(json.attachment_seq);
 
-            var form = $('form');
+            var form = $('form[id=postForm]');
 
             $("<input></input>").attr({ type: "hidden", name:"attachments[]", value:json.attachment_seq}).appendTo(form);
 

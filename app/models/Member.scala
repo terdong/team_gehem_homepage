@@ -22,7 +22,7 @@ trait MembersTable extends PermissionsTable {
 
   protected val members = TableQuery[Members]
 
-  protected class Members(tag: Tag) extends Table[Member](tag, "Members") {
+  protected class Members(tag: Tag) extends Table[Member](tag, "members") {
     def seq = column[Long]("seq", O.PrimaryKey, O.AutoInc)
 
     def email = column[String]("email", O.Length(80), O.Unique)

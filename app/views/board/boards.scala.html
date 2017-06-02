@@ -18,6 +18,9 @@
                         <th>#</th>
                         <th>이름</th>
                         <th>상태</th>
+                        <th>답글권한</th>
+                        <th>댓글권한</th>
+                        <th>파일첨부권한</th>
                         <th>목록권한</th>
                         <th>읽기권한</th>
                         <th>쓰기권한</th>
@@ -38,15 +41,14 @@
                                 <span class="glyphicon @if(board.status) {glyphicon-ok} else {glyphicon-remove}"></span>
                                 </a>
                             </td>
+                            <td>@{board.is_reply}</td>
+                            <td>@{board.is_comment}</td>
+                            <td>@{board.is_attachment}</td>
                             <td>@{board.list_permission}</td>
                             <td>@{board.read_permission}</td>
                             <td>@{board.write_permission}</td>
                             <td>@{board.author}</td>
-                            <td>@{
-                                val date = board.register_date.toString
-                                val index = date.indexOf('.')
-                                date.substring(0, index)
-                            }</td>
+                            <td>@tags.tag_cleanly_date(board.register_date)</td>
                             <td>
                                 <a title = "edit" href="@routes.BoardController.editBoardForm(board.seq)" class="btn btn-info btn-xs active" role="button"><span class="glyphicon glyphicon-edit"></span></a>
                             </td>
@@ -70,31 +72,46 @@
         </div>
     </div>
     @b3.form(url) {
-        @defining(form.data.get("seq")){ seq =>
-            @b3.hidden("seq", seq)
-        }
+
+        @defining(form.data.get("seq")) { seq =>
+            @if(seq.isDefined) {
+                @b3.hidden("seq", seq)
+            }
+
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-4">
             @b3.text(form("name"), '_label -> "Title")
-        </div>
-            <div class="col-md-6">
-            @b3.checkbox(form("status"), '_text -> "status", 'checked -> true )
+            </div>
+            <div class="col-md-2">
+            @b3.checkbox(form("status"), '_text -> "status")
+            </div>
+            <div class="col-md-2">
+            @b3.checkbox(form("is_reply"), '_text -> "is_reply")
+            </div>
+            <div class="col-md-2">
+            @b3.checkbox(form("is_comment"), '_text -> "is_comment")
+            </div>
+            <div class="col-md-2">
+            @b3.checkbox(form("is_attachment"), '_text -> "is_attachment")
             </div>
         </div>
-        @b3.textarea(form("description"), '_label -> "Contents")
+            @b3.textarea(form("description"), '_label -> "Contents")
         <div class="row">
             <div class="col-md-4">
-            @b3.select( form("list_perm"), options = option_permissions, '_label -> "List Permission")
+            @b3.select(form("list_perm"), options = option_permissions, '_label -> "List Permission")
             </div>
             <div class="col-md-4">
-            @b3.select( form("read_perm"), options = option_permissions, '_label -> "Read Permission")
+            @b3.select(form("read_perm"), options = option_permissions, '_label -> "Read Permission")
             </div>
             <div class="col-md-4">
-            @b3.select( form("write_perm"), options = option_permissions, '_label -> "Write Permission")
+            @b3.select(form("write_perm"), options = option_permissions, '_label -> "Write Permission")
             </div>
         </div>
 
-        @b3.submit('class -> "btn btn-default") {
-            <span class="glyphicon glyphicon-ok"></span> Create }
+            @b3.submit('class -> "btn btn-default") {
+                <span class="glyphicon glyphicon-ok"></span>
+                @if(seq.isDefined) {Edit} else {Create}
+            }
+        }
     }
 }

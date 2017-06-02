@@ -39,14 +39,13 @@ class PostsRepository @Inject()(
   }
 
   def listByBoard_(board_seq: Long, page: Int, page_length: Int) =
-    for {
+    (for {
       p <- posts
         .filter(_.board_seq === board_seq)
-        .sortBy(_.seq.desc.nullsFirst)
         .drop((page - 1) * page_length)
         .take(page_length)
       m <- members if p.author_seq === m.seq
-    } yield (p, m.name)
+    } yield (p, m.name)).sortBy(_._1.seq.desc.nullsFirst)
 
   def all(page: Int, page_length: Int, permission: Byte) = {
     db run all_(page, page_length, permission).result
@@ -100,7 +99,7 @@ class PostsRepository @Inject()(
   def insert(post: Post): Future[Unit] =
     db run (posts += post) map (_ => ())
 
-  def insert(form: (Long, String, String, Seq[Long]),
+  def insert(form: (Long, String, String, Seq[Long], Seq[String]),
              author_seq: Long,
              ip: String) = {
     val action = posts.map(_.thread).max.result.flatMap {
@@ -117,7 +116,8 @@ class PostsRepository @Inject()(
     db run action
   }
 
-  def update(form: (Long, String, String, Seq[Long]), post_seq: Long) = {
+  def update(form: (Long, String, String, Seq[Long], Seq[String]),
+             post_seq: Long) = {
     val action = posts
       .filter(_.seq === post_seq)
       .map(p => (p.subject, p.content, p.update_date))

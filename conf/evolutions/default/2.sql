@@ -1,6 +1,6 @@
 # --- !Ups
 
-insert into "Permissions" values
+insert into "permissions" values
   (00, true, '방문자'),
   (01, true, '인증 전'),
   (02, true, '멤버'),
@@ -9,4 +9,4 @@ insert into "Permissions" values
 
 # --- !Downs
 
-TRUNCATE "Permissions" CASCADE;
+TRUNCATE "permissions" CASCADE;

@@ -20,7 +20,7 @@ trait AttachmentsTable extends PostsTable {
   protected val attachments = TableQuery[Attachments]
 
   protected class Attachments(tag: Tag)
-      extends Table[Attachment](tag, "Attachements") {
+      extends Table[Attachment](tag, "attachments") {
     def seq = column[Long]("seq", O.PrimaryKey, O.AutoInc)
 
     def hash = column[String]("hash", O.Length(32))

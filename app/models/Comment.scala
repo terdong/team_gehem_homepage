@@ -20,7 +20,7 @@ trait CommentsTable extends PostsTable {
 
   protected val comments = TableQuery[Comments]
 
-  protected class Comments(tag: Tag) extends Table[Comment](tag, "Comments") {
+  protected class Comments(tag: Tag) extends Table[Comment](tag, "comments") {
     def seq = column[Long]("seq", O.PrimaryKey, O.AutoInc)
 
     def post_seq = column[Long]("post_seq")

@@ -2,13 +2,14 @@ package repositories
 
 import javax.inject.{Inject, Singleton}
 
-import models.CommentsTable
+import models.{Comment, CommentsTable}
 import play.api.Logger
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 /**
   * Created by terdo on 2017-05-21 021.
@@ -23,7 +24,8 @@ class CommentsRepository @Inject()(
     db run comments.filter(_.post_seq === post_seq).result
   }
 
-  def allWithMemberName(post_seq: Long) = {
+  def allWithMemberName(
+      post_seq: Long): Future[Seq[(Comment, String, Option[String])]] = {
     val query1 = for {
       comment <- comments.filter(_.post_seq === post_seq)
       member1 <- members.filter(_.seq === comment.author_seq)
