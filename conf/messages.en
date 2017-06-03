@@ -9,3 +9,4 @@ account.edit.title=
 result.button=
 account.edit.success=
 post.write.permission.error=
+unauthorized.login=

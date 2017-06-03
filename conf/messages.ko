@@ -9,3 +9,4 @@ account.edit.title=계정 수정
 result.button=홈으로
 account.edit.success=회원정보 변경을 성공했습니다.
 post.write.permission.error=해당 게시판에서 글쓰기 권한이 없습니다.
+unauthorized.login=권한이 없습니다. 로그인 해주세요.

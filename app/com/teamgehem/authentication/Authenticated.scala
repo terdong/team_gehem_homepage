@@ -30,7 +30,9 @@ object Authenticated extends mvc.ActionBuilder[CustomAuthenticatedRequest] {
   }
 
   private def onUnauthorized(request: RequestHeader) =
-    Results.Redirect(routes.AccountController.createSignInForm)
+    Results
+      .Redirect(routes.AccountController.createSignInForm)
+      .flashing("error" -> "unauthorized.login")
 
   def invokeBlock[A](
       request: Request[A],
