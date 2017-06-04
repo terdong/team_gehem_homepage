@@ -2,7 +2,7 @@ package repositories
 
 import javax.inject.{Inject, Singleton}
 
-import models.{Post, PostsTable}
+import models.{CommentsTable, Post}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 import slick.jdbc.PostgresProfile.api._
@@ -17,7 +17,7 @@ import scala.concurrent.Future
 class PostsRepository @Inject()(
     protected val dbConfigProvider: DatabaseConfigProvider)
     extends HasDatabaseConfigProvider[JdbcProfile]
-    with PostsTable {
+    with CommentsTable {
 
   def getPostCount(board_seq: Long = 0) = {
     val query =
@@ -27,25 +27,44 @@ class PostsRepository @Inject()(
   }
 
   private def all_(page: Int, page_length: Int, permission: Byte) = {
-    val query = for {
+    val query = (for {
       b <- boards.filter(_.list_permission <= permission)
       p <- posts.filter(_.board_seq === b.seq)
       m <- members if p.author_seq === m.seq
-    } yield (p, m.name)
-    query
-      .sortBy(_._1.seq.desc.nullsFirst)
+      comment <- comments.filter(_.post_seq === p.seq)
+    } yield (p, m.name, comment))
+      .groupBy({
+        case (p, member_name, comment) => (p, member_name)
+      })
+      .map {
+        case ((p, member_name), list) => {
+          (p, member_name, list.map(_._3).length)
+        }
+      }
       .drop((page - 1) * page_length)
       .take(page_length)
+    query.sortBy(_._1.seq.desc.nullsFirst)
   }
 
-  def listByBoard_(board_seq: Long, page: Int, page_length: Int) =
+  def listByBoard_(board_seq: Long, page: Int, page_length: Int) = {
     (for {
       p <- posts
         .filter(_.board_seq === board_seq)
         .drop((page - 1) * page_length)
         .take(page_length)
       m <- members if p.author_seq === m.seq
-    } yield (p, m.name)).sortBy(_._1.seq.desc.nullsFirst)
+      comment <- comments.filter(_.post_seq === p.seq)
+    } yield (p, m.name, comment))
+      .groupBy({
+        case (p, member_name, comment) => (p, member_name)
+      })
+      .map {
+        case ((p, member_name), list) => {
+          (p, member_name, list.map(_._3).length)
+        }
+      }
+      .sortBy(_._1.seq.desc.nullsFirst)
+  }
 
   def all(page: Int, page_length: Int, permission: Byte) = {
     db run all_(page, page_length, permission).result

@@ -17,7 +17,6 @@ case class Comment(seq: Long,
                    write_date: Timestamp)
 
 trait CommentsTable extends PostsTable {
-
   protected val comments = TableQuery[Comments]
 
   protected class Comments(tag: Tag) extends Table[Comment](tag, "comments") {

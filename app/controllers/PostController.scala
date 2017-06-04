@@ -62,6 +62,7 @@ class PostController @Inject()(implicit cache: CacheApi,
       name_op <- boards_repo.getNameBySeq(board_seq)
       posts <- posts_repo.listByBoard(board_seq, page, page_length)
       count <- posts_repo.getPostCount(board_seq)
+      //comment_count <- comments_repo.commentCount()
     } yield
       Ok(
         views.html.post

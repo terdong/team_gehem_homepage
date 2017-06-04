@@ -20,6 +20,11 @@ class CommentsRepository @Inject()(
     extends HasDatabaseConfigProvider[JdbcProfile]
     with CommentsTable {
 
+  def commentCount(post_seq: Long): Future[Int] = {
+    val q = comments.filter(_.post_seq === post_seq).length
+    db run q.result
+  }
+
   def all(post_seq: Long) = {
     db run comments.filter(_.post_seq === post_seq).result
   }
