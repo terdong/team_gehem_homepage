@@ -1,10 +1,43 @@
-@(board_name: Option[String], posts: Seq[(Post, String, Int)], page: Int, page_length: Int, count: Int, board_seq: Long = 0)(implicit messages: Messages, header: controllers.traits.Header)
+@(board_name: Option[String], posts: Seq[(Post, String, Int)], page: Int, page_length: Int, count: Int, board_seq: Long = 0, search_type:Option[Int] = None, search_word:Option[String]= None)(implicit messages: Messages, header: controllers.traits.Header)
 @scripts = {
     <script src="@routes.Assets.versioned("javascripts/click_event.js")" type="text/javascript"></script>
     <script type="text/javascript">
             $(document).ready(function () {
+                function convertType(value){
+                    switch(value.replace(/ /g, '')){
+                        case '제목':
+                            return 0;
+                        case '내용':
+                            return 1;
+                        case '제목+내용':
+                            return 2;
+                        case '작성자':
+                            return 3;
+                        case '댓글':
+                            return 4;
+                        default:
+                            return 0;
+                    }
+                }
+
                 $("#dropdown a").click(function () {
                     $("#AdvancedSearch").html($(this).text() + ' <span class="caret"/>');
+                });
+
+                $("#search_button").click(function () {
+                    var converted_type = convertType($("#AdvancedSearch").text());
+                    var word= $("#search").val();
+                    if(word) {
+                        console.log($(this).attr("href") + "/type/" + converted_type + "/word/" + word);
+                        $(this).attr("href", $(this).attr("href") + "/type/" + converted_type + "/word/" + word);
+                    }
+                    //return false;
+                });
+
+                $("input[id=search]").keydown(function (key) {
+                    if(key.keyCode == 13){
+                        $("#search_button")[0].click();
+                    }
                 });
             });
     </script>
@@ -33,7 +66,7 @@
                         <td>
                         @{
                             post.subject
-                        } <span class="badge badge-info">@p._3</span>
+                        } @if(p._3 >0){ <span class="badge badge-info">@p._3</span>}
 
                         </td>
                         <td>
@@ -61,17 +94,26 @@
         <div class="col-sm-4" style="margin: 0 auto;float: none;">
             <div class="input-group">
                 <div class="input-group-btn">
-                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"  id="AdvancedSearch" aria-expanded="false">제목 <span class="caret"></span></button>
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"  id="AdvancedSearch" aria-expanded="false">
+                        @search_type.map{ t => @{t match {
+                            case 0 => "제목"
+                            case 1 => "내용"
+                            case 2 => "제목+내용"
+                            case 3 => "작성자"
+                            case 4 => "댓글"
+                            case _ => "제목"}}
+                        }.getOrElse("제목") <span class="caret"></span></button>
                     <ul class="dropdown-menu" id="dropdown">
-                        <li><a href="#">제목</a></li>
-                        <li><a href="#">내용</a></li>
-                        <li><a href="#">제목+내용</a></li>
-                        <li><a href="#">댓글</a></li>
+                        <li><a >제목</a></li>
+                        <li><a >내용</a></li>
+                        <li><a >제목+내용</a></li>
+                        <li><a >작성자</a></li>
+                        <li><a >댓글</a></li>
                     </ul>
                 </div><!-- /btn-group -->
-                <input type="text" class="form-control" placeholder="Search for...">
+                <input id="search" type="text" class="form-control" placeholder="Search for..." value = @search_word.getOrElse("")>
                 <span class="input-group-btn">
-                    <button class="btn btn-default" type="button">검색</button>
+                    <a href="@routes.PostController.searchAll(0, "")" id="search_button" class="btn btn-default" type="button">검색</a>
                 </span>
             </div>
         </div>

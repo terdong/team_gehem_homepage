@@ -48,6 +48,28 @@ class PostController @Inject()(implicit cache: CacheApi,
 
   lazy val page_length = config.getInt("post.pageLength").getOrElse(15)
 
+  def searchAll(type_number: Int, word: String, page: Int) = Action.async {
+    implicit request =>
+      for {
+        posts <- posts_repo.searchAll(type_number,
+                                      word,
+                                      page,
+                                      page_length,
+                                      member_permission)
+        count <- posts_repo.getPostSearchCountAll(type_number, word)
+      } yield
+        Ok(
+          views.html.post
+            .list(None,
+                  posts,
+                  page,
+                  page_length,
+                  count,
+                  search_type = Option(type_number),
+                  search_word = Option(word)))
+    //Future.successful(Ok(""))
+  }
+
   def listAll(page: Int) = Action.async { implicit request =>
     for {
       posts <- posts_repo.all(page, page_length, member_permission)

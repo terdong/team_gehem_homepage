@@ -33,6 +33,10 @@ class TableManager @Inject()(appLifecycle: ApplicationLifecycle,
     boards_repo.allSeqAndNameAndListPermission.map(_.map(BoardInfo tupled))
   cache_board_list.map(cache.set("board_list", _))
 
+  /*  for (i <- 0 to 999) {
+    posts_repo.insertSample
+  }*/
+
   /*val result = boards_repo.insertSample
   result onComplete {
     case Success(_) => cache_board_list
