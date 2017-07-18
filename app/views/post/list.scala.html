@@ -28,8 +28,9 @@
                     var converted_type = convertType($("#AdvancedSearch").text());
                     var word= $("#search").val();
                     if(word) {
-                        console.log($(this).attr("href") + "/type/" + converted_type + "/word/" + word);
-                        $(this).attr("href", $(this).attr("href") + "/type/" + converted_type + "/word/" + word);
+                        var request = $(this).attr("href") + "/page/" + @{page} +  "/type/" + converted_type + "/word/" + word;
+                        console.log(request);
+                        $(this).attr("href", request);
                     }
                     //return false;
                 });
@@ -113,11 +114,23 @@
                 </div><!-- /btn-group -->
                 <input id="search" type="text" class="form-control" placeholder="Search for..." value = @search_word.getOrElse("")>
                 <span class="input-group-btn">
-                    <a href="@routes.PostController.searchAll(0, "")" id="search_button" class="btn btn-default" type="button">검색</a>
+                    <a href="@{
+        if(board_name.isDefined) routes.PostController.search(board_seq, 1, 0, "") else routes.PostController.searchAll(1, 0, "")
+                    }" id="search_button" class="btn btn-default" type="button">검색</a>
                 </span>
             </div>
         </div>
     </div>
 
-    @tags.tag_paginate(page, page_length, count, board_seq, if(board_name.isDefined) routes.PostController.list(board_seq, _) else routes.PostController.listAll(_))
+    @tags.tag_paginate(page, page_length, count, board_seq,
+        if(board_name.isDefined) {
+            if(search_type.isDefined) routes.PostController.search(board_seq, _, search_type.get, search_word.get)
+            else routes.PostController.list(board_seq, _)
+        } else {
+            if(search_type.isDefined)
+                routes.PostController.searchAll(_, search_type.get, search_word.get)
+            else
+                routes.PostController.listAll(_)
+        }
+    )
 }

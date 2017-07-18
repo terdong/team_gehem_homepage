@@ -103,12 +103,16 @@ class AccountController @Inject()(implicit cache: CacheApi,
     signin_form.bindFromRequest.fold(
       hasErrors => Future.successful(Ok(views.html.account.signin(hasErrors))),
       form => {
-        members_repo.findByEmail(form.email) map (
-            member =>
-              Redirect(routes.HomeController.index()).withSession(
-                Authenticated.seq -> member.seq.toString,
-                Authenticated.email -> member.email,
-                Authenticated.permission -> member.permission.toString))
+        members_repo.findByEmail(form.email) map { member =>
+          members_repo.updateLastSignin(member.seq)
+          Redirect(
+            routes.HomeController
+              .index())
+            .withSession(
+              Authenticated.seq -> member.seq.toString,
+              Authenticated.email -> member.email,
+              Authenticated.permission -> member.permission.toString)
+        }
       }
     )
   }

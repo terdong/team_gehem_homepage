@@ -18,6 +18,14 @@ class TestController @Inject()(implicit errorHandler: HttpErrorHandler,
     extends Controller
     with I18nSupport {
 
+  def test_option_param(param: Option[String]) = Action {
+    Ok(s"param = $param")
+  }
+
+  def test_default_param(param: Int) = Action {
+    Ok(s"param = ${param}")
+  }
+
   def test_sendFile2(name: String) = Action {
     val image_path = config.getString("uploads.path.images").get
     val file = new java.io.File(s"${image_path}/$name")

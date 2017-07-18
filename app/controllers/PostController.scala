@@ -48,15 +48,18 @@ class PostController @Inject()(implicit cache: CacheApi,
 
   lazy val page_length = config.getInt("post.pageLength").getOrElse(15)
 
-  def searchAll(type_number: Int, word: String, page: Int) = Action.async {
+  def searchAll(page: Int, type_number: Int, word: String) = Action.async {
     implicit request =>
+      val permission = member_permission
       for {
-        posts <- posts_repo.searchAll(type_number,
-                                      word,
-                                      page,
-                                      page_length,
-                                      member_permission)
-        count <- posts_repo.getPostSearchCountAll(type_number, word)
+        posts <- posts_repo.listAll(page,
+                                    page_length,
+                                    permission,
+                                    Option(type_number),
+                                    Option(word))
+        count <- posts_repo.getListAllCount(permission,
+                                            Option(type_number),
+                                            Option(word))
       } yield
         Ok(
           views.html.post
@@ -67,15 +70,50 @@ class PostController @Inject()(implicit cache: CacheApi,
                   count,
                   search_type = Option(type_number),
                   search_word = Option(word)))
-    //Future.successful(Ok(""))
   }
 
+  /*  def listAll(page: Int, type_number: Int, word: String) = Action.async {
+    implicit request =>
+      val permission = member_permission
+      for {
+        posts <- posts_repo.all(page, page_length, permission)
+        count <- posts_repo.getListAllCount(permission)
+      } yield Ok(views.html.post.list(None, posts, page, page_length, count))
+  }*/
+
   def listAll(page: Int) = Action.async { implicit request =>
+    val permission = member_permission
     for {
-      posts <- posts_repo.all(page, page_length, member_permission)
-      count <- posts_repo.getPostCount()
+      posts <- posts_repo.all(page, page_length, permission)
+      count <- posts_repo.getListAllCount(permission)
     } yield Ok(views.html.post.list(None, posts, page, page_length, count))
   }
+
+  def search(board_seq: Long, page: Int, type_number: Int, word: String) =
+    Action.async { implicit request =>
+      val permission = member_permission
+      for {
+        b <- boards_repo.isListValidBoard(board_seq, permission)
+        if b == true
+        name_op <- boards_repo.getNameBySeq(board_seq)
+        posts <- posts_repo.search(board_seq,
+                                   page,
+                                   page_length,
+                                   type_number,
+                                   word)
+        count <- posts_repo.getPostSearchCount(board_seq, type_number, word)
+      } yield
+        Ok(
+          views.html.post
+            .list(name_op,
+                  posts,
+                  page,
+                  page_length,
+                  count,
+                  board_seq,
+                  search_type = Option(type_number),
+                  search_word = Option(word)))
+    }
 
   def list(board_seq: Long, page: Int) = Action.async { implicit request =>
     for {
@@ -84,7 +122,6 @@ class PostController @Inject()(implicit cache: CacheApi,
       name_op <- boards_repo.getNameBySeq(board_seq)
       posts <- posts_repo.listByBoard(board_seq, page, page_length)
       count <- posts_repo.getPostCount(board_seq)
-      //comment_count <- comments_repo.commentCount()
     } yield
       Ok(
         views.html.post
@@ -192,8 +229,9 @@ class PostController @Inject()(implicit cache: CacheApi,
   def writePostForm(board_seq: Long) = Authenticated.async {
     implicit request =>
       if (board_seq > 0) {
-        Future.successful(
-          Ok(views.html.post.write(post_form, board_seq, file_form)))
+        boards_repo.getBoard(board_seq).map { board =>
+          Ok(views.html.post.write(post_form, board, file_form))
+        }
       } else {
         boards_repo
           .getBoardInfoForWrite(request.auth.permission)
@@ -207,8 +245,9 @@ class PostController @Inject()(implicit cache: CacheApi,
     val form = isWriteValidBoardForm.bindFromRequest
     form.fold(
       hasErrors =>
-        Future.successful(
-          BadRequest(views.html.post.write(hasErrors, board_seq, file_form))),
+        boards_repo.getBoard(board_seq).map { board =>
+          BadRequest(views.html.post.write(hasErrors, board, file_form))
+      },
       form => {
         posts_repo
           .insert(form, request.auth.seq, request.remoteAddress) flatMap {

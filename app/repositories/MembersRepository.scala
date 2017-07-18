@@ -34,6 +34,13 @@ class MembersRepository @Inject()(
     db run query.result
   }
 
+  def updateLastSignin(member_seq: Long) = {
+    db run members
+      .filter(_.seq === member_seq)
+      .map(m => (m.last_logged))
+      .update((new java.sql.Timestamp(System.currentTimeMillis())))
+  }
+
   def findByEmail(email: String) = {
     db run members.filter(_.email === email).result.head
   }

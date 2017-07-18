@@ -9,7 +9,6 @@
         }</a>
     }
 
-
     <div class="text-center">
         <ul class="pagination justify-content-center">
             @if(page == 1) {
@@ -23,7 +22,6 @@
             <span aria-hidden="true">&laquo;</span>
         </a>
         </li>
-
             @defining(((page.toDouble / bound).floor * bound).toInt) { low_bound =>
                 @defining(if((low_bound + bound) * page_length >= count) count / page_length + 1 else low_bound + bound) { high_bount =>
 

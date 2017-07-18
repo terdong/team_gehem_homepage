@@ -9,7 +9,6 @@ import slick.jdbc.{GetResult, JdbcProfile}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.math.Ordering.String
 
 /**
   * Created by terdo on 2017-04-19 019.
@@ -30,6 +29,14 @@ class PostsRepository @Inject()(
     db run query.result
   }
 
+  def getPostSearchCount(board_seq: Long, type_number: Int, word: String) = {
+    val search_query = convertSearchType(type_number, word)
+    val q =
+      sql"""SELECT count(p.seq) FROM posts AS p WHERE EXISTS (SELECT * FROM boards AS b WHERE  b.seq = p.board_seq) AND #${search_query}"""
+        .as[Int]
+    db run q.head
+  }
+
   def getPostSearchCountAll(type_number: Int, word: String) = {
     val search_query = convertSearchType(type_number, word)
     val q = sql"""SELECT count(p.seq) FROM posts AS p WHERE #${search_query}"""
@@ -47,11 +54,76 @@ class PostsRepository @Inject()(
   val search_format_list =
     Seq(search_0, search_1, search_2, search_3, search_4)
 
-  def convertSearchType(type_number: Int, word: String) = {
+  private def convertSearchType(type_number: Int, word: String) = {
     val s = search_format_list(type_number)
     type_number match {
-      case 2 => s.format(word, word); case _ => s.format(word);
+      case 2 => s.format(word, word);
+      case _ => s.format(word);
     }
+  }
+
+  def getSearchAllCount(permission: Byte,
+                        type_number: Int,
+                        word: String,
+                        board_seq_option: Option[Long]) = {
+
+    val search_query = convertSearchType(type_number, word)
+    val action = board_seq_option
+      .map { board_seq =>
+        sql"""SELECT count(p.seq) FROM posts AS p WHERE EXISTS (SELECT * FROM boards AS b WHERE b.status = TRUE AND b.seq = board_seq AND b.list_permission <= $permission) AND #${search_query}"""
+          .as[Int]
+      }
+      .getOrElse {
+        sql"""SELECT count(p.seq) FROM posts AS p WHERE EXISTS (SELECT * FROM boards AS b WHERE b.status = TRUE AND b.list_permission <= $permission AND b.seq = p.board_seq) AND #${search_query}"""
+          .as[Int]
+      }
+
+    db run action.head
+
+  }
+
+  def getListAllCount(permission: Byte,
+                      type_option: Option[Int] = None,
+                      word_option: Option[String] = None) = {
+
+    val action = type_option
+      .map { type_number =>
+        val word = word_option.getOrElse("")
+        val search_query = convertSearchType(type_number, word)
+        sql"""
+             SELECT count(p.seq) FROM posts AS p WHERE EXISTS (SELECT * FROM boards AS b WHERE b.status = TRUE AND b.list_permission <= $permission AND b.seq = p.board_seq) AND #${search_query}
+            """.as[Int]
+      }
+      .getOrElse {
+        (for {
+          b <- boards.filter(b =>
+            b.status === true && b.list_permission <= permission)
+        } yield posts.filter(_.board_seq === b.seq).length).result
+      }
+
+    db run action.head
+  }
+
+  def listAll(page: Int,
+              page_length: Int,
+              permission: Byte,
+              type_option: Option[Int] = None,
+              word_option: Option[String] = None) = {
+    val q = type_option
+      .map { type_number =>
+        val word = word_option.getOrElse("")
+        val search_query = convertSearchType(type_number, word)
+        sql"""
+             SELECT p_result.*, m.name, c_result.comment_count FROM (SELECT p.* FROM posts AS p WHERE EXISTS (SELECT * FROM boards AS b WHERE b.status = TRUE AND b.list_permission <= $permission AND p.board_seq = b.seq) AND #${search_query}) AS p_result INNER JOIN members AS m ON p_result.author_seq = m.seq LEFT OUTER JOIN (SELECT c.post_seq, COUNT(c.post_seq) AS comment_count FROM comments AS c GROUP BY c.post_seq) AS c_result ON p_result.seq = c_result.post_seq ORDER BY p_result.seq DESC NULLS FIRST LIMIT ${page_length} OFFSET ${(page - 1) * page_length}
+          """
+          .as[(models.Post, String, Int)]
+      }
+      .getOrElse {
+        sql"""
+             SELECT p_result.*, m.name, c_result.comment_count FROM (SELECT p.* FROM posts AS p WHERE EXISTS (SELECT * FROM boards AS b WHERE b.status = TRUE AND b.list_permission <= $permission AND p.board_seq = b.seq)) AS p_result INNER JOIN members AS m ON p_result.author_seq = m.seq LEFT OUTER JOIN (SELECT c.post_seq, COUNT(c.post_seq) AS comment_count FROM comments AS c GROUP BY c.post_seq) AS c_result ON p_result.seq = c_result.post_seq ORDER BY p_result.seq DESC NULLS FIRST LIMIT ${page_length} OFFSET ${(page - 1) * page_length}
+          """.as[(models.Post, String, Int)]
+      }
+    db run q
   }
 
   def searchAll(type_number: Int,
@@ -61,83 +133,35 @@ class PostsRepository @Inject()(
                 permission: Byte) = {
     val search_query = convertSearchType(type_number, word)
     val q =
-      sql"""SELECT p_result.*, m.name, c_result.comment_count FROM (SELECT p.* FROM posts AS p WHERE EXISTS (SELECT * FROM boards AS b WHERE b.list_permission <= 9 AND p.board_seq = b.seq) AND #${search_query}) AS p_result INNER JOIN members AS m ON p_result.author_seq = m.seq LEFT OUTER JOIN (SELECT c.post_seq, COUNT(c.post_seq) AS comment_count FROM comments AS c GROUP BY c.post_seq) AS c_result ON p_result.seq = c_result.post_seq ORDER BY p_result.seq DESC NULLS FIRST LIMIT ${page_length} OFFSET ${(page - 1) * page_length}"""
+      sql"""SELECT p_result.*, m.name, c_result.comment_count FROM (SELECT p.* FROM posts AS p WHERE EXISTS (SELECT * FROM boards AS b WHERE b.list_permission <= ${permission} AND p.board_seq = b.seq) AND #${search_query}) AS p_result INNER JOIN members AS m ON p_result.author_seq = m.seq LEFT OUTER JOIN (SELECT c.post_seq, COUNT(c.post_seq) AS comment_count FROM comments AS c GROUP BY c.post_seq) AS c_result ON p_result.seq = c_result.post_seq ORDER BY p_result.seq DESC NULLS FIRST LIMIT ${page_length} OFFSET ${(page - 1) * page_length}"""
         .as[(models.Post, String, Int)]
 
     db run q
   }
 
-  /*val search_0 = "p.subject LIKE '%%s%'"
-  val search_1 = s"p.subject LIKE '%%s%'"
-  val search_2 = s"p.subject LIKE '%%s%'"
-  val search_3 = s"p.subject LIKE '%%s%'"
-  val search_4 = s"p.subject LIKE '%%s%'"
-  val search_format_list =
-    Seq(search_0, search_1, search_2, search_3, search_4)
-
-  def searchAll(type_number: Int,
-                word: String,
-                page: Int,
-                page_length: Int,
-                permission: Byte) = {
-
-    val search = search_format_list(type_number).format(word)
-    val search2 = s"p.subject LIKE '%${word}%'"
-
+  def search(board_seq: Long,
+             page: Int,
+             page_length: Int,
+             type_number: Int,
+             word: String) = {
+    val search_query = convertSearchType(type_number, word)
     val q =
-      sql"""SELECT p_result.*, m.name, c_result.comment_count FROM (SELECT p.* FROM posts AS p WHERE EXISTS (SELECT * FROM boards AS b WHERE b.list_permission <= 9 AND p.board_seq = b.seq) AND #${search2}) AS p_result INNER JOIN members AS m ON p_result.author_seq = m.seq LEFT OUTER JOIN (SELECT c.post_seq, COUNT(c.post_seq) AS comment_count FROM comments AS c GROUP BY c.post_seq) AS c_result ON p_result.seq = c_result.post_seq ORDER BY p_result.seq DESC NULLS FIRST LIMIT ${page_length} OFFSET ${(page - 1) * page_length}"""
-        .as[(models.Post, String, Int)]
-
+      sql"""
+            SELECT p_result.*, m.name, c_result.comment_count FROM (SELECT p.* FROM posts AS p WHERE p.board_seq = ${board_seq} AND #${search_query}) AS p_result INNER JOIN members AS m ON p_result.author_seq = m.seq LEFT OUTER JOIN (SELECT c.post_seq, COUNT(c.post_seq) AS comment_count FROM comments AS c GROUP BY c.post_seq) AS c_result ON p_result.seq = c_result.post_seq ORDER BY p_result.seq DESC NULLS FIRST LIMIT ${page_length} OFFSET ${(page - 1) * page_length}
+         """.as[(models.Post, String, Int)]
     db run q
-  }*/
+  }
 
   private def all_(page: Int, page_length: Int, permission: Byte) = {
 
-    sql"""SELECT p_result.*, m.name, c_result.comment_count FROM (SELECT p.* FROM posts AS p WHERE EXISTS (SELECT * FROM boards AS b WHERE b.list_permission <= 9 AND p.board_seq = b.seq)) AS p_result INNER JOIN members AS m ON p_result.author_seq = m.seq LEFT OUTER JOIN (SELECT c.post_seq, COUNT(c.post_seq) AS comment_count FROM comments AS c GROUP BY c.post_seq) AS c_result ON p_result.seq = c_result.post_seq ORDER BY p_result.seq DESC NULLS FIRST LIMIT ${page_length} OFFSET ${(page - 1) * page_length}"""
+    sql"""SELECT p_result.*, m.name, c_result.comment_count FROM (SELECT p.* FROM posts AS p WHERE EXISTS (SELECT * FROM boards AS b WHERE b.list_permission <= ${permission} AND b.read_permission <= ${permission} AND p.board_seq = b.seq)) AS p_result INNER JOIN members AS m ON p_result.author_seq = m.seq LEFT OUTER JOIN (SELECT c.post_seq, COUNT(c.post_seq) AS comment_count FROM comments AS c GROUP BY c.post_seq) AS c_result ON p_result.seq = c_result.post_seq ORDER BY p_result.seq DESC NULLS FIRST LIMIT ${page_length} OFFSET ${(page - 1) * page_length}"""
       .as[(models.Post, String, Int)]
-
-    /*    sql"select x2.seq, x2.board_seq, x2.thread, x2.depth, x2.author_seq, x2.subject, x2.hit_count, x2.content, x2.author_ip, x2.write_date, x2.update_date, x3.name, count(x5.post_seq) from boards x4 inner join posts x2 inner join members x3 on x2.author_seq = x3.seq on (x4.list_permission <= ${permission}) and (x2.board_seq = x4.seq) left outer join comments x5 on x2.seq = x5.post_seq group by x2.seq, x2.content, x2.author_ip, x2.depth, x2.update_date, x2.write_date, x2.author_seq, x2.subject, x2.hit_count, x2.board_seq, x2.thread, x3.name order by x2.seq desc nulls first limit ${page_length} offset ${(page - 1) * page_length}"
-      .as[(models.Post, String, Int)]*/
-
-    /* ((for {
-        b <- boards.filter(_.list_permission <= permission)
-        p <- posts
-          .filter(_.board_seq === b.seq)
-        m <- members if p.author_seq === m.seq
-      } yield (p, m.name)) joinLeft comments on (_._1.seq === _.post_seq))
-        .groupBy {
-          case (pm, c: Rep[Option[Comments]]) => (pm._1, pm._2)
-        }
-        .map {
-          case ((p, m), list) => {
-            (p, m, list.map(_._2).length)
-          }
-        }
-        .sortBy(_._1.seq.desc.nullsFirst)
-        .drop((page - 1) * page_length)
-        .take(page_length)*/
   }
 
   def listByBoard_(board_seq: Long, page: Int, page_length: Int) = {
     sql"SELECT p_result.*, m.name, c_result.comment_count FROM (SELECT p.* FROM posts AS p WHERE p.board_seq = ${board_seq}) AS p_result INNER JOIN members AS m ON p_result.author_seq = m.seq LEFT OUTER JOIN (SELECT c.post_seq, COUNT(c.post_seq) AS comment_count FROM comments AS c GROUP BY c.post_seq) AS c_result ON p_result.seq = c_result.post_seq ORDER BY p_result.seq DESC NULLS FIRST LIMIT ${page_length} OFFSET ${(page - 1) * page_length}"
       .as[(models.Post, String, Int)]
 
-    /*    ((for {
-      p <- posts
-        .filter(_.board_seq === board_seq)
-        .drop((page - 1) * page_length)
-        .take(page_length)
-      m <- members if p.author_seq === m.seq
-    } yield (p, m.name)) joinLeft comments on (_._1.seq === _.post_seq))
-      .groupBy({
-        case (p, comment) => (p._1, p._2)
-      })
-      .map {
-        case ((p, member_name), list) => {
-          (p, member_name, list.map(_._2).length)
-        }
-      }
-      .sortBy(_._1.seq.desc.nullsFirst)*/
   }
 
   def all(page: Int, page_length: Int, permission: Byte) = {
@@ -154,6 +178,7 @@ class PostsRepository @Inject()(
 
     db run query.result.head
   }
+
   def getPost(post_seq: Long) = {
     val query = posts.filter(_.seq === post_seq) join members on (_.author_seq === _.seq)
 
