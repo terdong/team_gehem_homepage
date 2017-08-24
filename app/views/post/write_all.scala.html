@@ -1,0 +1,21 @@
+@import com.teamgehem.security.AuthMessagesRequest
+@import com.teamgehem.model.BoardInfo
+@(form: Form[_], boards_info:Seq[(Long, String)])(implicit request: AuthMessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list:Option[Seq[BoardInfo]])
+@implicitFC = @{
+    b3.horizontal.fieldConstructor("col-md-1", "col-md-11")
+}
+
+@tags.tag_post_write{
+    @b3.formCSRF(routes.PostController.writePost, 'id -> "postForm") {
+        @defining(for {
+            board <- boards_info
+        } yield (board._1.toString -> Messages(s"board.${board._2}"))) { board_list =>
+            @b3.select(form("board_seq"), options = board_list, '_label -> "Board")
+        }
+        @b3.text(form("subject"), '_label -> "Subject")
+        @b3.textarea(form("content"), '_label -> "Content", 'rows -> 5)
+        @b3.button('class -> "btn btn-default pull-right"){<span class="glyphicon glyphicon-ok"></span> Write}
+
+        @b3.submit('class -> "btn btn-default", 'style ->"display:none;"){Write}
+    }
+}()

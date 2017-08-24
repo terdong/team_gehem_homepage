@@ -1,7 +1,11 @@
 @(table_name:String)(thead_content:Html)(tbody_content:Html)
 
 <div class="panel panel-default">
-    <div class="panel-heading">@table_name</div>
+    <div class="panel-heading">
+        <h3 class="panel-title">
+            @table_name
+        </h3>
+    </div>
     <div class="table-responsive">
         <table class="table table-bordered table-hover table-condensed">
             <thead>

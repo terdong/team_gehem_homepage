@@ -3,7 +3,7 @@
 @board_list_option.map{ board_list =>
     <ol class="breadcrumb">
         @if(board_list.length > 0) {
-            <li class="breadcrumb-item active"><a href="@routes.PostController.list(0, 1)">@Messages(s"board.all")</a></li>
+            <li class="breadcrumb-item active"><a href="@routes.PostController.list(0, 1)">@Messages("board.all")</a></li>
             @defining(request.session.get("permission").getOrElse("0").toByte) { permission: Byte =>
                 @for(board <- board_list) {
                     @if(permission >= board.list_perm) {

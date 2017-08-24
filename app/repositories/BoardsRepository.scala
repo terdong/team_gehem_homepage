@@ -41,6 +41,7 @@ class BoardsRepository @Inject()(
 
     db run boards
       .filter(_.write_permission <= permission)
+      .sortBy(_.priority.desc.nullsFirst)
       .map(b => (b.seq, b.name))
       .result
 

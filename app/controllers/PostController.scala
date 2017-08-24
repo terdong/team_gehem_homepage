@@ -2,7 +2,6 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 
-import com.teamgehem.actions.BoardTransformer
 import com.teamgehem.model.{BoardInfo, BoardPaginationInfo, BoardSearchInfo}
 import com.teamgehem.security.AuthenticatedActionBuilder
 import models.{Member, Post}
@@ -141,29 +140,26 @@ class PostController @Inject()(cache: SyncCacheApi,
   }
 
   def writePostForm(board_seq: Long) = auth.async { implicit request =>
-    boards_repo.getBoard(board_seq).map { board =>
-      Ok(views.html.post.write(post_form, board, file_form))
+    if (board_seq > 0) {
+      boards_repo.getBoard(board_seq).map { board =>
+        Ok(views.html.post.write(post_form, board, file_form))
+      }
+    } else {
+      boards_repo
+        .getBoardInfoForWrite(request.member.permission)
+        .map(seq => Ok(views.html.post.write_all(post_form, seq)))
     }
-    /*
-        if (board_seq > 0) {
-          boards_repo.getBoard(board_seq).map { board =>
-            Ok(views.html.post.write(post_form, board, file_form))
-          }
-        } else {
-          boards_repo
-            .getBoardInfoForWrite(request.auth.permission)
-            .map(seq => Ok(views.html.post.write_all(post_form, board_seq, seq)))
-        }*/
   }
 
 
-  def writePost(board_seq: Long) = auth.async { implicit request =>
+  def writePost = auth.async { implicit request =>
     val form = isWriteValidBoardForm.bindFromRequest
     form.fold(
-      hasErrors =>
-        boards_repo.getBoard(board_seq).map { board =>
+      hasErrors => {
+        boards_repo.getBoard(form.get._1).map { board =>
           BadRequest(views.html.post.write(hasErrors, board, file_form))
-        },
+        }
+      },
       form => {
         posts_repo
           .insert(form, getSeq, request.remoteAddress) map {
