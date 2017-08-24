@@ -1,8 +1,8 @@
-name := "team_gehem_homepage_v2"
+name := "team_gehem_homepage"
 
 version := "1.0"
 
-lazy val `team_gehem_homepage_v2` =
+lazy val `team_gehem_homepage` =
   (project in file(".")).enablePlugins(PlayScala)
 
 resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"

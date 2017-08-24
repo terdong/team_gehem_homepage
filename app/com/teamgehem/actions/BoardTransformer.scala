@@ -12,7 +12,7 @@ import scala.concurrent.{ExecutionContext, Future}
 /**
   * Created by DongHee Kim on 2017-08-20 020.
   */
-@deprecated("This is no longer used.")
+@deprecated("This is no longer used.","0.3.7")
 class BoardTransformer(val parser: BodyParser[AnyContent],
                         messagesApi: MessagesApi,
                        board_repo: BoardsRepository)(implicit val executionContext: ExecutionContext)

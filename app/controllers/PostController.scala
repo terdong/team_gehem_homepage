@@ -31,8 +31,7 @@ class PostController @Inject()(cache: SyncCacheApi,
                                boards_repo: BoardsRepository,
                                posts_repo: PostsRepository,
                                attachments_repo: AttachmentsRepository,
-                               comments_repo: CommentsRepository,
-                               board_transformer: BoardTransformer)
+                               comments_repo: CommentsRepository)
 //cache: AsyncCacheApi)
   extends MessagesAbstractController(cc) {
 
