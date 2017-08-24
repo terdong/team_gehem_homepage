@@ -2,28 +2,12 @@ package controllers
 
 import javax.inject._
 
-import controllers.traits._
-import play.api._
-import play.api.cache.CacheApi
-import play.api.http.HttpErrorHandler
-import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.Logger
 import play.api.mvc._
 
-import scala.concurrent.ExecutionContext
-
-/**
-  * This controller creates an `Action` to handle HTTP requests to the
-  * application's home page.
-  */
 @Singleton
-class HomeController @Inject()(implicit exec: ExecutionContext,
-                               cache: CacheApi,
-                               errorHandler: HttpErrorHandler,
-                               val messagesApi: MessagesApi)
-    extends Controller
-    with I18nSupport
-    with ProvidesHeader {
-
+class HomeController @Inject()(cc: MessagesControllerComponents)
+    extends MessagesAbstractController(cc) {
   def index = Action { implicit request =>
     Logger.debug(request.headers.headers.mkString("\n"))
     Ok(views.html.index("Your new application is ready."))
@@ -32,5 +16,4 @@ class HomeController @Inject()(implicit exec: ExecutionContext,
   def result() = Action { implicit request =>
     Ok(views.html.result())
   }
-
 }

@@ -1,0 +1,10 @@
+@(userForm: Form[UserData])(implicit request: MessagesRequestHeader)
+
+@import helper._
+@import b3.vertical.fieldConstructor
+@helper.form(action = routes.TestController.test_form_post()) {
+    @CSRF.formField                     @* <- takes a RequestHeader    *@
+    @helper.inputText(userForm("name")) @* <- takes a MessagesProvider *@
+    @helper.inputText(userForm("age"))  @* <- takes a MessagesProvider *@
+    @b3.submit('class -> "btn btn-lg btn-success btn-block") {SignIn}
+}

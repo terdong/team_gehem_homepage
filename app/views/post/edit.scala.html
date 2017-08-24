@@ -1,4 +1,6 @@
-@(form: Form[_], board_seq: Long, post_seq: Long)(implicit messages: Messages, header: controllers.traits.Header)
+@import com.teamgehem.security.AuthMessagesRequest
+@import com.teamgehem.model.BoardInfo
+@(form: Form[_], board_seq: Long, post_seq: Long)(implicit request: AuthMessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list:Option[Seq[BoardInfo]])
 @implicitFC = @{
     b3.horizontal.fieldConstructor("col-md-1", "col-md-11")
 }
@@ -8,107 +10,20 @@
     <script src="@routes.Assets.versioned("javascripts/post_submit.js")" type="text/javascript"></script>
     <script src="@routes.Assets.versioned("javascripts/bootstrap-notify.min.js")" type="text/javascript"></script>
     <script src="@routes.Assets.versioned("javascripts/clipboard.min.js")" type="text/javascript"></script>
-    <script src="@routes.Assets.versioned("fine-uploader/jquery.fine-uploader.js")" type="text/javascript"></script>
-
-    <script type="text/javascript">
-            function hash_button_click(file_name) {
-                var message = file_name + "파일의 url을 클립보드(ctrl+c)에 저장했습니다.";
-                $.notify({
-                    message: message
-                },{
-                    // settings
-                    type: 'info',
-                    placement: {
-                        from: "bottom",
-                        align: "center"
-                    },
-                    delay: 1500
-                });
-            }
-
-            $(document).ready(function () {
-                var clipboard = new Clipboard('.qq-uuid');
-
-                $('#fine-uploader-gallery').fineUploader({
-                    template: 'qq-template-gallery',
-                    request: {
-                        endpoint: '/upload/file'
-                    },
-                    thumbnails: {
-                        placeholders: {
-                            waitingPath: '/assets/fine-uploader/placeholders/waiting-generic.png',
-                            notAvailablePath: '/assets/fine-uploader/placeholders/not_available-generic.png'
-                        }
-                    },
-                    validation: {
-                        allowedExtensions: ['jpeg', 'jpg', 'gif', 'png', 'mp3', 'flac', 'ogg', 'avi', 'mp4', 'zip', '7z', 'xls', 'doc', 'sh', 'txt', 'rar']
-                    },
-                    deleteFile: {
-                        enabled: true,
-                        method: "POST",
-                        endpoint: "/upload/file/delete"
-                    },
-                    session: {
-                        endpoint: "/files/" + @post_seq,
-                    },
-                    autoUpload: true,
-                    callbacks: {
-                        onComplete: function (id, name, responseJSON, maybeXhr) {
-                            //console.log(JSON.stringify(responseJSON));
-                            var form = $('form[id=postForm]');
-                            $("<input></input>").attr({
-                                type: "hidden",
-                                id: id,
-                                name: "upload_files[]",
-                                value: JSON.stringify(responseJSON['file_info'])
-                            }).appendTo(form);
-
-                            // 추가된 파일은 임시디렉토리에 있기 때문에 url을 지정할 수 없음.
-                            /*var content_type = responseJSON['file_info']['content_type'];
-                            if(content_type.split("/")[0] == "image"){
-                                var uuid_span = $('.qq-uuid').eq(id);
-                                uuid_span.val(name);
-                                uuid_span.attr("data-clipboard-text", "/images/" + responseJSON['newUuid']);
-                                uuid_span.removeClass("qq-hide");
-                            }*/
-                        },
-                        onDelete: function (id) {
-                            $('input[name="upload_files[]"]').remove("#" + id);
-                        },
-                        onSessionRequestComplete: function (response, success, xhrOrXdr) {
-                            var uuid_spans = $('.qq-uuid');
-                            $.each(response,function(i, data) {
-                                if(data['is_image'] == true){
-                                    var uuid_span = uuid_spans.eq(i);
-                                    uuid_span.val(response['name']);
-                                    uuid_span.attr("data-clipboard-text", "/images/" + data['uuid']);
-                                    uuid_span.removeClass("qq-hide");
-                                }
-                            });
-                        }
-                    }
-                });
-            });
-    </script>
-@includes.qq_template_gallery()
-
+    @*<script src="@routes.Assets.versioned("fine-uploader/jquery.fine-uploader.js")" type="text/javascript"></script>*@
 }
 @styles = {
-    <link href="@routes.Assets.versioned("fine-uploader/fine-uploader-gallery.css")" media="all" rel="stylesheet" type="text/css" />
+    @*<link href="@routes.Assets.versioned("fine-uploader/fine-uploader-gallery.css")" media="all" rel="stylesheet" type="text/css" />*@
     <link href="@routes.Assets.versioned("stylesheets/animate.css")" media="all" rel="stylesheet" type="text/css" />
 }
 @main("edit", "board", scripts, styles) {
     <div class="panel panel-default">
         <div class="panel-heading">
-            <h3 class="panel-title">@{
-                header.board_list.map(list => {
-                    list.find(p => p.seq == board_seq).head.name
-                })
-            }</h3>
+            <h3 class="panel-title">All</h3>
         </div>
         <div class="panel-body">
 
-        @b3.form(routes.PostController.editPost(board_seq, post_seq), 'id -> "postForm") {
+        @b3.formCSRF(routes.PostController.editPost(board_seq, post_seq), 'id -> "postForm") {
             @b3.hidden("board_seq", board_seq)
             @b3.text(form("subject"), '_label -> "Subject")
             @b3.textarea(form("content"), '_label -> "Content", 'rows -> 5)

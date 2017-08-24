@@ -1,5 +1,5 @@
+@(menu_name:String, members:Seq[(Member, String)])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 @import tags._
-@(menu_name:String, members:Seq[(Member, String)])(implicit messages: Messages,header: controllers.traits.Header)
 
 @implicitFieldConstructor = @{ b3.vertical.fieldConstructor }
 @scripts = {

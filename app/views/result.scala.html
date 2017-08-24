@@ -1,13 +1,13 @@
-@()(implicit flash: Flash, header: controllers.traits.Header, messages: Messages)
+@()(implicit request: play.api.mvc.RequestHeader, messages: MessagesProvider)
 @scripts = {
         <script type="text/javascript">alert("hello !");</script>
 }
 @main("Result") {
 
         <div class="row text-center">
-                @defining(flash.get("success")) { str =>
+                @defining(request.flash.get("success")) { str =>
                     <p>@str</p>
                 }
-                <a href="@routes.HomeController.index()" class="btn btn-success" role="button"><span class="glyphicon glyphicon-repeat">@Messages("result.button") </span></a>
+                <a href="@routes.HomeController.index()" class="btn btn-success" role="button"><i class="fa fa-repeat" aria-hidden="true"> @Messages("result.button")</i></a>
         </div>
 }

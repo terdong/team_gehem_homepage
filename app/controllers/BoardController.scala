@@ -2,19 +2,16 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 
-import com.teamgehem.authentication.Authorized
-import com.teamgehem.authentication.PermissionProvider.Admin
-import controllers.traits.{BoardInfo, Header, ProvidesHeader}
-import play.api.cache.CacheApi
+import com.teamgehem.security.{AuthMessagesRequest, AuthenticatedActionBuilder}
 import play.api.data.Forms._
 import play.api.data._
-import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Call, Controller, Result}
+import play.api.i18n._
+import play.api.mvc._
 import repositories.{
-  BoardsRepository,
-  MembersRepository,
-  PermissionsRepository,
-  PostsRepository
+BoardsRepository,
+MembersRepository,
+PermissionsRepository,
+PostsRepository
 }
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -25,62 +22,65 @@ import scala.concurrent.{Await, Future}
   * Created by terdo on 2017-04-20 020.
   */
 @Singleton
-class BoardController @Inject()(implicit cache: CacheApi,
+class BoardController @Inject()(auth: AuthenticatedActionBuilder,
+                                cc: MessagesControllerComponents,
                                 members_repo: MembersRepository,
                                 boards_repo: BoardsRepository,
                                 posts_repo: PostsRepository,
-                                permissions_repo: PermissionsRepository,
-                                val messagesApi: MessagesApi)
-    extends Controller
-    with I18nSupport
-    with ProvidesHeader {
+                                permissions_repo: PermissionsRepository)
+  extends MessagesAbstractController(cc) {
 
-  def boards = Authorized(Admin).async { implicit request =>
+  implicit val messagesProvider: MessagesProvider = {
+    MessagesImpl(cc.langs.availables.head, messagesApi)
+  }
+
+  def boards = auth.authrized_admin.async { implicit request: AuthMessagesRequest[AnyContent] =>
     boards_(board_form, routes.BoardController.createBoard)
   }
 
-  def editBoardForm(board_seq: Long) = Authorized(Admin).async {
+  def editBoardForm(board_seq: Long) = auth.authrized_admin.async {
     implicit request =>
       boards_repo.getBoard(board_seq).flatMap { b =>
         val form_data = (b.seq,
-                         b.name,
-                         b.description.getOrElse(""),
-                         b.status,
-                         b.list_permission,
-                         b.read_permission,
-                         b.write_permission)
+          b.name,
+          b.description.getOrElse(""),
+          b.status,
+          b.list_permission,
+          b.read_permission,
+          b.write_permission,
+          b.priority)
 
         boards_(board_edit_form.fill(form_data),
-                routes.BoardController.editBoard)
+          routes.BoardController.editBoard)
       }
   }
 
-  def editBoard = Authorized(Admin).async { implicit request =>
+  def editBoard = auth.authrized_admin.async { implicit request =>
     board_edit_form.bindFromRequest.fold(
       hasErrors => {
         boards_(hasErrors, routes.BoardController.editBoard)
       },
       form => {
-        val email = request.auth.email
+        val email = request.member.email
         val result = for {
           member <- members_repo.findByEmail(email)
           r <- boards_repo.update(form, member.name)
-          _ <- setCacheBoardList
+        // _ <- setCacheBoardList
         } yield Redirect(routes.BoardController.boards())
         result
       }
     )
   }
 
-  def createBoard = Authorized(Admin).async { implicit request =>
+  def createBoard = auth.authrized_admin.async { implicit request =>
     board_form.bindFromRequest.fold(
       hasErrors => boards_(hasErrors, routes.BoardController.createBoard),
       form => {
-        val email = request.auth.email
+        val email = request.member.email
         val result = for {
           member <- members_repo.findByEmail(email)
           r <- boards_repo.insert(form, member.name)
-          _ <- setCacheBoardList
+        //_ <- setCacheBoardList
         } yield Redirect(routes.BoardController.boards())
         result
       }
@@ -88,18 +88,18 @@ class BoardController @Inject()(implicit cache: CacheApi,
   }
 
   def setActiveBoard(board_seq: Long, is_active: Boolean) =
-    Authorized(Admin).async { implicit request =>
+    auth.authrized_admin.async { implicit request =>
       for {
         _ <- boards_repo.setActiveBoard(board_seq, is_active)
-        _ <- setCacheBoardList
+      //_ <- setCacheBoardList
       } yield Redirect(routes.BoardController.boards())
     }
 
-  def deleteBoard(board_seq: Long) = Authorized(Admin).async {
+  def deleteBoard(board_seq: Long) = auth.authrized_admin.async {
     implicit request =>
       for {
         _ <- boards_repo.delete(board_seq)
-        _ <- setCacheBoardList
+      // _ <- setCacheBoardList
       } yield Redirect(routes.BoardController.boards())
   }
 
@@ -119,14 +119,15 @@ class BoardController @Inject()(implicit cache: CacheApi,
       "status" -> boolean,
       "list_perm" -> byteNumber(min = 0, max = 99),
       "read_perm" -> byteNumber(min = 0, max = 99),
-      "write_perm" -> byteNumber(min = 0, max = 99)
+      "write_perm" -> byteNumber(min = 0, max = 99),
+      "priority" -> number(min = 0)
     )
   )
 
   private val board_form = Form(
     tuple(
       "name" -> nonEmptyText(maxLength = 30)
-        .verifying(messagesApi("board.create.exists.name"), !boardExists(_)),
+        .verifying(Messages("board.create.exists.name"), !boardExists(_)),
       "description" -> text(maxLength = 2000),
       "status" -> boolean,
       "is_reply" -> boolean,
@@ -134,24 +135,25 @@ class BoardController @Inject()(implicit cache: CacheApi,
       "is_attachment" -> boolean,
       "list_perm" -> byteNumber(min = 0, max = 99),
       "read_perm" -> byteNumber(min = 0, max = 99),
-      "write_perm" -> byteNumber(min = 0, max = 99)
+      "write_perm" -> byteNumber(min = 0, max = 99),
+      "priority" -> number(min = 0)
     )
   )
 
   private def boards_(form: Form[_], url: Call)(
-      implicit header: Header): Future[Result] = {
+    implicit request: AuthMessagesRequest[AnyContent]): Future[Result] = {
 
     for {
       boards <- boards_repo.all
       permissions <- permissions_repo.all
-    } yield Ok(views.html.board.boards(boards, permissions, form, url))
+    } yield Ok(views.html.admin.boards(boards, permissions, form, url))
   }
 
-  private def setCacheBoardList = {
+  /*  private def setCacheBoardList = {
     val r: Future[Seq[BoardInfo]] = for {
       r: Seq[(Long, String, Byte)] <- boards_repo.allSeqAndNameAndListPermission
     } yield r.map(BoardInfo tupled)
 
     r.map(cache.set("board_list", _))
-  }
+  }*/
 }

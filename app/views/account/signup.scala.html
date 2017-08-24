@@ -1,13 +1,12 @@
-@(signup_form: Form[_])(implicit messages: Messages ,header: controllers.traits.Header)
+@(signup_form: Form[_])(implicit request: play.api.mvc.RequestHeader, messages: Messages)
 @import b3.vertical.fieldConstructor
-
 @main("signup") {
 
-@b3.form(routes.AccountController.signup) {
-@b3.text(signup_form("email"), 'placeholder -> "E-mail", 'type -> "email", 'autofocus -> true)
-@b3.text(signup_form("name"), 'placeholder -> "name")
-@b3.text(signup_form("nickName"), 'placeholder -> "nickName")
-@b3.submit('class -> "btn btn-lg btn-success btn-block") {signup}
-}
+    @b3.formCSRF(routes.AccountController.signup) {
+        @b3.text(signup_form("email"), 'placeholder -> "E-mail", 'type -> "email", 'autofocus -> true)
+        @b3.text(signup_form("name"), 'placeholder -> "name")
+        @b3.text(signup_form("nickName"), 'placeholder -> "nickName")
+        @b3.submit('class -> "btn btn-lg btn-success btn-block") {signup}
+    }
 
 }

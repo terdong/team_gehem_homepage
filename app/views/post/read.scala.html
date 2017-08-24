@@ -1,4 +1,6 @@
-@(tuple: (Post, Member), comment_form: Form[_], comments: Seq[(Comment, String, Option[String])], attachments:Seq[Attachment], is_own: Boolean = false)(board_name: Option[String], posts: Seq[(Post, String, Int)], page: Int, page_length: Int, count: Int, board_seq: Long = 0)(implicit messages: Messages, header: controllers.traits.Header)
+@import com.teamgehem.actions.BoardTransformerRequest
+@import com.teamgehem.model.BoardInfo
+@(tuple: (Post, Member), comment_form: Form[_], comments: Seq[(Comment, String, Option[String])], attachments: Seq[Attachment], is_own: Boolean = false)(board_name: String, posts: Seq[(Post, String, Int)], page: Int, page_length: Int, count: Int, board_seq: Long = 0)(implicit request: MessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list:Option[Seq[BoardInfo]])
 @import b3.vertical.fieldConstructor
 
 @scripts = {
@@ -8,13 +10,15 @@
     <script src="@routes.Assets.versioned("javascripts/filesize.min.js")" type="text/javascript"></script>
 }
 @styles = {
-    <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/comment2.css")">
+    <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("../../../public/stylesheets/comment.css")">
     <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/read.css")">
 }
 
 @main("read", "board", scripts, styles) {
 
-    @defining(header.member_email.isDefined) { is_reply =>
+    @tags.tag_board_list()
+
+    @defining(request.session.get("email").isDefined) { is_reply =>
         @defining(tuple._1) { post =>
             @defining(tuple._2) { member =>
                 <div class="panel panel-default">
@@ -28,13 +32,17 @@
 
                             @if(is_own) {
                                 <div class="col-md-1 text-right" style="padding: 0px 10px;">
+                                    @*
                                     <a title="edit" href="@routes.PostController.editPost(post.board_seq, post.seq)" class="btn btn-default btn-xs" role="button"><span class="glyphicon glyphicon-pencil"></span></a>
+                                    *@
                                     <button type="button" title = "delete" data-toggle="modal" data-target="#remove_post_modal" class="btn btn-default btn-xs" ><span class="glyphicon glyphicon-remove"></span></button>
 
                                 </div>
-                                @tags.tag_modal_simple("remove_post_modal", "게시물 삭제", routes.PostController.deletePost(post.board_seq, post.seq)) {
-                                    정말 이 게시물을 삭제 하시겠습니까?
+                                @*
+                                @tags.tag_simple_modal("remove_post_modal", "게시물 삭제", routes.PostController.deletePost(post.board_seq, post.seq)) {
+                                정말 이 게시물을 삭제 하시겠습니까?
                                 }
+                                *@
                             }
                         </div>
                     </div>
@@ -64,164 +72,9 @@
                         </div>
                     }
 
-                    <ul class="list-group">
-                        <small>
-                            <li class="list-group-item">
-                                <ul class="list-inline">
-                                @for(attachment <- attachments) {
-                                    <li>
-                                        <a id="file_info_@{attachment.seq}" title="download" href="@routes.AttachmentController.file(attachment.hash)" class="btn btn-default btn-xs" role="button"><span class="glyphicon glyphicon-download"></span>&nbsp</a>
-                                        <script type="text/javascript">
-                                            var file_info = "@{attachment.name}(" + filesize(@attachment.size) + ")(@{attachment.download_count})";
-                                            $("#file_info_@{attachment.seq}").append(file_info);
-                                        </script>
-                                    </li>
-                                }
-                                </ul>
-                            </li>
-                        </small>
-                        @if(comments.length > 0) {
-                            <li class="list-group-item">
-                            @for(c <- comments) {
-                                @defining(c._1) { comment =>
-                                    <div class="row">
-                                        <div class="col-sm-1">
-                                            <div class="thumbnail">
-                                                <img class="img-responsive user-photo" src="https://ssl.gstatic.com/accounts/ui/avatar_2x.png">
-                                            </div><!-- /thumbnail -->
-                                        </div><!-- /col-sm-1 -->
-
-                                        <div class="col-sm-11">
-                                            <div class="panel panel-default">
-                                                <div class="panel-heading">
-                                                    <strong>
-                                                        @defining(comment.reply_comment_seq) { seq =>
-                                                            @if(seq.isDefined) {
-                                                                <small>@{c._3.getOrElse("삭제된 댓글")}</small> >>>
-                                                            }
-                                                        } @c._2
-                                                    </strong> <span class="text-muted">
-                                                    commented @tags.tag_cleanly_date(comment.write_date)</span>
-                                                    @header.member_seq.map { seq =>
-                                                        @if(seq.toLong == comment.author_seq) {
-                                                            @defining(s"remove_reply_modal_${comment.seq}") { modal_name =>
-                                                                <button type="button" title = "delete" data-toggle="modal" data-target="#@modal_name" class="btn btn-warning btn-xs" ><span class="glyphicon glyphicon-remove"></span></button>
-                                                            @tags.tag_modal_simple(modal_name,"댓글 삭제", routes.PostController.deleteComment(post.board_seq, post.seq, comment.seq)){
-                                                                    정말 이 댓글을 삭제 하시겠습니까?
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                </div>
-                                                <div class="panel-body">
-                                                    @Html(comment.content)
-                                                    @if(is_reply) {
-                                                        @defining(s"collapse_${comment.seq}") { collapse =>
-                                                            <button title="reply"
-                                                            class="btn btn-link btn-xs"
-                                                            type="button"
-                                                            data-toggle="collapse"
-                                                            data-target=@{
-                                                                s"#${collapse}"
-                                                            }
-                                                            aria-expanded="false"
-                                                            aria-controls=@collapse>
-                                                                <i class="fa fa-reply" aria-hidden="true"></i>
-                                                                reply
-                                                            </button>
-                                                            <div class="collapse" id=@collapse>
-                                                                <div class="well">
-                                                                    <div class="row" style="padding: 0px 15px;">
-                                                                    @b3.form(routes.PostController.writeComment(post.board_seq)) {
-                                                                        <div class="form-group" id="t_field">
-                                                                            <textarea id="content" maxlength="4000" required="true" placeholder="댓글을 입력하세요." class="form-control"></textarea>
-                                                                        </div>
-                                                                        @b3.hidden("post_seq", post.seq)
-                                                                        @b3.hidden("reply_comment_seq", comment.seq)
-                                                                        @b3.hidden("content", "")
-                                                                        @b3.buttonType("submit", 'class -> "btn btn-primary btn-sm pull-right") {
-                                                                            <i class="fa fa-check"></i> Write }
-                                                                    }
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        }
-                                                    }
-                                                </div>
-                                                    <!-- /panel-body -->
-                                            </div><!-- /panel panel-default -->
-                                        </div><!-- /col-sm-5 -->
-                                    </div> <!-- /row -->
-                                }
-                            }
-                            </li>
-                        }
-                        @if(is_reply) {
-                            <li class="list-group-item">
-                                <div class="row" style="padding: 0px 15px;">
-                                @b3.form(routes.PostController.writeComment(post.board_seq)) {
-                                    <div class="form-group" id="t_field">
-                                        <textarea id="content" maxlength="4000" required="true" placeholder="댓글을 입력하세요." class="form-control"></textarea>
-                                    </div>
-                                    @b3.hidden("post_seq", post.seq)
-                                    @b3.hidden("content", "")
-                                    @b3.buttonType("submit", 'class -> "btn btn-primary btn-sm pull-right") {
-                                        <i class="fa fa-check"></i> Write }
-                                }
-                                </div>
-                            </li>
-                        }
-                    </ul>
                 </div>
+            </div>
             }
         }
-        @*Post List*@
-        @tags.tag_table_layout(board_name.getOrElse("All")) {
-            <tr>
-                <th class="col-md-1">#</th>
-                <th class="col-md-6">제목</th>
-                <th class="col-md-2">작성자</th>
-                <th class="col-md-2">작성일</th>
-                <th class="col-md-1">조회수</th>
-            </tr>
-        } {
-            @for(p <- posts) {
-                @defining(p._1) { post =>
-                    @defining(p._2) { member_name =>
-                        <tr url= @{
-                            routes.PostController.showPost(post.board_seq, post.seq, page)
-                        }>
-                            <th scope="row">
-                            @{
-                                post.seq
-                            }
-                            </th>
-                            <td>
-                            @{
-                                post.subject
-                            } @if(p._3 >0){ <span class="badge badge-info">@p._3</span>}
-                            </td>
-                            <td>
-                            @{
-                                member_name
-                            }
-                            </td>
-                            <td>
-                            @{
-                                post.write_date.toString.split('.')(0)
-                            }
-                            </td>
-                            <td>
-                            @{
-                                post.hit_count
-                            }
-                            </td>
-                        </tr>
-                    }
-                }
-            }
-        }
-
-        @tags.tag_paginate(page, page_length, count, board_seq, if(board_name.isDefined) routes.PostController.list(board_seq, _) else routes.PostController.listAll(_))
     }
 }

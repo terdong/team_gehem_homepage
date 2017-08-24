@@ -1,0 +1,17 @@
+@import com.teamgehem.model.BoardInfo
+@()(implicit request:MessagesRequest[AnyContent], board_list_option:Option[Seq[BoardInfo]])
+@board_list_option.map{ board_list =>
+    <ol class="breadcrumb">
+        @if(board_list.length > 0) {
+            <li class="breadcrumb-item active"><a href="@routes.PostController.list(0, 1)">@Messages(s"board.all")</a></li>
+            @defining(request.session.get("permission").getOrElse("0").toByte) { permission: Byte =>
+                @for(board <- board_list) {
+                    @if(permission >= board.list_perm) {
+                        <li class="breadcrumb-item active"><a href="@routes.PostController.list(board.seq, 1)">@Messages(s"board.${board.name}")</a></li>
+                    }
+                }
+            }
+        }
+    </ol>
+
+}

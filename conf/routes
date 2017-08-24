@@ -12,16 +12,13 @@ GET         /signout                                                            
 POST        /edit                                                                   controllers.AccountController.edit
 GET         /edit                                                                   controllers.AccountController.editForm
 
-
 # Admin
 POST        /createBoard                                                            controllers.BoardController.createBoard
 GET         /boards                                                                 controllers.BoardController.boards
 POST        /boards/edit                                                            controllers.BoardController.editBoard
 GET         /boards/:board_seq/edit                                                 controllers.BoardController.editBoardForm(board_seq:Long)
 GET         /boards/:board_seq/delete                                               controllers.BoardController.deleteBoard(board_seq:Long)
-
 GET         /boards/:board_seq/active                                               controllers.BoardController.setActiveBoard(board_seq:Long, is_active:Boolean)
-
 
 POST        /createPermission                                                       controllers.AdminController.createPermission
 GET         /permissions                                                            controllers.AdminController.permissions
@@ -32,31 +29,40 @@ POST        /members/:member_email/edit                                         
 GET         /members/:member_email/edit                                             controllers.AdminController.editMemberForm(member_email:String)
 
 # Post
-GET         /board/all                                                              controllers.PostController.listAll(page:Int = 1)
-GET         /board/all/page/:page                                                        controllers.PostController.listAll(page:Int)
-GET         /board/all/search                                                       controllers.PostController.searchAll(page:Int = 1, type_number:Int = 0, word:String="")
-GET         /board/all/search/page/:page/type/:type_number/word/:word               controllers.PostController.searchAll(page:Int, type_number:Int, word:String)
+#GET         /board/all                                                              controllers.PostController.listAll(page:Int = 1)
+#GET         /board/all/page/:page                                                   controllers.PostController.listAll(page:Int)
+GET         /board/all                                                              controllers.PostController.list(board_seq:Long = 0, page:Int = 1)
+GET         /board/all/page/:page                                                   controllers.PostController.list(board_seq:Long = 0, page:Int)
 GET         /board/:board_seq                                                       controllers.PostController.list(board_seq:Long, page:Int = 1)
 GET         /board/:board_seq/page/:page                                            controllers.PostController.list(board_seq:Long, page:Int)
+
+GET         /board/all/search                                                       controllers.PostController.searchAll(page:Int = 1, type_number:Int = 0, word:String="")
+GET         /board/all/search/page/:page/type/:type_number/word/:word               controllers.PostController.searchAll(page:Int, type_number:Int, word:String)
 GET         /board/:board_seq/search                                                controllers.PostController.search(board_seq:Long, page:Int = 1, type_number:Int = 0, word:String="")
 GET         /board/:board_seq/search/page/:page/type/:type_number/word/:word        controllers.PostController.search(board_seq:Long, page:Int, type_number:Int, word:String)
 
-GET         /board/all/write                                                        controllers.PostController.writePostForm(board_seq :Long = 0L)
+GET         /board/:board_seq/page/:page/post/:post_seq                             controllers.PostController.read(board_seq :Long, post_seq:Long, page:Int)
+
 POST        /board/:board_seq/write                                                 controllers.PostController.writePost(board_seq :Long)
 GET         /board/:board_seq/write                                                 controllers.PostController.writePostForm(board_seq :Long)
-GET         /board/:board_seq/page/:page/post/:post_seq                             controllers.PostController.showPost(board_seq :Long, post_seq:Long, page:Int)
-GET         /board/:board_seq/post/:post_seq/delete                                 controllers.PostController.deletePost(board_seq :Long, post_seq:Long)
 POST        /board/:board_seq/post/:post_seq/edit                                   controllers.PostController.editPost(board_seq :Long, post_seq:Long)
 GET         /board/:board_seq/post/:post_seq/edit                                   controllers.PostController.editPostForm(board_seq :Long, post_seq:Long)
-POST        /board/:board_seq/post/comment/write                                    controllers.PostController.writeComment(board_seq:Long)
-GET         /board/:board_seq/post/:post_seq/comment/:comment_seq/delete            controllers.PostController.deleteComment(board_seq:Long, post_seq:Long, comment_seq:Long)
 
-POST        /upload/image                                                           controllers.PostController.uploadImage
-POST        /upload/file                                                            controllers.PostController.uploadFile
-POST        /upload/file/delete                                                     controllers.PostController.deleteFile
+
+#######################################################################################################################
+
+# An example controller showing how to use dependency injection
+GET         /count                                                                  controllers.CountController.count
+# An example controller showing how to write asynchronous code
+GET         /message                                                                controllers.AsyncController.message
+
+# Map static resources from the /public folder to the /assets URL path
+GET         /assets/*file                                                           controllers.Assets.versioned(path="/public", file: Asset)
 
 #Test
-GET   /test/posts      controllers.Default.todo
+GET         /test/auth/admin                                                        controllers.TestController.test_auth_admin
+GET         /test/auth/member                                                       controllers.TestController.test_auth_member
+GET         /test/posts                                                             controllers.Default.todo
 GET         /test/option_param                                                      controllers.TestController.test_option_param(param:Option[String])
 GET         /test/default_param                                                     controllers.TestController.test_default_param(param:Int ?= 99)
 GET         /test/sendFile                                                          controllers.TestController.test_sendFile
@@ -65,7 +71,7 @@ GET         /test/configuration                                                 
 GET         /test/assets                                                            controllers.TestController.test_assets
 GET         /test/flash                                                             controllers.TestController.test_flash
 GET         /test/json                                                              controllers.TestController.test_json
-GET         /test/error                                                             controllers.TestController.test_error
+#GET         /test/error                                                             controllers.TestController.test_error
 GET         /test/param                                                             controllers.TestController.test_param(param:Int = 999999999)
 GET         /test/param/:param                                                      controllers.TestController.test_param(param:Int)
 GET         /test/set_authorized                                                    controllers.TestController.test_set_authorized
@@ -75,15 +81,6 @@ GET         /test/remove_cookie                                                 
 GET         /test/get_request                                                       controllers.TestController.test_get_request
 GET         /test/get_headers                                                       controllers.TestController.test_get_headers
 GET         /test/messages                                                          controllers.TestController.test_messages
-
-# An example controller showing how to use dependency injection
-GET         /count                                                                  controllers.CountController.count
-# An example controller showing how to write asynchronous code
-GET         /message                                                                controllers.AsyncController.message
-
-# Map static resources from the /public folder to the /assets URL path
-GET         /assets/*file                                                           controllers.Assets.versioned(path="/public", file: Asset)
-GET         /images/:hash                                                           controllers.AttachmentController.images(hash: String)
-GET         /file/:hash                                                             controllers.AttachmentController.file(hash:String)
-GET         /files/:post_seq                                                        controllers.AttachmentController.files(post_seq:Long)
-#GET         /images/:hash                               controllers.AttachmentController.versioned(path="/uploads/images", hash: Asset)
+GET         /test/messages2                                                         controllers.TestController.test_messages2
+GET         /test/form                                                              controllers.TestController.test_form
+POST        /test/form_test                                                         controllers.TestController.test_form_post

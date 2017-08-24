@@ -34,6 +34,7 @@ create table "boards"
 	read_permission SMALLINT not null,
 	write_permission SMALLINT not null,
 	author varchar(80) not null,
+	priority integer default 0 not null,
 	register_date timestamp default now() not null
 );
 create table "posts"

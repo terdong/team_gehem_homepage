@@ -2,6 +2,7 @@ package repositories
 
 import javax.inject.{Inject, Singleton}
 
+import com.teamgehem.model.BoardSearchInfo
 import models.{CommentsTable, Post}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.PostgresProfile.api._
@@ -15,34 +16,12 @@ import scala.concurrent.Future
   */
 @Singleton
 class PostsRepository @Inject()(
-    protected val dbConfigProvider: DatabaseConfigProvider)
-    extends HasDatabaseConfigProvider[JdbcProfile]
+                                 protected val dbConfigProvider: DatabaseConfigProvider)
+  extends HasDatabaseConfigProvider[JdbcProfile]
     with CommentsTable {
 
   implicit val get_post_result = GetResult(p =>
     Post(p.<<, p.<<, p.<<, p.<<, p.<<, p.<<, p.<<, p.<<, p.<<, p.<<, p.<<))
-
-  def getPostCount(board_seq: Long = 0) = {
-    val query =
-      if (board_seq == 0) posts.length
-      else posts.filter(_.board_seq === board_seq).length
-    db run query.result
-  }
-
-  def getPostSearchCount(board_seq: Long, type_number: Int, word: String) = {
-    val search_query = convertSearchType(type_number, word)
-    val q =
-      sql"""SELECT count(p.seq) FROM posts AS p WHERE EXISTS (SELECT * FROM boards AS b WHERE  b.seq = p.board_seq) AND #${search_query}"""
-        .as[Int]
-    db run q.head
-  }
-
-  def getPostSearchCountAll(type_number: Int, word: String) = {
-    val search_query = convertSearchType(type_number, word)
-    val q = sql"""SELECT count(p.seq) FROM posts AS p WHERE #${search_query}"""
-      .as[Int]
-    db run q.head
-  }
 
   val search_0 = "p.subject ILIKE '%%%s%%'" //제목
   val search_1 = "p.content ILIKE '%%%s%%'" //내용
@@ -54,84 +33,49 @@ class PostsRepository @Inject()(
   val search_format_list =
     Seq(search_0, search_1, search_2, search_3, search_4)
 
-  private def convertSearchType(type_number: Int, word: String) = {
-    val s = search_format_list(type_number)
-    type_number match {
-      case 2 => s.format(word, word);
-      case _ => s.format(word);
+  private def convertSearchType(implicit search_info : BoardSearchInfo) = {
+    val s = search_format_list(search_info.search_type)
+    search_info.search_type match {
+      case 2 => s.format(search_info.search_word, search_info.search_word);
+      case _ => s.format(search_info.search_word);
     }
   }
 
-  def getSearchAllCount(permission: Byte,
-                        type_number: Int,
-                        word: String,
-                        board_seq_option: Option[Long]) = {
-
-    val search_query = convertSearchType(type_number, word)
-    val action = board_seq_option
-      .map { board_seq =>
-        sql"""SELECT count(p.seq) FROM posts AS p WHERE EXISTS (SELECT * FROM boards AS b WHERE b.status = TRUE AND b.seq = board_seq AND b.list_permission <= $permission) AND #${search_query}"""
-          .as[Int]
-      }
-      .getOrElse {
-        sql"""SELECT count(p.seq) FROM posts AS p WHERE EXISTS (SELECT * FROM boards AS b WHERE b.status = TRUE AND b.list_permission <= $permission AND b.seq = p.board_seq) AND #${search_query}"""
-          .as[Int]
-      }
-
-    db run action.head
-
+  def getPostCount(board_seq: Long = 0) = {
+    val query =
+      if (board_seq == 0) posts.length
+      else posts.filter(_.board_seq === board_seq).length
+    db run query.result
   }
 
-  def getListAllCount(permission: Byte,
-                      type_option: Option[Int] = None,
-                      word_option: Option[String] = None) = {
+  def getSearchPostCount(board_seq: Long, search_info : BoardSearchInfo) = {
+    val search_query = convertSearchType(search_info)
+    val q =
+      sql"""SELECT count(p.seq) FROM posts AS p WHERE EXISTS (SELECT * FROM boards AS b WHERE  b.seq = p.board_seq) AND #${search_query}"""
+        .as[Int]
+    db run q.head
+  }
 
-    val action = type_option
-      .map { type_number =>
-        val word = word_option.getOrElse("")
-        val search_query = convertSearchType(type_number, word)
-        sql"""
-             SELECT count(p.seq) FROM posts AS p WHERE EXISTS (SELECT * FROM boards AS b WHERE b.status = TRUE AND b.list_permission <= $permission AND b.seq = p.board_seq) AND #${search_query}
-            """.as[Int]
-      }
-      .getOrElse {
-        (for {
-          b <- boards.filter(b =>
-            b.status === true && b.list_permission <= permission)
-        } yield posts.filter(_.board_seq === b.seq).length).result
-      }
-
+  def getSearchAllPostCount(permission: Byte,
+                            search_info : BoardSearchInfo) = {
+    val search_query = convertSearchType(search_info)
+    val action = sql"""SELECT count(p.seq) FROM posts AS p WHERE EXISTS (SELECT * FROM boards AS b WHERE b.status = TRUE AND b.list_permission <= $permission AND b.seq = p.board_seq) AND #${search_query}""".as[Int]
     db run action.head
   }
 
-  def listAll(page: Int,
-              page_length: Int,
-              permission: Byte,
-              type_option: Option[Int] = None,
-              word_option: Option[String] = None) = {
-    val q = type_option
-      .map { type_number =>
-        val word = word_option.getOrElse("")
-        val search_query = convertSearchType(type_number, word)
-        sql"""
-             SELECT p_result.*, m.name, c_result.comment_count FROM (SELECT p.* FROM posts AS p WHERE EXISTS (SELECT * FROM boards AS b WHERE b.status = TRUE AND b.list_permission <= $permission AND p.board_seq = b.seq) AND #${search_query}) AS p_result INNER JOIN members AS m ON p_result.author_seq = m.seq LEFT OUTER JOIN (SELECT c.post_seq, COUNT(c.post_seq) AS comment_count FROM comments AS c GROUP BY c.post_seq) AS c_result ON p_result.seq = c_result.post_seq ORDER BY p_result.seq DESC NULLS FIRST LIMIT ${page_length} OFFSET ${(page - 1) * page_length}
-          """
-          .as[(models.Post, String, Int)]
-      }
-      .getOrElse {
-        sql"""
-             SELECT p_result.*, m.name, c_result.comment_count FROM (SELECT p.* FROM posts AS p WHERE EXISTS (SELECT * FROM boards AS b WHERE b.status = TRUE AND b.list_permission <= $permission AND p.board_seq = b.seq)) AS p_result INNER JOIN members AS m ON p_result.author_seq = m.seq LEFT OUTER JOIN (SELECT c.post_seq, COUNT(c.post_seq) AS comment_count FROM comments AS c GROUP BY c.post_seq) AS c_result ON p_result.seq = c_result.post_seq ORDER BY p_result.seq DESC NULLS FIRST LIMIT ${page_length} OFFSET ${(page - 1) * page_length}
-          """.as[(models.Post, String, Int)]
-      }
-    db run q
+  def getAllPostCount(permission: Byte) = {
+    val action = (for {
+      b <- boards.filter(b =>
+        b.status === true && b.list_permission <= permission)
+    } yield posts.filter(_.board_seq === b.seq).length).result
+    db run action.head
   }
 
-  def searchAll(type_number: Int,
-                word: String,
-                page: Int,
+  def searchAll(page: Int,
                 page_length: Int,
-                permission: Byte) = {
-    val search_query = convertSearchType(type_number, word)
+                permission: Byte,
+                search_info: BoardSearchInfo) = {
+    val search_query = convertSearchType(search_info)
     val q =
       sql"""SELECT p_result.*, m.name, c_result.comment_count FROM (SELECT p.* FROM posts AS p WHERE EXISTS (SELECT * FROM boards AS b WHERE b.list_permission <= ${permission} AND p.board_seq = b.seq) AND #${search_query}) AS p_result INNER JOIN members AS m ON p_result.author_seq = m.seq LEFT OUTER JOIN (SELECT c.post_seq, COUNT(c.post_seq) AS comment_count FROM comments AS c GROUP BY c.post_seq) AS c_result ON p_result.seq = c_result.post_seq ORDER BY p_result.seq DESC NULLS FIRST LIMIT ${page_length} OFFSET ${(page - 1) * page_length}"""
         .as[(models.Post, String, Int)]
@@ -142,9 +86,8 @@ class PostsRepository @Inject()(
   def search(board_seq: Long,
              page: Int,
              page_length: Int,
-             type_number: Int,
-             word: String) = {
-    val search_query = convertSearchType(type_number, word)
+             search_info: BoardSearchInfo) = {
+    val search_query = convertSearchType(search_info)
     val q =
       sql"""
             SELECT p_result.*, m.name, c_result.comment_count FROM (SELECT p.* FROM posts AS p WHERE p.board_seq = ${board_seq} AND #${search_query}) AS p_result INNER JOIN members AS m ON p_result.author_seq = m.seq LEFT OUTER JOIN (SELECT c.post_seq, COUNT(c.post_seq) AS comment_count FROM comments AS c GROUP BY c.post_seq) AS c_result ON p_result.seq = c_result.post_seq ORDER BY p_result.seq DESC NULLS FIRST LIMIT ${page_length} OFFSET ${(page - 1) * page_length}
@@ -207,12 +150,12 @@ class PostsRepository @Inject()(
   def insertQueryBase =
     posts map (p =>
       (p.board_seq,
-       p.thread,
-       p.depth,
-       p.author_seq,
-       p.subject,
-       p.content,
-       p.author_ip))
+        p.thread,
+        p.depth,
+        p.author_seq,
+        p.subject,
+        p.content,
+        p.author_ip))
 
   def insert(post: Post): Future[Unit] =
     db run (posts += post) map (_ => ())
@@ -223,12 +166,12 @@ class PostsRepository @Inject()(
     val action = posts.map(_.thread).max.result.flatMap {
       (thread: Option[Long]) =>
         insertQueryBase.returning(posts) += (form._1,
-        thread.getOrElse[Long](0) + 100,
-        0,
-        author_seq,
-        form._2,
-        Some(form._3),
-        ip)
+          thread.getOrElse[Long](0) + 100,
+          0,
+          author_seq,
+          form._2,
+          Some(form._3),
+          ip)
     }
 
     db run action
@@ -241,8 +184,8 @@ class PostsRepository @Inject()(
       .map(p => (p.subject, p.content, p.update_date))
       .update(
         (form._2,
-         Some(form._3),
-         new java.sql.Timestamp(System.currentTimeMillis())))
+          Some(form._3),
+          new java.sql.Timestamp(System.currentTimeMillis())))
 
     db run action
   }
@@ -256,12 +199,12 @@ class PostsRepository @Inject()(
     val action = posts.map(_.thread).max.result.flatMap {
       (thread: Option[Long]) =>
         insertQueryBase += (6,
-        thread.getOrElse[Long](0) + 100,
-        0,
-        3,
-        "subject",
-        Some("content"),
-        "127.0.0.1")
+          thread.getOrElse[Long](0) + 100,
+          0,
+          3,
+          "subject",
+          Some("content"),
+          "127.0.0.1")
     }
     db run (action)
   }

@@ -15,7 +15,9 @@ tinymce.init({
     ],
 
     toolbar: 'undo redo | insert | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | code',
-    content_css: ['//www.tinymce.com/css/codepen.min.css', '/assets/stylesheets/tinymce_body.css'],
+    content_css: [
+        '//fonts.googleapis.com/css?family=Lato:300,300i,400,400i',
+        '//www.tinymce.com/css/codepen.min.css'],
 
     image_title: true,
     // enable automatic uploads of images represented by blob or data URIs

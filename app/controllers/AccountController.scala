@@ -2,41 +2,32 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 
-import com.teamgehem.authentication.Authenticated
-import controllers.traits.ProvidesHeader
-import play.api.cache.CacheApi
+import com.teamgehem.security.AuthenticatedActionBuilder
 import play.api.data.Form
-import play.api.data.Forms.{nonEmptyText, _}
-import play.api.i18n.{I18nSupport, Messages, MessagesApi}
-import play.api.mvc.{Action, Controller}
+import play.api.data.Forms._
+import play.api.i18n._
+import play.api.mvc.{MessagesAbstractController, MessagesControllerComponents}
 import repositories.{MembersRepository, PermissionsRepository}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Random, Success}
 
-/**
-  * Created by terdo on 2017-04-12 012.
-  */
-case class SignIn(email: String, checkbox: Boolean)
-
-/**
-  * @param cache
-  * @param members_repo
-  * @param messagesApi
-  */
 @Singleton
-class AccountController @Inject()(implicit cache: CacheApi,
+class AccountController @Inject()(auth: AuthenticatedActionBuilder,
+                                  mcc: MessagesControllerComponents,
                                   members_repo: MembersRepository,
                                   permission_repo: PermissionsRepository,
-                                  val messagesApi: MessagesApi)
-    extends Controller
-    with ProvidesHeader
-    with I18nSupport {
+                                  rand: Random)
+    extends MessagesAbstractController(mcc) {
+  implicit val messagesProvider: MessagesProvider = {
+    MessagesImpl(mcc.langs.availables.head, messagesApi)
+  }
 
-  def edit = Authenticated.async { implicit request =>
-    val email = member_email.get
+  def edit = auth.authrized_member { implicit request =>
+    Ok("Hello edit")
+  /*    val email = member_email.get
     val form = member_form.bindFromRequest
     form.fold(
       has_errors =>
@@ -52,10 +43,12 @@ class AccountController @Inject()(implicit cache: CacheApi,
           Redirect(routes.HomeController.result())
             .flashing("success" -> Messages("account.edit.success")))
       }
-    )
+    )*/
   }
-  def editForm = Authenticated.async { implicit request =>
-    for {
+
+  def editForm = auth.authrized_member { implicit request =>
+    Ok("Hello editForm")
+  /*for {
       member <- members_repo.findByEmail(member_email.get)
       permission_content <- permission_repo.getContentByCode(member_permission)
     } yield {
@@ -64,7 +57,7 @@ class AccountController @Inject()(implicit cache: CacheApi,
       Ok(
         views.html.account
           .edit(member_form.fill(form), member, permission_content))
-    }
+    }*/
   }
 
   def createSignUpForm = Action { implicit request =>
@@ -73,6 +66,7 @@ class AccountController @Inject()(implicit cache: CacheApi,
 
   /**
     * 회원가입
+    *
     * @return
     */
   def signup = Action.async { implicit request =>
@@ -81,7 +75,6 @@ class AccountController @Inject()(implicit cache: CacheApi,
       hasErrors =>
         Future.successful(BadRequest(views.html.account.signup(hasErrors))),
       (form: (String, String, String)) => {
-        //Future.successful(Ok("test"))
         members_repo.insert(form) map (_ match {
           case Success(member) =>
             Ok(views.html.account.signup_complete(member.email, signin_form))
@@ -97,6 +90,7 @@ class AccountController @Inject()(implicit cache: CacheApi,
 
   /**
     * 회원인증
+    *
     * @return
     */
   def signin = Action.async { implicit request =>
@@ -108,21 +102,16 @@ class AccountController @Inject()(implicit cache: CacheApi,
           Redirect(
             routes.HomeController
               .index())
-            .withSession(
-              Authenticated.seq -> member.seq.toString,
-              Authenticated.email -> member.email,
-              Authenticated.permission -> member.permission.toString)
+            .withSession("seq" -> member.seq.toString,
+                         "email" -> member.email,
+                         "permission" -> member.permission.toString)
         }
       }
     )
   }
 
-  def signout = Authenticated { implicit request =>
+  def signout = Action { implicit request =>
     Redirect(routes.HomeController.index()).withNewSession
-  }
-
-  private def emailExists(email: String): Boolean = {
-    Await.result(members_repo.existsEmail(email), Duration.Inf)
   }
 
   private val signin_form: Form[SignIn] = Form {
@@ -142,10 +131,9 @@ class AccountController @Inject()(implicit cache: CacheApi,
     )
   }
 
-  private val member_form = Form(
-    tuple(
-      "name" -> nonEmptyText(2, 30),
-      "nick" -> nonEmptyText(2, 12)
-    )
-  )
+  private def emailExists(email: String): Boolean = {
+    Await.result(members_repo.existsEmail(email), Duration.Inf)
+  }
 }
+
+case class SignIn(email: String, checkbox: Boolean)

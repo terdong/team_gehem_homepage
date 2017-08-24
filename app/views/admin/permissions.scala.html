@@ -1,4 +1,4 @@
-@(permissions:Seq[Permission], form:Form[Permission])(implicit messages: Messages,header: controllers.traits.Header)
+@(permissions:Seq[Permission], form:Form[Permission])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 @implicitFieldConstructor = @{ b3.vertical.fieldConstructor }
 @script = {
@@ -38,7 +38,7 @@
     </div>
 
 
-    @b3.form(routes.AdminController.createPermission) {
+    @b3.formCSRF(routes.AdminController.createPermission) {
         <div class="row">
             <div class="col-md-6">
             @b3.text(form("permission_code"), '_label -> "Title")

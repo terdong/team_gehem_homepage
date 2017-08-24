@@ -15,8 +15,8 @@ import scala.concurrent.Future
   */
 @Singleton
 class BoardsRepository @Inject()(
-    protected val dbConfigProvider: DatabaseConfigProvider)
-    extends HasDatabaseConfigProvider[JdbcProfile]
+                                  protected val dbConfigProvider: DatabaseConfigProvider)
+  extends HasDatabaseConfigProvider[JdbcProfile]
     with BoardsTable {
 
   def all: Future[Seq[Board]] =
@@ -24,13 +24,13 @@ class BoardsRepository @Inject()(
 
   def allSeqAndNameAndListPermission = {
     val query = for {
-      board <- boards.filter(_.status === true).sortBy(_.seq.nullsFirst)
+      board <- boards.filter(_.status === true).sortBy(_.priority.desc.nullsFirst)
     } yield (board.seq, board.name, board.list_permission)
     db run (query.result)
   }
 
   def getNameBySeq(board_seq: Long) = {
-    db run boards.filter(_.seq === board_seq).map(_.name).result.headOption
+    db run boards.filter(_.seq === board_seq).map(_.name).result.head
   }
 
   def getBoard(board_seq: Long) = {
@@ -51,7 +51,7 @@ class BoardsRepository @Inject()(
 
   def existsName(board_seq: Long, name: String): Future[Boolean] = {
     val query =
-      boards.filter(b => b.name === name && b.seq != board_seq).exists.result
+      boards.filter(b => b.name === name && !(b.seq === board_seq)).exists.result
     val sql = query.statements.head
     db run query
   }
@@ -64,6 +64,7 @@ class BoardsRepository @Inject()(
       .result
     db run query
   }
+
   def isReadValidBoard(board_seq: Long, permission: Byte) = {
     val query = boards
       .filter(b =>
@@ -72,6 +73,7 @@ class BoardsRepository @Inject()(
       .result
     db run query
   }
+
   def isWriteValidBoard(board_seq: Long, permission: Byte): Future[Boolean] = {
     val query = boards
       .filter(b =>
@@ -85,53 +87,57 @@ class BoardsRepository @Inject()(
     db run (boards += board) map (_ => ())
 
   def insert(form_data: (String,
-                         String,
-                         Boolean,
-                         Boolean,
-                         Boolean,
-                         Boolean,
-                         Byte,
-                         Byte,
-                         Byte),
+    String,
+    Boolean,
+    Boolean,
+    Boolean,
+    Boolean,
+    Byte,
+    Byte,
+    Byte,
+    Int),
              name: String): Future[Int] = {
     val action = boards map (b =>
       (b.name,
-       b.description,
-       b.status,
-       b.is_reply,
-       b.is_comment,
-       b.is_attachment,
-       b.list_permission,
-       b.read_permission,
-       b.write_permission,
-       b.author)) += (form_data._1,
-    Some(form_data._2),
-    form_data._3,
-    form_data._4,
-    form_data._5,
-    form_data._6,
-    form_data._7,
-    form_data._8,
-    form_data._9,
-    name)
+        b.description,
+        b.status,
+        b.is_reply,
+        b.is_comment,
+        b.is_attachment,
+        b.list_permission,
+        b.read_permission,
+        b.write_permission,
+        b.priority,
+        b.author)) += (form_data._1,
+      Some(form_data._2),
+      form_data._3,
+      form_data._4,
+      form_data._5,
+      form_data._6,
+      form_data._7,
+      form_data._8,
+      form_data._9,
+      form_data._10,
+      name)
     db run action
   }
 
-  def update(form: (Long, String, String, Boolean, Byte, Byte, Byte),
+  def update(form: (Long, String, String, Boolean, Byte, Byte, Byte, Int),
              name: String) = {
     val action = boards
       .filter(_.seq === form._1)
       .map(
         b =>
           (b.name,
-           b.description,
-           b.status,
-           b.list_permission,
-           b.read_permission,
-           b.write_permission,
-           b.author))
+            b.description,
+            b.status,
+            b.list_permission,
+            b.read_permission,
+            b.write_permission,
+            b.priority,
+            b.author))
       .update(
-        (form._2, Some(form._3), form._4, form._5, form._6, form._7, name))
+        (form._2, Some(form._3), form._4, form._5, form._6, form._7, form._8, name))
 
     db run action
   }
@@ -151,18 +157,18 @@ class BoardsRepository @Inject()(
   def insertSample: Future[Int] = {
     val action = boards map (b =>
       (b.name,
-       b.description,
-       b.status,
-       b.list_permission,
-       b.read_permission,
-       b.write_permission,
-       b.author)) += ("noti",
-    Some("notification board"),
-    true,
-    99,
-    99,
-    99,
-    "terdong")
+        b.description,
+        b.status,
+        b.list_permission,
+        b.read_permission,
+        b.write_permission,
+        b.author)) += ("noti",
+      Some("notification board"),
+      true,
+      99,
+      99,
+      99,
+      "terdong")
     db run action
   }
 

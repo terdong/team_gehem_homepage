@@ -1,51 +1,35 @@
-import sbt.Keys.libraryDependencies
-
-name := "team_gehem"
+name := "team_gehem_homepage_v2"
 
 version := "1.0"
 
-lazy val root = (project in file(".")).enablePlugins(PlayScala)
+lazy val `team_gehem_homepage_v2` =
+  (project in file(".")).enablePlugins(PlayScala)
 
-scalaVersion := "2.11.9"
+resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"
 
-scalacOptions ++= Seq(
-  "-feature",
-  "-language:postfixOps"
-)
+resolvers += "Akka Snapshot Repository" at "http://repo.akka.io/snapshots/"
 
-libraryDependencies ++= Seq(
-  cache,
-  ws,
-  "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0" % Test,
-  evolutions
-)
+scalaVersion := "2.12.2"
 
-libraryDependencies += "org.scala-lang.modules" %% "scala-async" % "0.9.6"
+libraryDependencies ++= Seq(ehcache, ws, specs2 % Test, guice, evolutions)
 
-// slick
-libraryDependencies ++= Seq(
-  "com.typesafe.play" %% "play-slick" % "2.1.0",
-  "com.typesafe.play" %% "play-slick-evolutions" % "2.1.0",
-  "org.postgresql" % "postgresql" % "42.0.0"
-)
+unmanagedResourceDirectories in Test <+= baseDirectory(
+  _ / "target/web/public/test")
 
 resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
 //bootstrap
 libraryDependencies ++= Seq(
-  "com.adrianhurt" %% "play-bootstrap" % "1.1.1-P25-B3-SNAPSHOT",
+  "com.adrianhurt" %% "play-bootstrap" % "1.2-P26-B3" exclude("org.webjars", "jquery"),
   "org.webjars" % "bootstrap" % "3.3.7",
-  "org.webjars" % "jquery" % "3.2.0",
+  "org.webjars" % "jquery" % "3.2.1",
   "org.webjars" % "font-awesome" % "4.7.0",
   "org.webjars" % "bootstrap-datepicker" % "1.6.4"
 )
 
-//angularJS
-//libraryDependencies ++= Seq(
-//  "org.webjars" % "angularjs" % "1.6.4"
-//)
-
-// google'sHTML Compressor
-libraryDependencies += "com.mohiva" %% "play-html-compressor" % "0.6.3"
-
-libraryDependencies += "com.google.api-client" % "google-api-client" % "1.22.0"
+// slick
+libraryDependencies ++= Seq(
+  "com.typesafe.play" %% "play-slick" % "3.0.0",
+  "com.typesafe.play" %% "play-slick-evolutions" % "3.0.0",
+  "org.postgresql" % "postgresql" % "42.1.3"
+)

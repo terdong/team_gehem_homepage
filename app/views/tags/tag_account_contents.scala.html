@@ -1,11 +1,8 @@
-@(permission: Byte = 2)(content: Html)(none:Html = Html(""))(implicit header: controllers.traits.Header)
-
-@defining(header.request_header.session.get("permissions")){ p =>
+@(permission: Byte = 2)(content: Html)(none:Html = Html(""))(implicit request: play.api.mvc.RequestHeader)
+@defining(request.session.get("permission")){ p =>
     @if(p.isDefined && p.get.toByte >= permission) {
         @content
     }else {
         @none
     }
 }
-
-

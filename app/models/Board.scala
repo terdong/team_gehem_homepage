@@ -20,6 +20,7 @@ case class Board(seq: Long,
                  read_permission: Byte,
                  write_permission: Byte,
                  author: String,
+                 priority: Int,
                  register_date: Timestamp = null)
 
 trait BoardsTable {
@@ -36,18 +37,21 @@ trait BoardsTable {
 
     /**
       * 답글 가능 여부
+      *
       * @return
       */
     def is_reply = column[Boolean]("is_reply")
 
     /**
       * 댓글 가능 여부
+      *
       * @return
       */
     def is_comment = column[Boolean]("is_comment")
 
     /**
       * 파일 첨부 가능 여부
+      *
       * @return
       */
     def is_attachment = column[Boolean]("is_attachment")
@@ -63,22 +67,25 @@ trait BoardsTable {
 
     def author = column[String]("author", O.Length(80))
 
+    def priority = column[Int]("priority", O.Default(0))
+
     def register_date =
       column[Timestamp]("register_date", O.SqlType("timestamp default now()"))
 
     def * =
       (seq,
-       name,
-       description,
-       status,
-       is_reply,
-       is_comment,
-       is_attachment,
-       list_permission,
-       read_permission,
-       write_permission,
-       author,
-       register_date) <> (Board.tupled, Board.unapply _)
+        name,
+        description,
+        status,
+        is_reply,
+        is_comment,
+        is_attachment,
+        list_permission,
+        read_permission,
+        write_permission,
+        author,
+        priority,
+        register_date) <> (Board.tupled, Board.unapply _)
   }
 
 }
