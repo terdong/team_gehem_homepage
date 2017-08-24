@@ -1,0 +1,99 @@
+@import com.teamgehem.model.BoardInfo
+@import com.teamgehem.model.MemberInfo
+@import b3.vertical.fieldConstructor
+@(comment_form: Form[_], comments: Seq[(Comment, String, Option[String])])(implicit post:Post, is_reply:Boolean,  request: MessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list: Option[Seq[BoardInfo]], member_info_option:Option[MemberInfo])
+
+<ul class="list-group">
+    @if(comments.length > 0) {
+        <li class="list-group-item">
+        @for(c <- comments) {
+            @defining(c._1) { comment =>
+                <div class="row">
+                    <div class="col-sm-1">
+                        <div class="thumbnail">
+                            <img class="img-responsive user-photo" src="https://ssl.gstatic.com/accounts/ui/avatar_2x.png">
+                        </div><!-- /thumbnail -->
+                    </div><!-- /col-sm-1 -->
+
+                    <div class="col-sm-11">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <strong>
+                                    @defining(comment.reply_comment_seq) { seq =>
+                                        @if(seq.isDefined) {
+                                            <small>@{c._3.getOrElse("삭제된 댓글")}</small> >>>
+                                        }
+                                    } @c._2
+                                </strong> <span class="text-muted">
+                                commented @tags.tag_cleanly_date(comment.write_date)</span>
+                                @member_info_option.map { member_info =>
+                                    @if(member_info.seq == comment.author_seq) {
+                                        @defining(s"remove_reply_modal_${comment.seq}") { modal_name =>
+                                            <button type="button" title = "delete" data-toggle="modal" data-target="#@modal_name" class="btn btn-warning btn-xs" ><span class="glyphicon glyphicon-remove"></span></button>
+                                        @tags.tag_simple_modal(modal_name,Messages("post.delete.title"), routes.PostController.deleteComment(post.board_seq, post.seq, comment.seq)){
+                                            @Messages("post.delete.message")
+                                        }
+                                        }
+                                    }
+                                }
+                            </div>
+                            <div class="panel-body">
+                                @Html(comment.content)
+                                @if(is_reply) {
+                                    @defining(s"collapse_${comment.seq}") { collapse =>
+                                        <button title="reply"
+                                        class="btn btn-link btn-xs"
+                                        type="button"
+                                        data-toggle="collapse"
+                                        data-target=@{
+                                            s"#${collapse}"
+                                        }
+                                        aria-expanded="false"
+                                        aria-controls=@collapse>
+                                            <i class="fa fa-reply"></i>
+                                            reply
+                                        </button>
+                                        <div class="collapse" id=@collapse>
+                                            <div class="well">
+                                                <div class="row" style="padding: 0px 15px;">
+                                                @b3.formCSRF(routes.PostController.writeComment(post.board_seq)) {
+                                                    <div class="form-group" id="t_field">
+                                                        <textarea id="content" maxlength="4000" required="true" placeholder="@Messages("comment.placeholder")" class="form-control"></textarea>
+                                                    </div>
+                                                    @b3.hidden("post_seq", post.seq)
+                                                    @b3.hidden("reply_comment_seq", comment.seq)
+                                                    @b3.hidden("content", "")
+                                                    @b3.buttonType("submit", 'class -> "btn btn-primary btn-sm pull-right") {
+                                                        <i class="fa fa-check"></i> Write }
+                                                }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                                <!-- /panel-body -->
+                        </div><!-- /panel panel-default -->
+                    </div><!-- /col-sm-5 -->
+                </div> <!-- /row -->
+            }
+        }
+        </li>
+    }
+    @if(is_reply) {
+        <li class="list-group-item">
+            <div class="row" style="padding: 0px 15px;">
+
+            @b3.formCSRF(routes.PostController.writeComment(post.board_seq)) {
+                <div class="form-group" id="t_field">
+                    <textarea id="content" maxlength="4000" required="true" placeholder="@Messages("comment.placeholder")" class="form-control"></textarea>
+                </div>
+                @b3.hidden("post_seq", post.seq)
+                @b3.hidden("content", "")
+                @b3.buttonType("submit", 'class -> "btn btn-primary btn-sm pull-right") {
+                    <i class="fa fa-check"></i> Write }
+            }
+            </div>
+        </li>
+    }
+</ul>

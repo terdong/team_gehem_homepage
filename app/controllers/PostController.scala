@@ -2,13 +2,13 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 
-import com.teamgehem.model.{BoardInfo, BoardPaginationInfo, BoardSearchInfo}
+import com.teamgehem.model.{BoardInfo, BoardPaginationInfo, BoardSearchInfo, MemberInfo}
 import com.teamgehem.security.AuthenticatedActionBuilder
 import models.{Member, Post}
 import play.api.Configuration
 import play.api.cache.SyncCacheApi
 import play.api.data.Form
-import play.api.data.Forms._
+import play.api.data.Forms.{seq, _}
 import play.api.i18n.Messages
 import play.api.mvc._
 import repositories._
@@ -16,6 +16,8 @@ import repositories._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
+import scala.reflect.io.Path
+import scala.util.Try
 
 /**
   * Created by DongHee Kim on 2017-08-12 012.
@@ -23,7 +25,7 @@ import scala.concurrent.{Await, Future}
 
 @Singleton
 class PostController @Inject()(cache: SyncCacheApi,
-                                config: Configuration,
+                               config: Configuration,
                                auth: AuthenticatedActionBuilder,
                                cc: MessagesControllerComponents,
                                members_repo: MembersRepository,
@@ -34,6 +36,7 @@ class PostController @Inject()(cache: SyncCacheApi,
 //cache: AsyncCacheApi)
   extends MessagesAbstractController(cc) {
 
+  lazy val attachment_path = config.get[String]("uploads.path")
   lazy val page_length = config.get[Int]("post.pageLength")
   lazy val temp_dir_path: String = System.getProperty("java.io.tmpdir")
 
@@ -41,7 +44,19 @@ class PostController @Inject()(cache: SyncCacheApi,
 
   def getPermission(implicit request: MessagesRequest[AnyContent]) = request.session.get("permission").getOrElse("0").toByte
 
-  def getSeq(implicit request: MessagesRequest[AnyContent]) = request.session.get("seq").getOrElse("0").toLong
+  def getSeq(implicit request: MessagesRequest[AnyContent]) = request.session.get("seq")
+
+  def getEmail(implicit request: MessagesRequest[AnyContent]) = request.session.get("email")
+
+  implicit def getMemberInfo(implicit request: MessagesRequest[AnyContent]) = {
+    for {
+      email <- getEmail
+      permission <- request.session.get("permission")
+      seq <- getSeq
+    } yield {
+      MemberInfo(email, permission.toByte, seq.toLong)
+    }
+  }
 
   def list(board_seq: Long, page: Int) = Action.async { implicit request =>
     val permission = getPermission
@@ -126,7 +141,7 @@ class PostController @Inject()(cache: SyncCacheApi,
         attachments <- attachments_repo.getAttachments(post_seq)
       } yield {
         posts_repo.updateHitCount(tuple._1)
-        val is_own = getSeq == tuple._2.seq
+        val is_own = getSeq.map(_ == tuple._2.seq).getOrElse(false)
         Ok(
           views.html.post.read(tuple, comment_form, comments, attachments, is_own)(
             board_name,
@@ -161,70 +176,18 @@ class PostController @Inject()(cache: SyncCacheApi,
         }
       },
       form => {
-        posts_repo
-          .insert(form, getSeq, request.remoteAddress) map {
-          post =>
-            /*form._5.foreach {
-              json_str =>
-                Json
-                  .fromJson[UploadedFileInfo](Json.parse(json_str))
-                  .map {
-                    (file_info: UploadedFileInfo) =>
-                      val path =
-                        Paths.get(s"${temp_dir_path}/${file_info.hash}")
-                      if (Files.exists(path)) {
-                        val sub_path = java.time.LocalDate.now.toString
-
-                        val new_directory_path =
-                          Path(s"$attachment_path/${sub_path}")
-                        if (!new_directory_path.exists) {
-                          new_directory_path.createDirectory()
-                        }
-
-                        val new_file_path = Paths.get(
-                          s"${new_directory_path.path}/${file_info.hash}")
-                        Files.move(path, new_file_path)
-
-                        attachments_repo.insertAttachment(
-                          file_info.hash,
-                          file_info.file_name,
-                          sub_path,
-                          file_info.content_type,
-                          file_info.size,
-                          post.seq)
-                      }
-                  }
-            }
-            attachments_repo.updateAttachment2(form._4, post.seq).map { _ =>
-              Redirect(routes.PostController
-                .showPost(post.board_seq, post.seq, 1))
-            }
-            */
-
+        getSeq.map { seq =>
+          posts_repo.insert(form, seq.toLong, request.remoteAddress).map { post =>
             Redirect(routes.PostController.read(post.board_seq, post.seq, 1))
-        }
+          }
+        }.getOrElse(Future.successful(InternalServerError))
       }
     )
   }
 
   def editPostForm(board_seq: Long, post_seq: Long) = auth.async { implicit request =>
-      for {
-        r <- posts_repo.isOwnPost(post_seq, request.session.get("seq").getOrElse("0").toLong) if r == true
-        tuple: (Post, Member) <- posts_repo.getPost(board_seq, post_seq)
-      } yield {
-        val post = tuple._1
-        val form_data =
-          (board_seq, post.subject, post.content.getOrElse(""), Nil, Nil)
-        Ok(
-          views.html.post.edit(post_form.fill(form_data), board_seq, post_seq))
-      }
-    }
-
-
-
-  /*  (auth.async{implicit request =>  } andThen board_transformer).async { (request: BoardTransformerRequest[AnyContent]) =>
     for {
-      r <- posts_repo.isOwnPost(post_seq, request.member.seq) if r == true
+      r <- posts_repo.isOwnPost(post_seq, request.session.get("seq").getOrElse("0").toLong) if r == true
       tuple: (Post, Member) <- posts_repo.getPost(board_seq, post_seq)
     } yield {
       val post = tuple._1
@@ -233,7 +196,7 @@ class PostController @Inject()(cache: SyncCacheApi,
       Ok(
         views.html.post.edit(post_form.fill(form_data), board_seq, post_seq))
     }
-  }*/
+  }
 
   def editPost(board_seq: Long, post_seq: Long) = auth.async { implicit request =>
     val form = post_form.bindFromRequest
@@ -256,6 +219,90 @@ class PostController @Inject()(cache: SyncCacheApi,
       }
     )
   }
+
+  def deletePost(board_seq: Long, post_seq: Long) = auth.async { implicit request =>
+    attachments_repo.getAttachments(post_seq).map { attachments =>
+      for (attachment <- attachments) {
+        val path =
+          Path(s"${attachment_path}/${attachment.sub_path}/${attachment.hash}")
+        Try(path.delete)
+      }
+      attachments_repo.deleteAttachements(post_seq)
+    }
+    posts_repo.delete(post_seq).map { _ =>
+      Redirect(routes.PostController.list(board_seq, 1))
+    }
+  }
+
+  def writeComment(board_seq: Long) = auth.async { implicit request =>
+    val form = comment_form.bindFromRequest
+    form.fold(
+      hasErrors => {
+        val post_seq = hasErrors.get._1
+        val page =
+          request.cookies
+            .get("page")
+            .getOrElse(Cookie("page", "1"))
+            .value
+            .toInt
+        for {
+          r <- boards_repo.isReadValidBoard(board_seq, getPermission)
+          if r == true
+          tuple <- posts_repo.getPost(board_seq, post_seq)
+          comments <- comments_repo.allWithMemberName(post_seq)
+          name_op <- boards_repo.getNameBySeq(board_seq)
+          posts <- posts_repo.listByBoard(board_seq, page, page_length)
+          count <- posts_repo.getPostCount(board_seq)
+          attachments <- attachments_repo.getAttachments(post_seq)
+        } yield {
+          posts_repo.updateHitCount(tuple._1)
+          val is_own = getSeq.map {
+            _ == tuple._2.seq
+          }.getOrElse(false)
+
+          BadRequest(
+            views.html.post
+              .read(tuple, hasErrors, comments, attachments, is_own)(
+                name_op,
+                posts,
+                page,
+                page_length,
+                count,
+                board_seq))
+        }
+      },
+      form => {
+        getSeq.map { seq =>
+          comments_repo
+            .insert(form, seq.toLong, request.remoteAddress)
+            .map { post_seq =>
+              val page =
+                request.cookies
+                  .get("page")
+                  .getOrElse(Cookie("page", "1"))
+                  .value
+                  .toInt
+              Redirect(routes.PostController.read(board_seq, post_seq, page))
+            }
+        }.getOrElse(Future.successful(InternalServerError))
+      }
+    )
+  }
+
+  def deleteComment(board_seq: Long, post_seq: Long, comment_seq: Long) = auth.async { implicit request =>
+    val page = request.cookies
+      .get("page")
+      .getOrElse(Cookie("page", "1"))
+      .value
+      .toInt
+
+    getSeq.map { seq =>
+      comments_repo.delete(comment_seq, seq.toLong).map { _ =>
+        Redirect(routes.PostController.read(board_seq, post_seq, page))
+      }
+    }.getOrElse(Future.successful(InternalServerError))
+  }
+
 
   private def isWriteValidBoard(board_seq: Long, permission: Byte)(
     implicit request: Request[AnyContent]): Boolean = {

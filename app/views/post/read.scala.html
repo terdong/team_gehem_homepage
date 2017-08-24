@@ -1,60 +1,61 @@
 @import com.teamgehem.model.BoardInfo
-@(tuple: (Post, Member), comment_form: Form[_], comments: Seq[(Comment, String, Option[String])], attachments: Seq[Attachment], is_own: Boolean = false)(board_name: String, posts: Seq[(Post, String, Int)], page: Int, page_length: Int, count: Int, board_seq: Long = 0)(implicit request: MessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list:Option[Seq[BoardInfo]])
-@import b3.vertical.fieldConstructor
+@import com.teamgehem.model.MemberInfo
+@(tuple: (Post, Member), comment_form: Form[_], comments: Seq[(Comment, String, Option[String])], attachments: Seq[Attachment], is_own: Boolean = false)(board_name: String, posts: Seq[(Post, String, Int)], page: Int, page_length: Int, count: Int, board_seq: Long = 0)(implicit request: MessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list: Option[Seq[BoardInfo]], member_info_option: Option[MemberInfo])
 
 @scripts = {
     <script src="@routes.Assets.versioned("javascripts/click_event.js")" type="text/javascript"></script>
-    @*<script src="@routes.Assets.versioned("javascripts/comment_auto_collapse.js")" type="text/javascript"></script>*@
+    <script src="@routes.Assets.versioned("javascripts/comment_auto_collapse.js")" type="text/javascript"></script>
     <script src="@routes.Assets.versioned("javascripts/change_new_line_in_textarea.js")" type="text/javascript"></script>
     <script src="@routes.Assets.versioned("javascripts/filesize.min.js")" type="text/javascript"></script>
 }
 @styles = {
-    @*<link rel="stylesheet" media="screen" href="@routes.Assets.versioned("../../../public/stylesheets/comment.css")">*@
+    <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/comment.css")">
     <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/read.css")">
 }
 
 @main("read", "board", scripts, styles) {
     @tags.tag_board_list()
 
-    @defining(request.session.get("email").isDefined) { is_reply =>
-        @defining(tuple._1) { post =>
+    @defining(request.session.get("email").isDefined) { implicit is_reply =>
+        @defining(tuple._1) { implicit post =>
             @defining(tuple._2) { member =>
                 <div class="panel panel-default">
+
                     <div class="panel-heading">
                         <div class="row">
+                            @*제목*@
                             <div class="col-md-11">
-                                @{
-                                    post.subject
-                                }
+                                @post.subject
                             </div>
 
+                            @*게시글 액션 이벤트*@
                             @if(is_own) {
                                 <div class="col-md-1 text-right" style="padding: 0px 10px;">
                                     <a title="edit" href="@routes.PostController.editPost(post.board_seq, post.seq)" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-pencil"></span></a>
                                     <button type="button" title = "delete" data-toggle="modal" data-target="#remove_post_modal" class="btn btn-default btn-xs" ><span class="glyphicon glyphicon-remove"></span></button>
 
                                 </div>
-                                @*
-                                @tags.tag_simple_modal("remove_post_modal", "게시물 삭제", routes.PostController.deletePost(post.board_seq, post.seq)) {
-                                정말 이 게시물을 삭제 하시겠습니까?
+                                @tags.tag_simple_modal("remove_post_modal", Messages("post.delete.title"), routes.PostController.deletePost(post.board_seq, post.seq)) {
+                                    @Messages("post.delete.message")
                                 }
-                                *@
                             }
                         </div>
                     </div>
+
+                    @*게시글 정보*@
                     <ul class="list-group">
                         <li class="list-group-item">
                             <small>
                                 <div class="row">
-                                    <div class="col-md-3">작성자: @{
+                                    <div class="col-md-3">@Messages("post.author"): @{
                                         member.name
                                     }</div>
-                                    <div class="col-md-3">작성일: @{
+                                    <div class="col-md-3">@Messages("post.date"): @{
                                         post.write_date.toString.split('.')(0)
                                     }</div>
                                     <div class="col-md-3">IP: @tags.tag_protect_ip_address(post.author_ip)
                                     </div>
-                                    <div class="col-md-3">조회수: @{
+                                    <div class="col-md-3">@Messages("post.counter"): @{
                                         post.hit_count + 1
                                     }</div>
                                 </div>
@@ -62,14 +63,17 @@
                         </li>
                     </ul>
 
+                    @*게시글 본문*@
                     @defining(post.content.get) { content =>
                         <div class="panel-body">
                             @Html(content)
                         </div>
                     }
 
+                    @*댓글*@
+                    @includes.comment(comment_form, comments)
+
                 </div>
-            </div>
             }
         }
     }

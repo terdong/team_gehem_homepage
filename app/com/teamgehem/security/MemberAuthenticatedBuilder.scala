@@ -2,6 +2,7 @@ package com.teamgehem.security
 
 import javax.inject.Inject
 
+import com.teamgehem.model.MemberInfo
 import play.api.mvc.{AnyContent, BodyParser, BodyParsers, RequestHeader}
 import play.api.mvc.Security.AuthenticatedBuilder
 
@@ -9,13 +10,13 @@ import scala.concurrent.ExecutionContext
 
 class MemberAuthenticatedBuilder(parser: BodyParser[AnyContent])(
     implicit ec: ExecutionContext)
-    extends AuthenticatedBuilder[Member](
+    extends AuthenticatedBuilder[MemberInfo](
       { req: RequestHeader =>
         for {
           email: String <- req.session.get("email")
           permission: String <- req.session.get("permission")
           seq: String <- req.session.get("seq")
-        } yield (Member(email, permission.toByte, seq.toLong))
+        } yield (MemberInfo(email, permission.toByte, seq.toLong))
       },
       parser
     ) {

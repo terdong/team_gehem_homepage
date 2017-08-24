@@ -6,11 +6,13 @@ import play.api.i18n.MessagesApi
 import play.api.mvc.Security.{AuthenticatedBuilder, AuthenticatedRequest}
 import play.api.mvc._
 import PermissionProvider._
+import com.teamgehem.model.MemberInfo
+
 import scala.concurrent.{ExecutionContext, Future}
 
 class AuthenticatedActionBuilder(val parser: BodyParser[AnyContent],
                                  messagesApi: MessagesApi,
-                                 builder: AuthenticatedBuilder[Member],
+                                 builder: AuthenticatedBuilder[MemberInfo],
                                  filter: MemberAuthorizedFilter)(
     implicit val executionContext: ExecutionContext)
     extends ActionBuilder[AuthMessagesRequest, AnyContent] {
@@ -42,7 +44,7 @@ class AuthenticatedActionBuilder(val parser: BodyParser[AnyContent],
                      block: ResultBlock[A]): Future[Result] = {
     //Logger.debug(s"requiredPermissions = $requiredPermissions")
     builder.authenticate(request, {
-      authRequest: AuthenticatedRequest[A, Member] =>
+      authRequest: AuthenticatedRequest[A, MemberInfo] =>
         block(
           new AuthMessagesRequest[A](authRequest.user, messagesApi, request))
     })
