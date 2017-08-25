@@ -7,6 +7,7 @@
     <script src="@routes.Assets.versioned("javascripts/comment_auto_collapse.js")" type="text/javascript"></script>
     <script src="@routes.Assets.versioned("javascripts/change_new_line_in_textarea.js")" type="text/javascript"></script>
     <script src="@routes.Assets.versioned("javascripts/filesize.min.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.versioned("javascripts/convert_file_size.js")" type="text/javascript"></script>
 }
 @styles = {
     <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/comment.css")">
@@ -69,6 +70,19 @@
                             @Html(content)
                         </div>
                     }
+
+                    @*첨부파일*@
+                    <small>
+                        <li class="list-group-item">
+                            <ul class="list-inline">
+                            @for(attachment <- attachments) {
+                                <li>
+                                    @tags.tag_attachment(attachment)
+                                </li>
+                            }
+                            </ul>
+                        </li>
+                    </small>
 
                     @*댓글*@
                     @includes.comment(comment_form, comments)

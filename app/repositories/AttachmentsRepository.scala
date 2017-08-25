@@ -16,8 +16,8 @@ import scala.concurrent.Future
   */
 @Singleton
 class AttachmentsRepository @Inject()(
-    protected val dbConfigProvider: DatabaseConfigProvider)
-    extends HasDatabaseConfigProvider[JdbcProfile]
+                                       protected val dbConfigProvider: DatabaseConfigProvider)
+  extends HasDatabaseConfigProvider[JdbcProfile]
     with AttachmentsTable {
 
   def updateAttachment(attachments_seq: Long, container_seq: Long) = {
@@ -38,32 +38,17 @@ class AttachmentsRepository @Inject()(
         .map(_.container_seq)
         .update(container_seq)
     }
-
-    /*val actions = for {
-      seq <- attachments_seq
-      _ <- DBIO.seq(
-        attachments
-          .filter(_.seq === seq)
-          .map(_.container_seq)
-          .update(container_seq))
-    } yield ()*/
-
-    /*val action = attachments
-      .filter(_.seq === attachments_seq)
-      .map(_.container_seq)
-      .update(container_seq)*/
-    val combined: DBIOAction[Seq[Int], NoStream, Effect.Write] =
-      DBIO.sequence(actions)
+    val combined: DBIOAction[Seq[Int], NoStream, Effect.Write] = DBIO.sequence(actions)
     db run combined
   }
 
   def insertAttachment(
-      form_data: (String, String, String, String, Long)): Future[Long] = {
+                        form_data: (String, String, String, String, Long)): Future[Long] = {
     db run insertAttachment_(form_data)
   }
 
   def insertAttachment(form_data: (String, String, String, String, Long, Long))
-    : Future[Long] = {
+  : Future[Long] = {
     db run insertAttachment_(form_data)
   }
 
@@ -72,7 +57,7 @@ class AttachmentsRepository @Inject()(
   }
 
   def getAttachmentWithoutCount(hash: String) = {
-    db run attachments.filter(_.hash === hash).result.head
+    db run attachments.filter(_.hash === hash).result.headOption
   }
 
   def getAttachment(hash: String) = {
@@ -108,12 +93,13 @@ class AttachmentsRepository @Inject()(
   }
 
   private def insertAttachment_(
-      form_data: (String, String, String, String, Long)) = {
+                                 form_data: (String, String, String, String, Long)) = {
     (attachments.map(a => (a.hash, a.name, a.sub_path, a.mime_type, a.size)) returning attachments
       .map(_.seq)) += (form_data)
   }
+
   private def insertAttachment_(
-      form_data: (String, String, String, String, Long, Long)) = {
+                                 form_data: (String, String, String, String, Long, Long)) = {
     (attachments.map(a =>
       (a.hash, a.name, a.sub_path, a.mime_type, a.size, a.container_seq)) returning attachments
       .map(_.seq)) += (form_data)

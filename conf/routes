@@ -52,6 +52,13 @@ GET         /board/:board_seq/post/:post_seq/delete                             
 POST        /board/:board_seq/post/comment/write                                    controllers.PostController.writeComment(board_seq:Long)
 GET         /board/:board_seq/post/:post_seq/comment/:comment_seq/delete            controllers.PostController.deleteComment(board_seq:Long, post_seq:Long, comment_seq:Long)
 
+POST        /upload/file                                                            controllers.PostController.uploadFile
+POST        /upload/file/delete                                                     controllers.PostController.deleteFile
+
+GET         /images/:hash                                                           controllers.AttachmentController.images(hash: String)
+GET         /file/:hash                                                             controllers.AttachmentController.file(hash:String)
+GET         /files/:post_seq                                                        controllers.AttachmentController.files(post_seq:Long)
+
 
 #######################################################################################################################
 

@@ -177,7 +177,7 @@ class PostsRepository @Inject()(
     db run action
   }
 
-  def update(form: (Long, String, String, Seq[Long], Seq[String]),
+  def update(form: (Long, String, String, Seq[String]),
              post_seq: Long) = {
     val action = posts
       .filter(_.seq === post_seq)
