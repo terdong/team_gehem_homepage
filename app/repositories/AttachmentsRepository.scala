@@ -20,6 +20,7 @@ class AttachmentsRepository @Inject()(
   extends HasDatabaseConfigProvider[JdbcProfile]
     with AttachmentsTable {
 
+  @deprecated("this is no longer used.","0.3.14")
   def updateAttachment(attachments_seq: Long, container_seq: Long) = {
     val action = attachments
       .filter(_.seq === attachments_seq)
@@ -28,6 +29,7 @@ class AttachmentsRepository @Inject()(
     db run action
   }
 
+  @deprecated("this is no longer used.","0.3.14")
   def updateAttachment2(attachments_seq: Seq[Long], container_seq: Long) = {
 
     val actions: Seq[FixedSqlAction[Int, NoStream, Effect.Write]] = for {

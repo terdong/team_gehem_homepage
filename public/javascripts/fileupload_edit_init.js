@@ -4,6 +4,8 @@
 
 $(document).ready(function () {
 
+    var post_seq = $('input[id="post_seq"]').val();
+
     $('#fine-uploader').fineUploader({
         request: {
             endpoint: '/upload/file'
@@ -23,7 +25,9 @@ $(document).ready(function () {
             endpoint: "/upload/file/delete"
         },
         autoUpload: true,
-
+        session:{
+            endpoint: "/files/" + post_seq
+        },
         callbacks: {
             onComplete: function(id, name, response, maybeXhr) {
                 //console.log(JSON.stringify(response));
@@ -48,6 +52,18 @@ $(document).ready(function () {
             },
             onDelete: function(id) {
                 $('input[name="upload_files[]"]').remove("#" + id);
+            },
+            onSessionRequestComplete: function (response, success, xhrOrXdr) {
+                //console.log("onSessionRequestComplete");
+                var uuid_spans = $('.qq-uuid');
+                $.each(response,function(i, data) {
+                    var button = uuid_spans.eq(i);
+                    button.attr("data-clipboard-text", "/images/" + data['uuid']);
+                    button.removeClass("qq-hide");
+                    button.click(function(){
+                        hash_button_click(data['name']);
+                    });
+                });
             }
         }
     });

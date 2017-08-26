@@ -81,9 +81,9 @@ class AttachmentController @Inject()(cache: AsyncCacheApi,
             val file = new java.io.File(full_path)
 
             if (file != null && !file.exists) {
-              Logger.error(
-                s"Attachment Seq: ${attachment.seq} (${full_path}) does not exist on storage")
-              InternalServerError("The file does not exist")
+              Logger.debug(s"image hash: ${attachment.seq} (${full_path}) does not exist on storage")
+              //InternalServerError("The file does not exist")
+              Redirect(routes.Assets.versioned("images/image_not_found.jpg"))
             } else {
               Ok.sendFile(file, true, _ => attachment.name)
                 .as(attachment.mime_type)
@@ -96,9 +96,9 @@ class AttachmentController @Inject()(cache: AsyncCacheApi,
         val file = new java.io.File(full_path)
 
         if (file != null && !file.exists) {
-          Logger.error(
-            s"Attachment Hash: $hash does not exist on storage")
-          InternalServerError("The file does not exist")
+          Logger.debug(s"temp image hash: $hash does not exist on storage")
+          //InternalServerError("The file does not exist")
+          Redirect(routes.Assets.versioned("images/image_not_found.jpg"))
         } else {
           Ok.sendFile(file)
         }

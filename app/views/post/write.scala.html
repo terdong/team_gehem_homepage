@@ -1,6 +1,6 @@
 @import com.teamgehem.security.AuthMessagesRequest
 @import com.teamgehem.model.BoardInfo
-@(form: Form[_], board: Board, file_form:Form[_])(implicit request: AuthMessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list:Option[Seq[BoardInfo]])
+@(form: Form[_], board: Board)(implicit request: AuthMessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list:Option[Seq[BoardInfo]])
 
 @tags.tag_post_write{
     @tags.tag_post_write_form(routes.PostController.writePost, board.seq, form)

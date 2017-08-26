@@ -5,60 +5,63 @@
 tinymce.init({
     selector: 'textarea',
     height: 500,
-    forced_root_block : false,
+    //forced_root_block : false,
     theme: "modern",
     menubar: false,
     plugins: [
-        'advlist autolink lists link image imagetools charmap print preview anchor',
-        'searchreplace visualblocks code fullscreen',
-        'insertdatetime media table contextmenu paste code'
+        'advlist autolink lists link image imagetools charmap print preview hr anchor pagebreak',
+        'searchreplace wordcount visualblocks visualchars code fullscreen',
+        'insertdatetime media nonbreaking save table contextmenu directionality',
+        'emoticons template paste textcolor colorpicker textpattern imagetools codesample toc help'
     ],
 
-    toolbar: 'undo redo | insert | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | code',
+    toolbar: 'undo redo | insert | styleselect | bold italic | forecolor backcolor emoticons | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media | code preview | codesample help | save',
     content_css: [
         '//fonts.googleapis.com/css?family=Lato:300,300i,400,400i',
         '//www.tinymce.com/css/codepen.min.css'],
-
     image_title: true,
+    image_advtab: true,
+    relative_urls : false,
+    /*
     // enable automatic uploads of images represented by blob or data URIs
     automatic_uploads: false,
     relative_urls : false,
     // URL of our upload handler (for more details check: https://www.tinymce.com/docs/configure/file-image-upload/#images_upload_url)
     //images_upload_url: '/upload/image',
-    images_upload_base_path: '/images',
-    images_upload_handler: function (blobInfo, success, failure) {
-        console.log("images_upload_handler")
+        images_upload_base_path: '/images',
+      images_upload_handler: function (blobInfo, success, failure) {
+           console.log("images_upload_handler")
 
-        var xhr, formData;
-        xhr = new XMLHttpRequest();
-        xhr.withCredentials = false;
-        xhr.open('POST', '/upload/image');
-        xhr.onload = function() {
-            var json;
+           var xhr, formData;
+           xhr = new XMLHttpRequest();
+           xhr.withCredentials = false;
+           xhr.open('POST', '/upload/image');
+           xhr.onload = function() {
+               var json;
 
-            if (xhr.status != 200) {
-                failure('HTTP Error: ' + xhr.status);
-                return;
-            }
-            json = JSON.parse(xhr.responseText);
+               if (xhr.status != 200) {
+                   failure('HTTP Error: ' + xhr.status);
+                   return;
+               }
+               json = JSON.parse(xhr.responseText);
 
-            if (!json || (typeof json.location != 'string' && typeof json.attachment_seq != 'Number')) {
-                failure('Invalid JSON: ' + xhr.responseText);
-                return;
-            }
-            console.log(json.location);
-            console.log(json.attachment_seq);
+               if (!json || (typeof json.location != 'string' && typeof json.attachment_seq != 'Number')) {
+                   failure('Invalid JSON: ' + xhr.responseText);
+                   return;
+               }
+               console.log(json.location);
+               console.log(json.attachment_seq);
 
-            var form = $('form[id=postForm]');
+               var form = $('form[id=postForm]');
 
-            $("<input></input>").attr({ type: "hidden", name:"attachments[]", value:json.attachment_seq}).appendTo(form);
+               $("<input></input>").attr({ type: "hidden", name:"attachments[]", value:json.attachment_seq}).appendTo(form);
 
-            success('/images/' + json.location);
-        };
-        formData = new FormData();
-        formData.append('file', blobInfo.blob(), blobInfo.filename());
-        xhr.send(formData);
-    },
+               success('/images/' + json.location);
+           };
+           formData = new FormData();
+           formData.append('file', blobInfo.blob(), blobInfo.filename());
+           xhr.send(formData);
+       },
 
     // here we add custom filepicker only to Image dialog
     file_picker_types: 'image',
@@ -95,4 +98,5 @@ tinymce.init({
         };
         input.click();
     }
+    */
 });

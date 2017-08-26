@@ -58,6 +58,8 @@ class PostController @Inject()(cache: SyncCacheApi,
 
   def getEmail(implicit request: MessagesRequest[AnyContent]) = request.session.get("email")
 
+  def getPage(implicit request: MessagesRequest[AnyContent]) = request.cookies.get("page").getOrElse(Cookie("page", "1")).value.toInt
+
   implicit def getMemberInfo(implicit request: MessagesRequest[AnyContent]) = {
     for {
       email <- getEmail
@@ -167,7 +169,7 @@ class PostController @Inject()(cache: SyncCacheApi,
   def writePostForm(board_seq: Long) = auth.async { implicit request =>
     if (board_seq > 0) {
       boards_repo.getBoard(board_seq).map { board =>
-        Ok(views.html.post.write(post_form, board, file_form))
+        Ok(views.html.post.write(post_form, board))
       }
     } else {
       boards_repo
@@ -182,51 +184,14 @@ class PostController @Inject()(cache: SyncCacheApi,
     form.fold(
       hasErrors => {
         boards_repo.getBoard(form.get._1).map { board =>
-          BadRequest(views.html.post.write(hasErrors, board, file_form))
+          BadRequest(views.html.post.write(hasErrors, board))
         }
       },
-      form => {
-        getSeq.fold( Future.successful(InternalServerError("There is no seq")) ){ seq =>
+      (form: (Long, String, String, Seq[String])) => {
+        getSeq.fold(Future.successful(InternalServerError("There is no seq"))) { seq =>
           posts_repo.insert(form, seq.toLong, request.remoteAddress).map { post =>
-
-            form._5.foreach {
-              json_str =>
-                Json
-                  .fromJson[UploadedFileInfo](Json.parse(json_str))
-                  .map {
-                    (file_info: UploadedFileInfo) =>
-                      val path =
-                        Paths.get(s"${temp_dir_path}/${file_info.hash}")
-                      if (Files.exists(path)) {
-                        val sub_path = java.time.LocalDate.now.toString
-
-                        val new_directory_path =
-                          Path(s"$attachment_path/${sub_path}")
-                        if (!new_directory_path.exists) {
-                          new_directory_path.createDirectory()
-                        }
-
-                        val new_file_path = Paths.get(
-                          s"${new_directory_path.path}/${file_info.hash}")
-                        Files.move(path, new_file_path)
-
-                        attachments_repo.insertAttachment(
-                          file_info.hash,
-                          file_info.file_name,
-                          sub_path,
-                          file_info.content_type,
-                          file_info.size,
-                          post.seq)
-                      }
-                  }
-            }
-
+            insertAttachment(post.seq, form._4)
             Redirect(routes.PostController.read(post.board_seq, post.seq, 1))
-
-      /*      attachments_repo.updateAttachment2(form._4, post.seq).map { _ =>
-              Redirect(routes.PostController.read(post.board_seq, post.seq, 1))
-            }*/
-            //Redirect(routes.PostController.read(post.board_seq, post.seq, 1))
           }
         }
       }
@@ -253,16 +218,11 @@ class PostController @Inject()(cache: SyncCacheApi,
         Future.successful(
           BadRequest(views.html.post.edit(hasErrors, board_seq, post_seq))),
       form => {
+
         posts_repo.update(form, post_seq) map {
           _ =>
-            val page =
-              request.cookies
-                .get("page")
-                .getOrElse(Cookie("page", "1"))
-                .value
-                .toInt
-
-            Redirect(routes.PostController.read(board_seq, post_seq, page))
+            insertAttachment(post_seq, form._4)
+            Redirect(routes.PostController.read(board_seq, post_seq, getPage))
         }
       }
     )
@@ -283,30 +243,30 @@ class PostController @Inject()(cache: SyncCacheApi,
   }
 
   def uploadFile = auth(parse.multipartFormData(handleFilePartAsFile)) { request =>
-      request.body
-        .file("qqfile")
-        .map {
-          case FilePart(key, filename, contentType, file: File) =>
-            val hash = file.getName
-            Logger.info(
-              s"key = ${key}, filename = ${filename}, contentType = ${contentType}, file = $file, filename = ${hash}")
+    request.body
+      .file("qqfile")
+      .map {
+        case FilePart(key, filename, contentType, file: File) =>
+          val hash = file.getName
+          Logger.info(
+            s"key = ${key}, filename = ${filename}, contentType = ${contentType}, file = $file, filename = ${hash}")
 
-            Json.obj(
-              "success" -> true,
-              "newUuid" -> hash,
-              "file_info" -> Json.toJson(
-                UploadedFileInfo(
-                  hash,
-                  filename,
-                  contentType.getOrElse("application/octet-stream"),
-                  file.length))
-            )
-        }
-        .map {
-          Ok(_)
-        }
-        .getOrElse(BadRequest("Unable to upload."))
-    }
+          Json.obj(
+            "success" -> true,
+            "newUuid" -> hash,
+            "file_info" -> Json.toJson(
+              UploadedFileInfo(
+                hash,
+                filename,
+                contentType.getOrElse("application/octet-stream"),
+                file.length))
+          )
+      }
+      .map {
+        Ok(_)
+      }
+      .getOrElse(BadRequest("Unable to upload."))
+  }
 
   def deleteFile = auth { request =>
     val body = request.body
@@ -340,12 +300,7 @@ class PostController @Inject()(cache: SyncCacheApi,
     form.fold(
       hasErrors => {
         val post_seq = hasErrors.get._1
-        val page =
-          request.cookies
-            .get("page")
-            .getOrElse(Cookie("page", "1"))
-            .value
-            .toInt
+        val page = getPage
         for {
           r <- boards_repo.isReadValidBoard(board_seq, getPermission)
           if r == true
@@ -377,13 +332,7 @@ class PostController @Inject()(cache: SyncCacheApi,
           comments_repo
             .insert(form, seq.toLong, request.remoteAddress)
             .map { post_seq =>
-              val page =
-                request.cookies
-                  .get("page")
-                  .getOrElse(Cookie("page", "1"))
-                  .value
-                  .toInt
-              Redirect(routes.PostController.read(board_seq, post_seq, page))
+              Redirect(routes.PostController.read(board_seq, post_seq, getPage))
             }
         }.getOrElse(Future.successful(InternalServerError))
       }
@@ -391,15 +340,10 @@ class PostController @Inject()(cache: SyncCacheApi,
   }
 
   def deleteComment(board_seq: Long, post_seq: Long, comment_seq: Long) = auth.async { implicit request =>
-    val page = request.cookies
-      .get("page")
-      .getOrElse(Cookie("page", "1"))
-      .value
-      .toInt
 
     getSeq.map { seq =>
       comments_repo.delete(comment_seq, seq.toLong).map { _ =>
-        Redirect(routes.PostController.read(board_seq, post_seq, page))
+        Redirect(routes.PostController.read(board_seq, post_seq, getPage))
       }
     }.getOrElse(Future.successful(InternalServerError))
   }
@@ -418,7 +362,6 @@ class PostController @Inject()(cache: SyncCacheApi,
         isWriteValidBoard(_, getPermission)),
       "subject" -> nonEmptyText(maxLength = 80),
       "content" -> text,
-      "attachments" -> seq(longNumber),
       "upload_files" -> seq(text)
     )
   )
@@ -452,6 +395,40 @@ class PostController @Inject()(cache: SyncCacheApi,
       }
   }
 
+  private def insertAttachment(post_seq: Long, seq_file_info: Seq[String]) = {
+    seq_file_info.foreach {
+      json_str =>
+        Json
+          .fromJson[UploadedFileInfo](Json.parse(json_str))
+          .map {
+            (file_info: UploadedFileInfo) =>
+              val path =
+                Paths.get(s"${temp_dir_path}/${file_info.hash}")
+              if (Files.exists(path)) {
+                val sub_path = java.time.LocalDate.now.toString
+
+                val new_directory_path =
+                  Path(s"$attachment_path/${sub_path}")
+                if (!new_directory_path.exists) {
+                  new_directory_path.createDirectory()
+                }
+
+                val new_file_path = Paths.get(
+                  s"${new_directory_path.path}/${file_info.hash}")
+                Files.move(path, new_file_path)
+
+                attachments_repo.insertAttachment(
+                  file_info.hash,
+                  file_info.file_name,
+                  sub_path,
+                  file_info.content_type,
+                  file_info.size,
+                  post_seq)
+              }
+          }
+    }
+  }
+
   private val post_form = Form(
     tuple(
       "board_seq" -> longNumber,
@@ -478,6 +455,7 @@ class PostController @Inject()(cache: SyncCacheApi,
   )
 
   import play.api.libs.functional.syntax._
+
   case class UploadedFileInfo(hash: String,
                               file_name: String,
                               content_type: String,
@@ -488,12 +466,12 @@ class PostController @Inject()(cache: SyncCacheApi,
       (JsPath \ "file_name").read[String] and
       (JsPath \ "content_type").read[String] and
       (JsPath \ "size").read[Long]
-    )(UploadedFileInfo.apply _)
+    ) (UploadedFileInfo.apply _)
 
   implicit val uploadedFileInfoWrites: Writes[UploadedFileInfo] = (
     (JsPath \ "hash").write[String] and
       (JsPath \ "file_name").write[String] and
       (JsPath \ "content_type").write[String] and
       (JsPath \ "size").write[Long]
-    )(unlift(UploadedFileInfo.unapply))
+    ) (unlift(UploadedFileInfo.unapply))
 }

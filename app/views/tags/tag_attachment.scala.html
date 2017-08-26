@@ -2,10 +2,4 @@
 
 <a id="file_info_@{attachment.seq}" title="download" href="@routes.AttachmentController.file(attachment.hash)" class="btn btn-default btn-xs"><span class="fa fa-download"></span>
     @{attachment.name}(<span class="file_size" value="@{attachment.size}"></span>)(@{attachment.download_count})
-
-    @*
-    <script>file_info("@{attachment.name}","@{attachment.size}", "@{attachment.download_count}", "@{attachment.seq}"); </script>
-    @{
-        s"${attachment.name}(${attachment.size})(${attachment.download_count})"
-    }*@
 </a>

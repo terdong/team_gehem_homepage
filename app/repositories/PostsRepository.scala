@@ -160,7 +160,7 @@ class PostsRepository @Inject()(
   def insert(post: Post): Future[Unit] =
     db run (posts += post) map (_ => ())
 
-  def insert(form: (Long, String, String, Seq[Long], Seq[String]),
+  def insert(form: (Long, String, String, Seq[String]),
              author_seq: Long,
              ip: String) = {
     val action = posts.map(_.thread).max.result.flatMap {

@@ -72,17 +72,19 @@
                     }
 
                     @*첨부파일*@
-                    <small>
-                        <li class="list-group-item">
-                            <ul class="list-inline">
-                            @for(attachment <- attachments) {
-                                <li>
+                    @if(attachments.length > 0) {
+                        <small>
+                            <li class="list-group-item">
+                                <ul class="list-inline">
+                                @for(attachment <- attachments) {
+                                    <li>
                                     @tags.tag_attachment(attachment)
-                                </li>
-                            }
-                            </ul>
-                        </li>
-                    </small>
+                                    </li>
+                                }
+                                </ul>
+                            </li>
+                        </small>
+                    }
 
                     @*댓글*@
                     @includes.comment(comment_form, comments)

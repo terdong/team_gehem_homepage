@@ -1,4 +1,4 @@
-@(content:Html)(board_name:Option[String] = None)(implicit request: com.teamgehem.security.AuthMessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list:Option[Seq[com.teamgehem.model.BoardInfo]])
+@(content:Html)(board_name:Option[String] = None, is_edit :Boolean = false)(implicit request: com.teamgehem.security.AuthMessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list:Option[Seq[com.teamgehem.model.BoardInfo]])
 
 @scripts = {
     <script src="@routes.Assets.versioned("javascripts/tinymce/tinymce.min.js")" type="text/javascript"></script>
@@ -8,7 +8,12 @@
     <script src="@routes.Assets.versioned("javascripts/clipboard.min.js")" type="text/javascript"></script>
     <script src="@routes.Assets.versioned("fine-uploader/jquery.fine-uploader.js")" type="text/javascript"></script>
 
-    <script src="@routes.Assets.versioned("javascripts/fileupload_init.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.versioned("javascripts/fileupload_save_hash.js")" type="text/javascript"></script>
+    @if(is_edit) {
+        <script src="@routes.Assets.versioned("javascripts/fileupload_edit_init.js")" type="text/javascript"></script>
+    }else{
+        <script src="@routes.Assets.versioned("javascripts/fileupload_init.js")" type="text/javascript"></script>
+    }
 
     @includes.qq_template_default()
 @*
@@ -33,9 +38,7 @@
             <h3 class="panel-title">@Messages(s"board.${board_name.getOrElse("all")}")</h3>
         </div>
         <div class="panel-body">
-
             @content
-
         </div>
 
         <ul class="list-group">
