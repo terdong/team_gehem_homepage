@@ -52,14 +52,6 @@ class PostController @Inject()(cache: SyncCacheApi,
 
   implicit def getBoardInfo: Option[Seq[BoardInfo]] = cache.get[Seq[BoardInfo]]("board.list")
 
-  def getPermission(implicit request: MessagesRequest[AnyContent]) = request.session.get("permission").getOrElse("0").toByte
-
-  def getSeq(implicit request: MessagesRequest[AnyContent]) = request.session.get("seq")
-
-  def getEmail(implicit request: MessagesRequest[AnyContent]) = request.session.get("email")
-
-  def getPage(implicit request: MessagesRequest[AnyContent]) = request.cookies.get("page").getOrElse(Cookie("page", "1")).value.toInt
-
   implicit def getMemberInfo(implicit request: MessagesRequest[AnyContent]) = {
     for {
       email <- getEmail
@@ -69,6 +61,14 @@ class PostController @Inject()(cache: SyncCacheApi,
       MemberInfo(email, permission.toByte, seq.toLong)
     }
   }
+
+  def getPermission(implicit request: MessagesRequest[AnyContent]) = request.session.get("permission").getOrElse("0").toByte
+
+  def getSeq(implicit request: MessagesRequest[AnyContent]) = request.session.get("seq")
+
+  def getEmail(implicit request: MessagesRequest[AnyContent]) = request.session.get("email")
+
+  def getPage(implicit request: MessagesRequest[AnyContent]) = request.cookies.get("page").getOrElse(Cookie("page", "1")).value.toInt
 
   def list(board_seq: Long, page: Int) = Action.async { implicit request =>
     val permission = getPermission
