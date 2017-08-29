@@ -6,7 +6,7 @@
     @if(request.session.get("email").isDefined) {
         <a href="@routes.PostController.writePostForm(pagination_info.board_seq)">
         @b3.button('class -> "btn btn-default pull-right") {
-            <span class="glyphicon glyphicon-pencil"></span> Write
+            <span class="fa fa-pencil"></span> Write
         }</a>
     }
 
@@ -20,7 +20,7 @@
                 <li>
                     <a href="@route(pagination_info.page - 1)" aria-label="Previous">
                     }
-            <span aria-hidden="true">&laquo;</span>
+            <i class="fa fa-angle-double-left" aria-hidden="true"></i>
         </a>
         </li>
             @defining(pagination_info.getLowBound(bound)) { low_bound =>
@@ -39,7 +39,7 @@
                     } else {
                         <li class="disabled"><a href="#" aria-label="Next">
                         }
-                    <span aria-hidden="true">&raquo;</span>
+                    <i class="fa fa-angle-double-right" aria-hidden="true"></i>
                 </a>
                 </li>
                 }

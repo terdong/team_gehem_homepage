@@ -33,10 +33,10 @@
                             @if(is_own) {
                                 <div class="col-md-1 text-right" style="padding: 0px 10px;">
                                     <a title="edit" href="@routes.PostController.editPost(post.board_seq, post.seq)" class="btn btn-default btn-xs">
-                                        <span class="glyphicon glyphicon-pencil"></span>
+                                        <span class="fa fa-pencil"></span>
                                     </a>
                                     <button type="button" title = "delete" data-toggle="modal" data-target="#remove_post_modal" class="btn btn-default btn-xs" >
-                                        <span class="glyphicon glyphicon-remove"></span>
+                                        <span class="fa fa-times"></span>
                                     </button>
                                 </div>
                                 @tags.tag_simple_modal("remove_post_modal", Messages("post.delete.title"), routes.PostController.deletePost(post.board_seq, post.seq)) {

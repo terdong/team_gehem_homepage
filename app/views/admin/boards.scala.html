@@ -47,7 +47,7 @@
                         }</td>
                         <td>
                             <a href="#" class="btn btn-primary btn-xs disabled" role="button">
-                                <span class="glyphicon @if(board.status) {glyphicon-ok} else {glyphicon-remove}"></span>
+                                <span class="fa @if(board.status) {fa-check} else {fa-times}"></span>
                             </a>
                         </td>
                         <td>@{
@@ -76,18 +76,18 @@
                         }</td>
                         <td>@tags.tag_cleanly_date(board.register_date)</td>
                         <td>
-                            <a title = "edit" href="@routes.BoardController.editBoardForm(board.seq)" class="btn btn-info btn-xs active" role="button"><span class="glyphicon glyphicon-edit"></span></a>
+                            <a title = "edit" href="@routes.BoardController.editBoardForm(board.seq)" class="btn btn-info btn-xs active" role="button"><span class="fa fa-pencil-square-o" aria-hidden="true"></span></a>
                         </td>
                         <td>
                         @defining(board.status) { status =>
-                            <a title = "active" href="@routes.BoardController.setActiveBoard(board.seq, true)" class="btn btn-warning btn-xs @if(status) {disabled} else {active}" role="button"><span class="glyphicon glyphicon-ok"></span></a>
-                            <a title = "inactive" href="@routes.BoardController.setActiveBoard(board.seq, false)" class="btn btn-warning btn-xs @if(status) {active} else {disabled}" role="button"><span class="glyphicon glyphicon-remove"></span></a>
+                            <a title = "active" href="@routes.BoardController.setActiveBoard(board.seq, true)" class="btn btn-warning btn-xs @if(status) {disabled} else {active}" role="button"><span class="fa fa-check"></span></a>
+                            <a title = "inactive" href="@routes.BoardController.setActiveBoard(board.seq, false)" class="btn btn-warning btn-xs @if(status) {active} else {disabled}" role="button"><span class="fa fa-times"></span></a>
                         }
                         </td>
                         <td>
                             <button type="button" title = "remove" data-toggle="modal" data-target= "#remove_board_@{
                                 board.seq
-                            }" class="btn btn-danger btn-xs" ><span class="glyphicon glyphicon-trash"></span></button>
+                            }" class="btn btn-danger btn-xs" ><span class="fa fa-trash-o" aria-hidden="true"></span></button>
                         </td>
                         @tags.tag_simple_modal(s"remove_board_${board.seq}", "Warnning", routes.BoardController.deleteBoard(board.seq)) {
                             Are you sure you want to remove "@board.name" board?
@@ -140,7 +140,7 @@
         </div>
 
             @b3.submit('class -> "btn btn-default") {
-                <span class="glyphicon glyphicon-ok"></span>
+                <span class="fa fa-check"></span>
                 @if(seq.isDefined) {Edit} else {Create}
             }
         }
