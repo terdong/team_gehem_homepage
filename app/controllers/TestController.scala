@@ -12,9 +12,6 @@ import play.api.{Configuration, Logger}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-
-case class UserData(name: String, age: Int)
-
 /**
   * Created by terdo on 2017-05-08 008.
   */
@@ -148,3 +145,6 @@ class TestController @Inject()(config: Configuration,
     Ok(Messages("result.button"))
   }
 }
+
+case class UserData(name: String, age: Int)
+
