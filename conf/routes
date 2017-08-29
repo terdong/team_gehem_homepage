@@ -47,7 +47,7 @@ GET         /board/:board_seq/write                                             
 POST        /board/:board_seq/post/:post_seq/edit                                   controllers.PostController.editPost(board_seq :Long, post_seq:Long)
 GET         /board/:board_seq/post/:post_seq/edit                                   controllers.PostController.editPostForm(board_seq :Long, post_seq:Long)
 
-GET         /board/:board_seq/post/:post_seq/delete                                 controllers.PostController.deletePost(board_seq :Long, post_seq:Long)
+GET         /board/:board_seq/post/:post_seq                                        controllers.PostController.deletePost(board_seq :Long, post_seq:Long)
 
 POST        /board/:board_seq/post/comment/write                                    controllers.PostController.writeComment(board_seq:Long)
 GET         /board/:board_seq/post/:post_seq/comment/:comment_seq/delete            controllers.PostController.deleteComment(board_seq:Long, post_seq:Long, comment_seq:Long)

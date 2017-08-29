@@ -3,10 +3,10 @@
 @(tuple: (Post, Member), comment_form: Form[_], comments: Seq[(Comment, String, Option[String])], attachments: Seq[Attachment], is_own: Boolean = false)(board_name: String, posts: Seq[(Post, String, Int)], page: Int, page_length: Int, count: Int, board_seq: Long = 0)(implicit request: MessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list: Option[Seq[BoardInfo]], member_info_option: Option[MemberInfo])
 
 @scripts = {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/filesize/3.5.10/filesize.min.js" type="text/javascript"></script>
     <script src="@routes.Assets.versioned("javascripts/click_event.js")" type="text/javascript"></script>
     <script src="@routes.Assets.versioned("javascripts/comment_auto_collapse.js")" type="text/javascript"></script>
     <script src="@routes.Assets.versioned("javascripts/change_new_line_in_textarea.js")" type="text/javascript"></script>
-    <script src="@routes.Assets.versioned("javascripts/filesize.min.js")" type="text/javascript"></script>
     <script src="@routes.Assets.versioned("javascripts/convert_file_size.js")" type="text/javascript"></script>
 }
 @styles = {
@@ -32,9 +32,12 @@
                             @*게시글 액션 이벤트*@
                             @if(is_own) {
                                 <div class="col-md-1 text-right" style="padding: 0px 10px;">
-                                    <a title="edit" href="@routes.PostController.editPost(post.board_seq, post.seq)" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-pencil"></span></a>
-                                    <button type="button" title = "delete" data-toggle="modal" data-target="#remove_post_modal" class="btn btn-default btn-xs" ><span class="glyphicon glyphicon-remove"></span></button>
-
+                                    <a title="edit" href="@routes.PostController.editPost(post.board_seq, post.seq)" class="btn btn-default btn-xs">
+                                        <span class="glyphicon glyphicon-pencil"></span>
+                                    </a>
+                                    <button type="button" title = "delete" data-toggle="modal" data-target="#remove_post_modal" class="btn btn-default btn-xs" >
+                                        <span class="glyphicon glyphicon-remove"></span>
+                                    </button>
                                 </div>
                                 @tags.tag_simple_modal("remove_post_modal", Messages("post.delete.title"), routes.PostController.deletePost(post.board_seq, post.seq)) {
                                     @Messages("post.delete.message")

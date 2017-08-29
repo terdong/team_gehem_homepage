@@ -111,7 +111,7 @@ class PostsRepository @Inject()(
     db run all_(page, page_length, permission)
   }
 
-  def listByBoard(board_seq: Long, page: Int, page_length: Int) = {
+  def getListByBoard(board_seq: Long, page: Int, page_length: Int) = {
     db run listByBoard_(board_seq, page, page_length)
   }
 
@@ -190,7 +190,7 @@ class PostsRepository @Inject()(
     db run action
   }
 
-  def delete(post_seq: Long) = {
+  def delete(post_seq: Long): Future[Int] = {
     val action = posts.filter(_.seq === post_seq).delete
     db run action
   }

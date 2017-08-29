@@ -87,7 +87,7 @@ class PostController @Inject()(cache: SyncCacheApi,
           b <- boards_repo.isListValidBoard(board_seq, permission)
           if b == true
           board_name <- boards_repo.getNameBySeq(board_seq)
-          posts <- posts_repo.listByBoard(board_seq, page, page_length)
+          posts <- posts_repo.getListByBoard(board_seq, page, page_length)
           count <- posts_repo.getPostCount(board_seq)
         } yield
           Ok(views.html.post.list(board_name, posts, BoardPaginationInfo(page, page_length, count, board_seq), route = a_route))
@@ -148,7 +148,7 @@ class PostController @Inject()(cache: SyncCacheApi,
         tuple <- posts_repo.getPost(board_seq, post_seq)
         comments <- comments_repo.allWithMemberName(post_seq)
         board_name <- boards_repo.getNameBySeq(board_seq)
-        posts <- posts_repo.listByBoard(board_seq, page, page_length)
+        posts <- posts_repo.getListByBoard(board_seq, page, page_length)
         count <- posts_repo.getPostCount(board_seq)
         attachments <- attachments_repo.getAttachments(post_seq)
       } yield {
@@ -199,16 +199,14 @@ class PostController @Inject()(cache: SyncCacheApi,
   }
 
   def editPostForm(board_seq: Long, post_seq: Long) = auth.async { implicit request =>
-    for {
-      r <- posts_repo.isOwnPost(post_seq, request.session.get("seq").getOrElse("0").toLong) if r == true
-      tuple: (Post, Member) <- posts_repo.getPost(board_seq, post_seq)
-    } yield {
-      val post = tuple._1
-      val form_data =
-        (board_seq, post.subject, post.content.getOrElse(""), Nil)
-      Ok(
-        views.html.post.edit(post_form.fill(form_data), board_seq, post_seq))
-    }
+      for {
+        r <- posts_repo.isOwnPost(post_seq, getSeq.getOrElse("0").toLong) if r == true
+        tuple: (Post, Member) <- posts_repo.getPost(board_seq, post_seq)
+      } yield {
+        val post = tuple._1
+        val form_data = (board_seq, post.subject, post.content.getOrElse(""), Nil)
+        Ok(views.html.post.edit(post_form.fill(form_data), board_seq, post_seq))
+      }
   }
 
   def editPost(board_seq: Long, post_seq: Long) = auth.async { implicit request =>
@@ -229,16 +227,22 @@ class PostController @Inject()(cache: SyncCacheApi,
   }
 
   def deletePost(board_seq: Long, post_seq: Long) = auth.async { implicit request =>
-    attachments_repo.getAttachments(post_seq).map { attachments =>
-      for (attachment <- attachments) {
-        val path =
-          Path(s"${attachment_path}/${attachment.sub_path}/${attachment.hash}")
-        Try(path.delete)
+    posts_repo.isOwnPost(post_seq, getSeq.getOrElse("0").toLong).flatMap {
+      _ match {
+        case true => {
+          posts_repo.delete(post_seq).map { _ =>
+            attachments_repo.getAttachments(post_seq).map { attachments =>
+              for (attachment <- attachments) {
+                val path = Path(s"${attachment_path}/${attachment.sub_path}/${attachment.hash}")
+                Try(path.delete)
+              }
+              attachments_repo.deleteAttachements(post_seq)
+            }
+            Redirect(routes.PostController.list(board_seq, 1))
+          }
+        }
+        case false => Future.successful(Unauthorized(views.html.defaultpages.unauthorized()))
       }
-      attachments_repo.deleteAttachements(post_seq)
-    }
-    posts_repo.delete(post_seq).map { _ =>
-      Redirect(routes.PostController.list(board_seq, 1))
     }
   }
 
@@ -307,7 +311,7 @@ class PostController @Inject()(cache: SyncCacheApi,
           tuple <- posts_repo.getPost(board_seq, post_seq)
           comments <- comments_repo.allWithMemberName(post_seq)
           name_op <- boards_repo.getNameBySeq(board_seq)
-          posts <- posts_repo.listByBoard(board_seq, page, page_length)
+          posts <- posts_repo.getListByBoard(board_seq, page, page_length)
           count <- posts_repo.getPostCount(board_seq)
           attachments <- attachments_repo.getAttachments(post_seq)
         } yield {

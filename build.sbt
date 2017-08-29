@@ -1,6 +1,6 @@
 name := "team_gehem_homepage"
 
-version := "0.3.15"
+version := "0.3.16"
 
 lazy val `team_gehem_homepage` =
   (project in file(".")).enablePlugins(PlayScala)
@@ -20,11 +20,11 @@ resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repos
 
 //bootstrap
 libraryDependencies ++= Seq(
-  "com.adrianhurt" %% "play-bootstrap" % "1.2-P26-B3" exclude("org.webjars", "jquery"),
-  "org.webjars" % "bootstrap" % "3.3.7",
-  "org.webjars" % "jquery" % "3.2.1",
-  "org.webjars" % "font-awesome" % "4.7.0",
-  "org.webjars" % "bootstrap-datepicker" % "1.6.4"
+  "com.adrianhurt" %% "play-bootstrap" % "1.2-P26-B3" exclude("org.webjars", "jquery")
+//  "org.webjars" % "bootstrap" % "3.3.7",
+//  "org.webjars" % "jquery" % "3.2.1",
+//  "org.webjars" % "font-awesome" % "4.7.0",
+//  "org.webjars" % "bootstrap-datepicker" % "1.6.4"
 )
 
 // slick
