@@ -51,7 +51,7 @@
                 </li>
 
 
-                @tags.tag_account_contents(9){
+                @tags.tag_contents_by_permission(9){
                     <li class="dropdown @("active".when(tab == "admin"))">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin <b class="caret"></b></a>
                         <ul class="dropdown-menu">
@@ -68,6 +68,19 @@
                     </li>
                 }()
 
+                @tags.tag_contents_by_permission(8){
+                    <li class="dropdown @("active".when(tab == "dev"))">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dev <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a href=@routes.DevController.insertPost100()>insertSamplePost100</a>
+                            </li>
+                        </ul>
+                    </li>
+                }()
+
+
+
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li class="dropdown">
@@ -76,8 +89,7 @@
                     </a>
                     <ul class="dropdown-menu dropdown-user">
 
-                        @tags.tag_account_contents(){
-
+                        @tags.tag_contents_by_permission(){
                             <li><a>@{request.session.get("email")} 님</a></li>
                             <li><a href="@routes.AccountController.edit"><i class="fa fa-user fa-fw"></i> User Profile</a>
                             </li>

@@ -26,7 +26,7 @@
                         <div class="row">
                             @*제목*@
                             <div class="col-md-11">
-                                @post.subject
+                                <strong>@post.subject </strong> <small class="text-muted">| @Messages(s"board.${board_name}")</small>
                             </div>
 
                             @*게시글 액션 이벤트*@

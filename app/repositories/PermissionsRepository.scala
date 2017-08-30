@@ -18,10 +18,10 @@ class PermissionsRepository @Inject()(
     extends HasDatabaseConfigProvider[JdbcProfile]
     with PermissionsTable {
 
-  def all: Future[Seq[Permission]] = db run permissions.result
+  def all: Future[Seq[Permission]] = db run permissions.sortBy(_.permission_code.asc).result
 
   def allwithActive: Future[Seq[Permission]] =
-    db run (permissions.filter(_.active === true) result)
+    db run (permissions.filter(_.active === true).sortBy(_.permission_code.asc) result)
 
   def getContentByCode(code: Byte) = {
     val query = permissions.filter(_.permission_code === code).map(_.content)

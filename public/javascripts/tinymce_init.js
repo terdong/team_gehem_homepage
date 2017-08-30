@@ -4,8 +4,8 @@
 
 tinymce.init({
     selector: 'textarea',
+    branding: false,
     height: 500,
-    //forced_root_block : false,
     theme: "modern",
     menubar: false,
     plugins: [
@@ -15,13 +15,14 @@ tinymce.init({
         'emoticons template paste textcolor colorpicker textpattern imagetools codesample toc help'
     ],
 
-    toolbar: 'undo redo | insert | styleselect | bold italic | forecolor backcolor emoticons | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media | code preview | codesample help | save',
+    toolbar: 'undo redo | insert | styleselect table | bold italic | forecolor backcolor emoticons | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media | code preview | codesample help | save',
     content_css: [
         '//fonts.googleapis.com/css?family=Lato:300,300i,400,400i',
         '//www.tinymce.com/css/codepen.min.css'],
     image_title: true,
     image_advtab: true,
     relative_urls : false,
+    save_enablewhendirty: true,
     /*
     // enable automatic uploads of images represented by blob or data URIs
     automatic_uploads: false,
@@ -57,8 +58,7 @@ tinymce.init({
                $("<input></input>").attr({ type: "hidden", name:"attachments[]", value:json.attachment_seq}).appendTo(form);
 
                success('/images/' + json.location);
-           };
-           formData = new FormData();
+           };w
            formData.append('file', blobInfo.blob(), blobInfo.filename());
            xhr.send(formData);
        },

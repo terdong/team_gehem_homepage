@@ -59,6 +59,9 @@ GET         /images/:hash                                                       
 GET         /file/:hash                                                             controllers.AttachmentController.file(hash:String)
 GET         /files/:post_seq                                                        controllers.AttachmentController.files(post_seq:Long)
 
+#Developer
+GET /dev/insert_post_100 controllers.DevController.insertPost100
+
 
 #######################################################################################################################
 

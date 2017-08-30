@@ -48,6 +48,13 @@ class PostsRepository @Inject()(
     db run query.result
   }
 
+  def getAllPostCount(permission: Byte) = {
+    val action = for {
+      b <- boards.filter(b => b.status === true && b.list_permission <= permission)
+    } yield posts.filter(_.board_seq === b.seq).length
+    db run action.result.map(_.sum)
+  }
+
   def getSearchPostCount(board_seq: Long, search_info : BoardSearchInfo) = {
     val search_query = convertSearchType(search_info)
     val q =
@@ -60,14 +67,6 @@ class PostsRepository @Inject()(
                             search_info : BoardSearchInfo) = {
     val search_query = convertSearchType(search_info)
     val action = sql"""SELECT count(p.seq) FROM posts AS p WHERE EXISTS (SELECT * FROM boards AS b WHERE b.status = TRUE AND b.list_permission <= $permission AND b.seq = p.board_seq) AND #${search_query}""".as[Int]
-    db run action.head
-  }
-
-  def getAllPostCount(permission: Byte) = {
-    val action = (for {
-      b <- boards.filter(b =>
-        b.status === true && b.list_permission <= permission)
-    } yield posts.filter(_.board_seq === b.seq).length).result
     db run action.head
   }
 
@@ -196,16 +195,6 @@ class PostsRepository @Inject()(
   }
 
   def insertSample = {
-    val action = posts.map(_.thread).max.result.flatMap {
-      (thread: Option[Long]) =>
-        insertQueryBase += (6,
-          thread.getOrElse[Long](0) + 100,
-          0,
-          3,
-          "subject",
-          Some("content"),
-          "127.0.0.1")
-    }
-    db run (action)
+    insert((2,"subject", "content", Nil), 2, "127.0.0.1")
   }
 }
