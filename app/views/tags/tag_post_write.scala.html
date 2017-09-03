@@ -1,4 +1,4 @@
-@(content:Html)(board_name:Option[String] = None, is_edit :Boolean = false)(implicit request: com.teamgehem.security.AuthMessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list:Option[Seq[com.teamgehem.model.BoardInfo]])
+@(content:Html)(board_name_option:Option[String] = None, is_edit :Boolean = false)(implicit request: com.teamgehem.security.AuthMessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list:Option[Seq[com.teamgehem.model.BoardInfo]])
 
 @scripts = {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" type="text/javascript"></script>
@@ -27,26 +27,27 @@
 
 @main("write", "board", scripts, styles) {
 
-    @tags.tag_board_list()
+    @defining(board_name_option.getOrElse("all")) { board_name =>
+        @tags.tag_board_list(board_name)
 
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <h3 class="panel-title">@Messages(s"board.${board_name.getOrElse("all")}")</h3>
-        </div>
-        <div class="panel-body">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">@Messages(s"board.${board_name}")</h3>
+            </div>
+            <div class="panel-body">
             @content
-        </div>
+            </div>
 
-        <ul class="list-group">
-            <li class="list-group-item">
-                <div class="row">
-                    <label class="control-label col-md-1" for="content">File Upload</label>
-                    <div class="col-md-11">
-                        <div id="fine-uploader"/>
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <div class="row">
+                        <label class="control-label col-md-1" for="content">File Upload</label>
+                        <div class="col-md-11">
+                            <div id="fine-uploader"/>
+                        </div>
                     </div>
-                </div>
-            </li>
-        </ul>
-
-    </div>
+                </li>
+            </ul>
+        </div>
+    }
 }

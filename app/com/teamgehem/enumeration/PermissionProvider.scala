@@ -1,4 +1,4 @@
-package com.teamgehem.security
+package com.teamgehem.enumeration
 
 /**
   * Created by terdo on 2017-05-08 008.

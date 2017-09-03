@@ -1,15 +1,14 @@
-@import com.teamgehem.actions.BoardTransformerRequest
 @import com.teamgehem.model.BoardInfo
 @import com.teamgehem.model.BoardSearchInfo
 @import com.teamgehem.model.BoardPaginationInfo
-@(board_name: String, posts: Seq[(Post, String, Int)], pagination_info: BoardPaginationInfo, search_info: Option[BoardSearchInfo] = None, route: Int => Call)(implicit request: MessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list:Option[Seq[BoardInfo]])
+@(board_name: String, posts: Seq[(Post, String, Int)], pagination_info: BoardPaginationInfo, route: Int => Call, board_seq:Option[Long] = None, search_info: Option[BoardSearchInfo] = None)(implicit request: MessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list: Option[Seq[BoardInfo]])
 @scripts = {
     <script src="@routes.Assets.versioned("javascripts/click_event.js")" type="text/javascript"></script>
     <script src="@routes.Assets.versioned("javascripts/search_event.js")" type="text/javascript"></script>
 }
-@main("list", "board", scripts) {
+@main("list", "board", scripts = scripts) {
 
-    @tags.tag_board_list()
+    @tags.tag_board_list(board_name)
 
     @tags.tag_table_layout(Messages(s"board.${board_name}")) {
         <tr>
@@ -24,7 +23,7 @@
             @defining(p._1) { post =>
                 @defining(p._2) { member_name =>
                     <tr url= @{
-                        routes.PostController.read(post.board_seq, post.seq, pagination_info.page)
+                        routes.PostController.read(post.board_seq, post.seq, pagination_info.current_page)
                     }>
                         <th scope="row">
                         @{
@@ -37,7 +36,6 @@
                             } @if(p._3 > 0) {
                             <span class="badge badge-info">@p._3</span>
                         }
-
                         </td>
                         <td>
                         @{
@@ -60,42 +58,7 @@
         }
     }
 
-    <div class="row">
-        <div class="col-sm-4" style="margin: 0 auto;
-            float: none;">
-            <div class="input-group">
-                <div class="input-group-btn">
-                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" id="AdvancedSearch" aria-expanded="false">
-                        @search_info.map{ info =>
-                            @{
-                                info.search_type match {
-                                    case 0 => "제목"
-                                    case 1 => "내용"
-                                    case 2 => "제목+내용"
-                                    case 3 => "작성자"
-                                    case 4 => "댓글"
-                                    case _ => "제목"
-                                }
-                            }
-                        }.getOrElse("제목") <span class="caret"></span></button>
-                    <ul class="dropdown-menu" id="dropdown">
-                        <li><a >제목</a></li>
-                        <li><a >내용</a></li>
-                        <li><a >제목+내용</a></li>
-                        <li><a >작성자</a></li>
-                        <li><a >댓글</a></li>
-                    </ul>
-                </div><!-- /btn-group -->
-                <input id="search" class="form-control" placeholder="Search for..." value = @search_info.map(_.search_word).getOrElse("")>
-                <span class="input-group-btn">
-                    <a href="@{
-                    if(board_name.equals("all")) routes.PostController.searchAll(1, 0, "") else routes.PostController.search(pagination_info.board_seq, 1, 0, "")
+    @includes.search(pagination_info.current_page, board_seq, search_info)
 
-                    }" id="search_button" class="btn btn-default" type="button" val=@{pagination_info.page}>검색</a>
-                </span>
-            </div>
-        </div>
-    </div>
-
-    @tags.tag_paginate(pagination_info, route)
+    @tags.tag_paginate(pagination_info, route, board_seq)
 }

@@ -1,10 +1,10 @@
 @import com.teamgehem.model.BoardPaginationInfo
-@(pagination_info : BoardPaginationInfo, route: Int => Call, bound: Int = 5)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@(pagination_info : BoardPaginationInfo, route: Int => Call, board_seq_option:Option[Long], bound: Int = 5)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 @import b3.clear.fieldConstructor
 
 <nav aria-label="Page navigation">
     @if(request.session.get("email").isDefined) {
-        <a href="@routes.PostController.writePostForm(pagination_info.board_seq)">
+        <a href="@routes.PostController.writePostForm(board_seq_option.getOrElse(0))">
         @b3.button('class -> "btn btn-default pull-right") {
             <span class="fa fa-pencil"></span> Write
         }</a>
@@ -12,13 +12,13 @@
 
     <div class="text-center">
         <ul class="pagination justify-content-center">
-            @if(pagination_info.page == 1) {
+            @if(pagination_info.current_page == 1) {
                 <li class="disabled">
                     <a href="#" aria-label="Previous">
             } else {
                 <li><a href="@route(1)">First</a></li>
                 <li>
-                    <a href="@route(pagination_info.page - 1)" aria-label="Previous">
+                    <a href="@route(pagination_info.current_page - 1)" aria-label="Previous">
                     }
             <i class="fa fa-angle-double-left" aria-hidden="true"></i>
         </a>
@@ -26,16 +26,16 @@
             @defining(pagination_info.getLowBound(bound)) { low_bound =>
                 @defining(pagination_info.getHighBound(bound, low_bound)) { high_bount =>
 
-                    @for(i <- low_bound.max(1) until pagination_info.page) {
+                    @for(i <- low_bound.max(1) until pagination_info.current_page) {
                         <li><a href="@route(i)">@i</a></li>
                     }
-                <li class="active"><a href="#">@{pagination_info.page}</a></li>
-                    @for(i <- pagination_info.page + 1 to high_bount) {
+                <li class="active"><a href="#">@{pagination_info.current_page}</a></li>
+                    @for(i <- pagination_info.current_page + 1 to high_bount) {
                         <li><a href="@route(i)">@i</a></li>
                     }
 
-                    @if(pagination_info.page < high_bount) {
-                        <li><a href="@route(pagination_info.page + 1)" aria-label="Next">
+                    @if(pagination_info.current_page < high_bount) {
+                        <li><a href="@route(pagination_info.current_page + 1)" aria-label="Next">
                     } else {
                         <li class="disabled"><a href="#" aria-label="Next">
                         }

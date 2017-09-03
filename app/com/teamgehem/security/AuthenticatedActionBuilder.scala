@@ -2,10 +2,11 @@ package com.teamgehem.security
 
 import javax.inject.Inject
 
+import com.teamgehem.enumeration.PermissionProvider
 import play.api.i18n.MessagesApi
 import play.api.mvc.Security.{AuthenticatedBuilder, AuthenticatedRequest}
 import play.api.mvc._
-import PermissionProvider._
+import com.teamgehem.enumeration.PermissionProvider._
 import com.teamgehem.model.MemberInfo
 
 import scala.concurrent.{ExecutionContext, Future}

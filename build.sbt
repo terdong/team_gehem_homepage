@@ -1,6 +1,6 @@
 name := "team_gehem_homepage"
 
-version := "0.4.0"
+version := "0.4.1"
 
 lazy val `team_gehem_homepage` =
   (project in file(".")).enablePlugins(PlayScala)

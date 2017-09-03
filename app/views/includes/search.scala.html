@@ -1,0 +1,39 @@
+@import com.teamgehem.model.BoardSearchInfo
+@(page:Int, board_seq_option: Option[Long], search_info: Option[BoardSearchInfo])
+<div class="row">
+    <div class="col-sm-4" style="margin: 0 auto;
+        float: none;">
+        <div class="input-group">
+            <div class="input-group-btn">
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" id="AdvancedSearch" aria-expanded="false">
+                    @search_info.map { info =>
+                        @{
+                            info.search_type match {
+                                case 0 => "제목"
+                                case 1 => "내용"
+                                case 2 => "제목+내용"
+                                case 3 => "작성자"
+                                case 4 => "댓글"
+                                case _ => "제목"
+                            }
+                        }
+                    }.getOrElse("제목") <span class="caret"></span></button>
+                <ul class="dropdown-menu" id="dropdown">
+                    <li><a >제목</a></li>
+                    <li><a >내용</a></li>
+                    <li><a >제목+내용</a></li>
+                    <li><a >작성자</a></li>
+                    <li><a >댓글</a></li>
+                </ul>
+            </div><!-- /btn-group -->
+            <input id="search" class="form-control" placeholder="Search for..." value = @search_info.map(_.search_word).getOrElse("")>
+            <span class="input-group-btn">
+                <a href="@{
+                    board_seq_option.map(board_seq => routes.PostController.search(board_seq, 1, 0, "")).getOrElse(routes.PostController.searchAll(1, 0, ""))
+                }" id="search_button" class="btn btn-default" type="button" val=@{
+                    page
+                }>검색</a>
+            </span>
+        </div>
+    </div>
+</div>
