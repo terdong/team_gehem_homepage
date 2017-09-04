@@ -57,12 +57,9 @@
                                             <div class="well">
                                                 <div class="row" style="padding: 0px 15px;">
                                                 @b3.formCSRF(routes.PostController.writeComment(post.board_seq)) {
-                                                    <div class="form-group" id="t_field">
-                                                        <textarea id="content" maxlength="4000" required="true" placeholder="@Messages("comment.placeholder")" class="form-control"></textarea>
-                                                    </div>
+                                                    @b3.textarea(comment_form("content"), 'class -> "form-control", 'rows -> 3, 'placeholder -> Messages("comment.placeholder"))
                                                     @b3.hidden("post_seq", post.seq)
                                                     @b3.hidden("reply_comment_seq", comment.seq)
-                                                    @b3.hidden("content", "")
                                                     @b3.buttonType("submit", 'class -> "btn btn-primary btn-sm pull-right") {
                                                         <i class="fa fa-check"></i> Write }
                                                 }
@@ -85,11 +82,8 @@
             <div class="row" style="padding: 0px 15px;">
 
             @b3.formCSRF(routes.PostController.writeComment(post.board_seq)) {
-                <div class="form-group" id="t_field">
-                    <textarea id="content" maxlength="4000" required="true" placeholder="@Messages("comment.placeholder")" class="form-control"></textarea>
-                </div>
+                @b3.textarea(comment_form("content"), 'class -> "form-control", 'rows -> 3, 'placeholder -> Messages("comment.placeholder"))
                 @b3.hidden("post_seq", post.seq)
-                @b3.hidden("content", "")
                 @b3.buttonType("submit", 'class -> "btn btn-primary btn-sm pull-right") {
                     <i class="fa fa-check"></i> Write }
             }

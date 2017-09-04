@@ -345,11 +345,12 @@ class PostController @Inject()(cache: SyncCacheApi,
       }
   }
 
+  // TODO: If the form fails, change the request method to ajax to prevent unnecessary operations.
   def writeComment(board_seq: Long) = auth.async { implicit request =>
     val form = comment_form.bindFromRequest
     form.fold(
       hasErrors => {
-        val post_seq = hasErrors.get._1
+        val post_seq: Long = hasErrors.data.get("post_seq").map(_.toLong).getOrElse(0)
         val page = getReadPage
         for {
           r <- boards_repo.isReadValidBoard(board_seq, getPermission)
@@ -361,7 +362,6 @@ class PostController @Inject()(cache: SyncCacheApi,
           all_posts_count <- posts_repo.getPostCount(board_seq)
           attachments <- attachments_repo.getAttachments(post_seq)
         } yield {
-          posts_repo.updateHitCount(tuple._1)
           val is_own = getSeq.map {
             _ == tuple._2.seq
           }.getOrElse(false)
