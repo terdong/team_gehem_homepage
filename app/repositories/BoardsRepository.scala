@@ -123,7 +123,7 @@ class BoardsRepository @Inject()(
     db run action
   }
 
-  def update(form: (Long, String, String, Boolean, Byte, Byte, Byte, Int),
+  def update(form: (Long, String, String, Boolean, Boolean, Boolean, Boolean, Byte, Byte, Byte, Int),
              name: String) = {
     val action = boards
       .filter(_.seq === form._1)
@@ -132,13 +132,16 @@ class BoardsRepository @Inject()(
           (b.name,
             b.description,
             b.status,
+            b.is_reply,
+            b.is_comment,
+            b.is_attachment,
             b.list_permission,
             b.read_permission,
             b.write_permission,
             b.priority,
             b.author))
       .update(
-        (form._2, Some(form._3), form._4, form._5, form._6, form._7, form._8, name))
+        (form._2, Some(form._3), form._4, form._5, form._6, form._7, form._8, form._9, form._10, form._11, name))
 
     db run action
   }

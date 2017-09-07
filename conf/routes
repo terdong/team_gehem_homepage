@@ -61,6 +61,7 @@ GET         /files/:post_seq                                                    
 
 #Developer
 GET /dev/insert_post_100 controllers.DevController.insertPost100
+GET /dev/insert_comment_100 controllers.DevController.insertComment100
 
 
 #######################################################################################################################

@@ -45,13 +45,14 @@ class BoardController @Inject()(auth: AuthenticatedActionBuilder,
           b.name,
           b.description.getOrElse(""),
           b.status,
+          b.is_reply,
+          b.is_comment,
+          b.is_attachment,
           b.list_permission,
           b.read_permission,
           b.write_permission,
           b.priority)
-
-        boards_(board_edit_form.fill(form_data),
-          routes.BoardController.editBoard)
+        boards_(board_edit_form.fill(form_data), routes.BoardController.editBoard)
       }
   }
 
@@ -117,6 +118,9 @@ class BoardController @Inject()(auth: AuthenticatedActionBuilder,
       "name" -> nonEmptyText(maxLength = 30),
       "description" -> text(maxLength = 2000),
       "status" -> boolean,
+      "is_reply" -> boolean,
+      "is_comment" -> boolean,
+      "is_attachment" -> boolean,
       "list_perm" -> byteNumber(min = 0, max = 99),
       "read_perm" -> byteNumber(min = 0, max = 99),
       "write_perm" -> byteNumber(min = 0, max = 99),

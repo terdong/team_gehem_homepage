@@ -11,7 +11,7 @@ import akka.util.ByteString
 import com.teamgehem.enumeration.BoardListState._
 import com.teamgehem.model.{BoardInfo, BoardPaginationInfo, BoardSearchInfo, MemberInfo}
 import com.teamgehem.security.AuthenticatedActionBuilder
-import models.{Member, Post}
+import models.{Comment, Member, Post}
 import org.apache.commons.codec.digest.DigestUtils
 import play.api.cache.SyncCacheApi
 import play.api.data.Form
@@ -201,15 +201,16 @@ class PostController @Inject()(cache: SyncCacheApi,
     for {
       r <- boards_repo.isReadValidBoard(board_seq, getPermission)
       if r == true
+      board <- boards_repo.getBoard(board_seq)
       tuple <- posts_repo.getPost(board_seq, post_seq)
-      comments <- comments_repo.allWithMemberName(post_seq)
+      comments: Seq[(Comment, String, Option[String])] <- comments_repo.allWithMemberName(post_seq)
       attachments <- attachments_repo.getAttachments(post_seq)
       result <- route
     }yield {
       posts_repo.updateHitCount(tuple._1)
       val is_own = getSeq.map(_.toLong == tuple._2.seq).getOrElse(false)
 
-      Ok((views.html.post.read(tuple, comment_form, comments, attachments, is_own) _).tupled(result)).withCookies(Cookie("read_page", page.toString, Some(3600))).bakeCookies()
+      Ok((views.html.post.read(tuple, comment_form, comments, attachments, is_own, board.is_reply, board.is_comment, board.is_attachment) _).tupled(result)).withCookies(Cookie("read_page", page.toString, Some(3600))).bakeCookies()
     }
   }
 
@@ -379,11 +380,11 @@ class PostController @Inject()(cache: SyncCacheApi,
         }
       },
       form => {
-        getSeq.map { seq =>
+        getSeq.map { author_seq =>
           comments_repo
-            .insert(form, seq.toLong, request.remoteAddress)
-            .map { post_seq =>
-              Redirect(routes.PostController.read(board_seq, post_seq, getReadPage))
+            .insert(form, author_seq.toLong, request.remoteAddress)
+            .map { result =>
+              Redirect(routes.PostController.read(board_seq, form._1, getReadPage))
             }
         }.getOrElse(Future.successful(InternalServerError))
       }
