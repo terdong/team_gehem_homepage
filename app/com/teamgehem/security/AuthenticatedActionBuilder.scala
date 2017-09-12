@@ -13,8 +13,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class AuthenticatedActionBuilder(val parser: BodyParser[AnyContent],
                                  messagesApi: MessagesApi,
-                                 builder: AuthenticatedBuilder[MemberInfo],
-                                 filter: MemberAuthorizedFilter)(
+                                 builder: AuthenticatedBuilder[MemberInfo])(
     implicit val executionContext: ExecutionContext)
     extends ActionBuilder[AuthMessagesRequest, AnyContent] {
   type ResultBlock[A] = (AuthMessagesRequest[A]) => Future[Result]
@@ -22,10 +21,9 @@ class AuthenticatedActionBuilder(val parser: BodyParser[AnyContent],
   @Inject
   def this(parser: BodyParsers.Default,
            messagesApi: MessagesApi,
-           builder: MemberAuthenticatedBuilder,
-           filter: MemberAuthorizedFilter)(implicit ec: ExecutionContext) = {
+           builder: MemberAuthenticatedBuilder)(implicit ec: ExecutionContext) = {
 
-    this(parser: BodyParser[AnyContent], messagesApi, builder, filter)
+    this(parser: BodyParser[AnyContent], messagesApi, builder)
   }
 
   def authrized_standby = {

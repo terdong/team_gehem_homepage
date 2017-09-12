@@ -8,9 +8,15 @@ import play.api.mvc._
 @Singleton
 class HomeController @Inject()(cc: MessagesControllerComponents)
     extends MessagesAbstractController(cc) {
-  def index = Action { implicit request =>
-    Logger.debug(request.headers.headers.mkString("\n"))
-    Ok(views.html.index("Your new application is ready."))
+  def index = {
+
+    val a: Action[AnyContent] = Action { implicit request =>
+      Logger.debug(request.headers.headers.mkString("\n"))
+      Ok(views.html.index("Your new application is ready."))
+    }
+
+    Logger.debug(s"action's hashcode = ${a.hashCode()}")
+    a
   }
 
   def result() = Action { implicit request =>

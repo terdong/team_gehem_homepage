@@ -2,7 +2,10 @@ package services
 
 import javax.inject.{Inject, Singleton}
 
+import com.teamgehem.enumeration.BoardCacheString
 import com.teamgehem.model.BoardInfo
+import models.Board
+import play.api.Logger
 import play.api.cache.AsyncCacheApi
 import play.api.inject.ApplicationLifecycle
 import repositories._
@@ -16,8 +19,16 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class CacheManager @Inject()(appLifecycle: ApplicationLifecycle,
                              boards_repo: BoardsRepository,
                              cache: AsyncCacheApi) {
+  import BoardCacheString._
 
-  boards_repo.allSeqAndNameAndListPermission.map(_.map(BoardInfo tupled)).map(cache.set("board.list", _))
+  Logger.info("CacheManager Start")
+
+  boards_repo.getAllSeqAndNameAndListPermission.map(_.map(BoardInfo tupled)).foreach(cache.set(List_Permission, _))
+  boards_repo.getAvailableBoards.foreach{
+    _.foreach{ (board: Board) =>
+      cache.set(combineBoardSeq(board.seq), board)
+    }
+  }
 
   appLifecycle.addStopHook { () =>
     Future.successful(())

@@ -36,7 +36,7 @@ class AttachmentController @Inject()(cache: AsyncCacheApi,
             s"Attachment Seq: ${attachment.seq} (${full_path}) does not exist on storage")
           InternalServerError("The file does not exist")
         } else {
-          Ok.sendFile(file, false, _ => attachment.name)
+          Ok.sendFile(file, false, _ => attachment.name).as(attachment.mime_type)
         }
       }
   }

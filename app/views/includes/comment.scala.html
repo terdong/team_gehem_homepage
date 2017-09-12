@@ -1,7 +1,7 @@
 @import com.teamgehem.model.BoardInfo
 @import com.teamgehem.model.MemberInfo
 @import b3.vertical.fieldConstructor
-@(comment_form: Form[_], comments: Seq[(Comment, String, Option[String])])(implicit post:Post, is_reply:Boolean,  request: MessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list: Option[Seq[BoardInfo]], member_info_option:Option[MemberInfo])
+@(comment_form: Form[_], comments: Seq[(Comment, String, Option[String])])(implicit post: Post, is_reply: Boolean, request: MessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list: Option[Seq[BoardInfo]], member_info_option: Option[MemberInfo])
 
 <ul class="list-group">
     @if(comments.length > 0) {
@@ -21,7 +21,9 @@
                                 <strong>
                                     @defining(comment.reply_comment_seq) { seq =>
                                         @if(seq.isDefined) {
-                                            <small>@{c._3.getOrElse("삭제된 댓글")}</small> >>>
+                                            <small>@{
+                                                c._3.getOrElse("삭제된 댓글")
+                                            }</small> >>>
                                         }
                                     } @c._2
                                 </strong> <span class="text-muted">
@@ -30,7 +32,7 @@
                                     @if(member_info.seq == comment.author_seq) {
                                         @defining(s"remove_reply_modal_${comment.seq}") { modal_name =>
                                             <button type="button" title = "delete" data-toggle="modal" data-target="#@modal_name" class="btn btn-warning btn-xs" ><span class="fa fa-times"></span></button>
-                                        @tags.tag_simple_modal(modal_name,Messages("post.delete.title"), routes.PostController.deleteComment(post.board_seq, post.seq, comment.seq)){
+                                        @tags.tag_simple_modal(modal_name, Messages("post.delete.title"), routes.PostController.deleteComment(post.board_seq, post.seq, comment.seq)) {
                                             @Messages("post.delete.message")
                                         }
                                         }

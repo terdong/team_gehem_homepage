@@ -4,7 +4,6 @@ import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.{Inject, Singleton}
 
 import models.{Comment, CommentsTable}
-import play.api.Logger
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 import slick.jdbc.PostgresProfile.api._
@@ -90,12 +89,12 @@ class CommentsRepository @Inject()(
           val sub_q2 = sqlu"INSERT INTO comments (post_seq,thread,author_seq,reply_comment_seq,content,author_ip) VALUES (${form._1}, ${next_thread} - 1, ${author_seq},${form._2},${form._3},${ip})"
           val verification_query = sql"""SELECT count(*) FROM comments WHERE thread >= ${prev_thread} AND thread < ${next_thread}""".as[Int].head
           val verification_action = verification_query.flatMap { count =>
-            Logger.debug(s"parent_thread(${prev_thread})'s sub comment count = $count")
+            //Logger.debug(s"parent_thread(${prev_thread})'s sub comment count = $count")
             if (count > Max_Sub_Comment_Count) {
               DBIO.failed(new Exception("The number of child threads for that thread has been exceeded 1000."))
             }
             else {
-              DBIO.successful(s"It has been updated.")
+              DBIO.successful(s"It has been inserted.")
             }
           }
           sub_q1 andThen sub_q2 zip verification_action
@@ -103,7 +102,7 @@ class CommentsRepository @Inject()(
 
         db.run(final_query.transactionally).map {
           case (query_result, rollback_result: String) => {
-            Logger.debug(s"query_result: ${query_result}, rollback_result: ${rollback_result}")
+            //Logger.debug(s"query_result: ${query_result}, rollback_result: ${rollback_result}")
             query_result
           }
         }

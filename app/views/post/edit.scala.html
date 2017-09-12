@@ -1,8 +1,9 @@
 @import com.teamgehem.security.AuthMessagesRequest
 @import com.teamgehem.model.BoardInfo
-@(form: Form[_], board_seq: Long, post_seq: Long)(implicit request: AuthMessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list: Option[Seq[BoardInfo]])
+@(form: Form[_], board_name:String, board_seq:Long, is_attachment:Boolean, post_seq: Long)(implicit request: AuthMessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list: Option[Seq[BoardInfo]])
+@implicit_is_attachment = @{is_attachment}
 
 @tags.tag_post_write {
     @tags.tag_post_write_form(routes.PostController.editPost(board_seq, post_seq), board_seq, form)
     <input id="post_seq" type="hidden" value="@post_seq" readonly />
-}(board_list.map { list =>list.find(_.seq == board_seq).map(b => b.name)}.get, true)
+}(Some(board_name), true)

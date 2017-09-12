@@ -3,16 +3,12 @@ package controllers
 import javax.inject.{Inject, Singleton}
 
 import com.teamgehem.security.{AuthMessagesRequest, AuthenticatedActionBuilder}
+import play.api.cache.AsyncCacheApi
 import play.api.data.Forms._
 import play.api.data._
 import play.api.i18n._
 import play.api.mvc._
-import repositories.{
-BoardsRepository,
-MembersRepository,
-PermissionsRepository,
-PostsRepository
-}
+import repositories.{BoardsRepository, MembersRepository, PermissionsRepository, PostsRepository}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
@@ -22,7 +18,8 @@ import scala.concurrent.{Await, Future}
   * Created by terdo on 2017-04-20 020.
   */
 @Singleton
-class BoardController @Inject()(auth: AuthenticatedActionBuilder,
+class BoardController @Inject()(cache: AsyncCacheApi,
+                                auth: AuthenticatedActionBuilder,
                                 cc: MessagesControllerComponents,
                                 members_repo: MembersRepository,
                                 boards_repo: BoardsRepository,
@@ -66,8 +63,13 @@ class BoardController @Inject()(auth: AuthenticatedActionBuilder,
         val result = for {
           member <- members_repo.findByEmail(email)
           r <- boards_repo.update(form, member.name)
-        // _ <- setCacheBoardList
-        } yield Redirect(routes.BoardController.boards())
+        } yield{
+          // TODO: The result that is about "editBoard" will have to be implemented with "success", "failure" pattern matching.
+          if(r == 1){
+            boards_repo.getAvailableBoards.foreach(cache.set("board.list.available",_))
+          }
+          Redirect(routes.BoardController.boards())
+        }
         result
       }
     )

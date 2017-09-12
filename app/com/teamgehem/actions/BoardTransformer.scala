@@ -26,7 +26,7 @@ class BoardTransformer(val parser: BodyParser[AnyContent],
   }
 
   def transform[A](request: MessagesRequest[A]): Future[BoardTransformerRequest[A]] = {
-    board_repo.allSeqAndNameAndListPermission.map(_.map(BoardInfo tupled)).map(new BoardTransformerRequest[A](_, messagesApi, request))
+    board_repo.getAllSeqAndNameAndListPermission.map(_.map(BoardInfo tupled)).map(new BoardTransformerRequest[A](_, messagesApi, request))
   }
 }
 

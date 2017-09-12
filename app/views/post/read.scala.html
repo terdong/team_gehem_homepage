@@ -1,8 +1,8 @@
 @import com.teamgehem.model.BoardInfo
 @import com.teamgehem.model.MemberInfo
-@import com.teamgehem.model.BoardPaginationInfo
+@import com.teamgehem.model.PaginationInfo
 @import com.teamgehem.model.BoardSearchInfo
-@(tuple: (Post, Member), comment_form: Form[_], comments: Seq[(Comment, String, Option[String])], attachments: Seq[Attachment], is_own: Boolean, is_reply : Boolean,is_comment:Boolean, is_attachment:Boolean)(board_name: String, posts: Seq[(Post, String, Int)], pagination_info: BoardPaginationInfo, route: Int => Call, board_seq:Option[Long] = None, search_info: Option[BoardSearchInfo] = None)(implicit request: MessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list: Option[Seq[BoardInfo]], member_info_option: Option[MemberInfo])
+@(tuple: (Post, Member), comment_data_option: Option[(Form[_], Seq[(Comment, String, Option[String])])], attachments: Seq[Attachment], is_own: Boolean, is_reply : Boolean)(board_name: String, posts: Seq[(Post, String, Int)], board_pagination_info: PaginationInfo, route: Int => Call, board_seq:Option[Long] = None, search_info: Option[BoardSearchInfo] = None)(implicit request: MessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list: Option[Seq[BoardInfo]], member_info_option: Option[MemberInfo])
 
 @scripts = {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/filesize/3.5.10/filesize.min.js" type="text/javascript"></script>
@@ -88,16 +88,18 @@
                                     <ul class="list-inline">
                                     @for(attachment <- attachments) {
                                         <li>
-                                        @tags.tag_attachment(attachment)
+                                        @tags.tag_attachment_download(attachment)
                                         </li>
                                     }
                                     </ul>
                                 </li>
                             </small>
                         }
-                        @*댓글*@
-                        @includes.comment(comment_form, comments)
 
+                        @*댓글*@
+                        @comment_data_option.map{ comment_data =>
+                            @includes.comment(comment_data._1, comment_data._2)
+                        }
                     </div>
                 }
 
@@ -116,7 +118,7 @@
                                 <tr class="@{
                                     "active".when(post.seq.equals(post_in_list.seq))
                                 }" url= @{
-                                    routes.PostController.read(post_in_list.board_seq, post_in_list.seq, pagination_info.current_page)
+                                    routes.PostController.read(post_in_list.board_seq, post_in_list.seq, board_pagination_info.current_page)
                                 }>
                                     <th scope="row">
                                     @{
@@ -154,7 +156,7 @@
         }
     }
 
-    @includes.search(pagination_info.current_page, board_seq, search_info)
+    @includes.search(board_pagination_info.current_page, board_seq, search_info)
 
-    @tags.tag_paginate(pagination_info, route, board_seq)
+    @tags.tag_paginate(board_pagination_info, route)
 }

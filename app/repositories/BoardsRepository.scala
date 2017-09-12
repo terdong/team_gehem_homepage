@@ -22,11 +22,15 @@ class BoardsRepository @Inject()(
   def all: Future[Seq[Board]] =
     db run boards.sortBy(_.seq.nullsFirst).result
 
-  def allSeqAndNameAndListPermission = {
+  def getAllSeqAndNameAndListPermission = {
     val query = for {
       board <- boards.filter(_.status === true).sortBy(_.priority.desc.nullsFirst)
     } yield (board.seq, board.name, board.list_permission)
     db run (query.result)
+  }
+
+  def getAvailableBoards: Future[Seq[Board]] = {
+    db run boards.filter(_.status === true).result
   }
 
   def getNameBySeq(board_seq: Long) = {
@@ -37,12 +41,12 @@ class BoardsRepository @Inject()(
     db run boards.filter(_.seq === board_seq).result.head
   }
 
-  def getBoardInfoForWrite(permission: Byte): Future[Seq[(Long, String)]] = {
+  def getBoardInfoForWrite(permission: Byte) = {
 
     db run boards
       .filter(_.write_permission <= permission)
       .sortBy(_.priority.desc.nullsFirst)
-      .map(b => (b.seq, b.name))
+      .map(b => (b.seq, b.name, b.is_attachment))
       .result
 
   }
@@ -54,6 +58,11 @@ class BoardsRepository @Inject()(
     val query =
       boards.filter(b => b.name === name && !(b.seq === board_seq)).exists.result
     val sql = query.statements.head
+    db run query
+  }
+
+  def checkCommentWriting(board_seq:Long) = {
+    val query = boards.filter(b=> b.seq === board_seq && b.is_comment === true).exists.result
     db run query
   }
 

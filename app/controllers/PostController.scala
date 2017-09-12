@@ -9,9 +9,9 @@ import akka.stream.IOResult
 import akka.stream.scaladsl.{FileIO, Sink}
 import akka.util.ByteString
 import com.teamgehem.enumeration.BoardListState._
-import com.teamgehem.model.{BoardInfo, BoardPaginationInfo, BoardSearchInfo, MemberInfo}
-import com.teamgehem.security.AuthenticatedActionBuilder
-import models.{Comment, Member, Post}
+import com.teamgehem.model.{BoardInfo, BoardSearchInfo, MemberInfo, PaginationInfo}
+import com.teamgehem.security.{AuthenticatedActionBuilder, BoardStateFilter}
+import models.{Member, Post}
 import org.apache.commons.codec.digest.DigestUtils
 import play.api.cache.SyncCacheApi
 import play.api.data.Form
@@ -45,7 +45,8 @@ class PostController @Inject()(cache: SyncCacheApi,
                                boards_repo: BoardsRepository,
                                posts_repo: PostsRepository,
                                attachments_repo: AttachmentsRepository,
-                               comments_repo: CommentsRepository)
+                               comments_repo: CommentsRepository,
+                               board_state_filter: BoardStateFilter)
 //cache: AsyncCacheApi)
   extends MessagesAbstractController(cc) {
 
@@ -53,7 +54,7 @@ class PostController @Inject()(cache: SyncCacheApi,
   lazy val page_length = config.get[Int]("post.pageLength")
   lazy val temp_dir_path: String = System.getProperty("java.io.tmpdir")
 
-  implicit def getBoardInfo: Option[Seq[BoardInfo]] = cache.get[Seq[BoardInfo]]("board.list")
+  implicit def getBoardInfo: Option[Seq[BoardInfo]] = cache.get[Seq[BoardInfo]]("board.list.list_permission")
 
   implicit def getMemberInfo(implicit request: MessagesRequest[AnyContent]) = {
     for {
@@ -82,7 +83,7 @@ class PostController @Inject()(cache: SyncCacheApi,
           posts_in_page <- posts_repo.all(page, page_length, permission)
           all_posts_count <- posts_repo.getAllPostCount(permission)
         } yield {
-          Ok(views.html.post.list("all", posts_in_page, BoardPaginationInfo(page, page_length, all_posts_count), route)).withCookies(Cookie(List_Mode, All_List)).bakeCookies()
+          Ok(views.html.post.list("all", posts_in_page, PaginationInfo(page, page_length, all_posts_count), route)).withCookies(Cookie(List_Mode, All_List)).bakeCookies()
         }
       }
       case _ => {
@@ -93,7 +94,7 @@ class PostController @Inject()(cache: SyncCacheApi,
           posts_in_page <- posts_repo.getListByBoard(board_seq, page, page_length)
           posts_count_on_board <- posts_repo.getPostCount(board_seq)
         } yield
-          Ok(views.html.post.list(board_name, posts_in_page, BoardPaginationInfo(page, page_length, posts_count_on_board), route, Some(board_seq))).withCookies(Cookie(List_Mode, Default_List)).bakeCookies()
+          Ok(views.html.post.list(board_name, posts_in_page, PaginationInfo(page, page_length, posts_count_on_board), route, Some(board_seq))).withCookies(Cookie(List_Mode, Default_List)).bakeCookies()
       }
     }
   }
@@ -108,7 +109,7 @@ class PostController @Inject()(cache: SyncCacheApi,
         views.html.post.list(
           "all",
           posts_in_page,
-          BoardPaginationInfo(page, page_length, posts_count_on_board),
+          PaginationInfo(page, page_length, posts_count_on_board),
           routes.PostController.searchAll(_, type_number, word),
           search_info = Some(BoardSearchInfo(type_number, word))
         )
@@ -129,7 +130,7 @@ class PostController @Inject()(cache: SyncCacheApi,
           .list(
             board_name,
             posts_in_page,
-            BoardPaginationInfo(page, page_length, posts_count_on_board),
+            PaginationInfo(page, page_length, posts_count_on_board),
             routes.PostController.search(board_seq, _, type_number, word),
             Some(board_seq),
             Some(BoardSearchInfo(type_number, word))
@@ -151,14 +152,14 @@ class PostController @Inject()(cache: SyncCacheApi,
     // get list of the posts
     val permission = getPermission
     val list_mode = request.cookies.get(List_Mode).map(_.value).getOrElse(Default_List)
-    val route: Future[(String, Vector[(Post, String, Int)], BoardPaginationInfo, (Int) => Call, Option[Long], Option[BoardSearchInfo])] = list_mode match {
+    val route: Future[(String, Vector[(Post, String, Int)], PaginationInfo, (Int) => Call, Option[Long], Option[BoardSearchInfo])] = list_mode match {
       case Default_List => {
         for{
           board_name <- boards_repo.getNameBySeq(board_seq)
           posts <- posts_repo.getListByBoard(board_seq, page, page_length)
           posts_count_on_board <- posts_repo.getPostCount(board_seq)
         }yield{
-          (board_name, posts, BoardPaginationInfo(page, page_length, posts_count_on_board), routes.PostController.list(board_seq, _), Some(board_seq), None)
+          (board_name, posts, PaginationInfo(page, page_length, posts_count_on_board), routes.PostController.list(board_seq, _), Some(board_seq), None)
         }
       }
       case All_List => {
@@ -167,7 +168,7 @@ class PostController @Inject()(cache: SyncCacheApi,
           posts_in_page <- posts_repo.all(page, page_length, permission)
           all_posts_count <- posts_repo.getAllPostCount(permission)
         }yield{
-          (board_name, posts_in_page, BoardPaginationInfo(page, page_length, all_posts_count), routes.PostController.list(0, _), None, None)
+          (board_name, posts_in_page, PaginationInfo(page, page_length, all_posts_count), routes.PostController.list(0, _), None, None)
         }
       }
       case Search_List => {
@@ -180,7 +181,7 @@ class PostController @Inject()(cache: SyncCacheApi,
           posts_in_page <- posts_repo.search(board_seq, page, page_length, BoardSearchInfo(type_number, word))
           posts_count_on_board <- posts_repo.getSearchPostCount(board_seq, BoardSearchInfo(type_number, word))
         } yield{
-          (board_name, posts_in_page, BoardPaginationInfo(page, page_length, posts_count_on_board), routes.PostController.search(board_seq, _, type_number, word), Some(board_seq),
+          (board_name, posts_in_page, PaginationInfo(page, page_length, posts_count_on_board), routes.PostController.search(board_seq, _, type_number, word), Some(board_seq),
             Some(BoardSearchInfo(type_number, word)))
         }
       }
@@ -192,7 +193,7 @@ class PostController @Inject()(cache: SyncCacheApi,
           posts_in_page <- posts_repo.searchAll(page, page_length, permission, BoardSearchInfo(type_number, word))
           posts_count_on_board <- posts_repo.getSearchAllPostCount(permission, BoardSearchInfo(type_number, word))
         } yield {
-          (board_name, posts_in_page, BoardPaginationInfo(page, page_length, posts_count_on_board), routes.PostController.searchAll(_, type_number, word), None, Some(BoardSearchInfo(type_number, word)))
+          (board_name, posts_in_page, PaginationInfo(page, page_length, posts_count_on_board), routes.PostController.searchAll(_, type_number, word), None, Some(BoardSearchInfo(type_number, word)))
         }
       }
     }
@@ -203,21 +204,21 @@ class PostController @Inject()(cache: SyncCacheApi,
       if r == true
       board <- boards_repo.getBoard(board_seq)
       tuple <- posts_repo.getPost(board_seq, post_seq)
-      comments: Seq[(Comment, String, Option[String])] <- comments_repo.allWithMemberName(post_seq)
+      comments <- comments_repo.allWithMemberName(post_seq)
       attachments <- attachments_repo.getAttachments(post_seq)
       result <- route
     }yield {
       posts_repo.updateHitCount(tuple._1)
       val is_own = getSeq.map(_.toLong == tuple._2.seq).getOrElse(false)
 
-      Ok((views.html.post.read(tuple, comment_form, comments, attachments, is_own, board.is_reply, board.is_comment, board.is_attachment) _).tupled(result)).withCookies(Cookie("read_page", page.toString, Some(3600))).bakeCookies()
+      Ok((views.html.post.read(tuple, if(board.is_comment){Some(comment_form, comments)}else{None}, attachments, is_own, board.is_reply) _).tupled(result)).withCookies(Cookie("read_page", page.toString, Some(3600))).bakeCookies()
     }
   }
 
   def writePostForm(board_seq: Long) = auth.async { implicit request =>
     if (board_seq > 0) {
       boards_repo.getBoard(board_seq).map { board =>
-        Ok(views.html.post.write(post_form, board))
+        Ok(views.html.post.write(post_form, board.name, board.seq, board.is_attachment))
       }
     } else {
       boards_repo
@@ -232,7 +233,7 @@ class PostController @Inject()(cache: SyncCacheApi,
     form.fold(
       hasErrors => {
         boards_repo.getBoard(form.get._1).map { board =>
-          BadRequest(views.html.post.write(hasErrors, board))
+          BadRequest(views.html.post.write(hasErrors, board.name, board.seq, board.is_attachment))
         }
       },
       (form: (Long, String, String, Seq[String])) => {
@@ -250,10 +251,11 @@ class PostController @Inject()(cache: SyncCacheApi,
     for {
       r <- posts_repo.isOwnPost(post_seq, getSeq.getOrElse("0").toLong) if r == true
       tuple: (Post, Member) <- posts_repo.getPost(board_seq, post_seq)
+      board <- boards_repo.getBoard(board_seq)
     } yield {
       val post = tuple._1
       val form_data = (board_seq, post.subject, post.content.getOrElse(""), Nil)
-      Ok(views.html.post.edit(post_form.fill(form_data), board_seq, post_seq))
+      Ok(views.html.post.edit(post_form.fill(form_data), board.name, board.seq, board.is_attachment, post_seq))
     }
   }
 
@@ -261,8 +263,7 @@ class PostController @Inject()(cache: SyncCacheApi,
     val form = post_form.bindFromRequest
     form.fold(
       hasErrors =>
-        Future.successful(
-          BadRequest(views.html.post.edit(hasErrors, board_seq, post_seq))),
+        boards_repo.getBoard(board_seq).map(board=> BadRequest(views.html.post.edit(hasErrors, board.name, board.seq, board.is_attachment, post_seq))),
       form => {
         posts_repo.update(form, post_seq) map {
           _ =>
@@ -293,7 +294,7 @@ class PostController @Inject()(cache: SyncCacheApi,
     }
   }
 
-  def uploadFile = auth(parse.multipartFormData(handleFilePartAsFile)) { request =>
+  def uploadFile = auth.authrized_member(parse.multipartFormData(handleFilePartAsFile)) { request =>
     request.body
       .file("qqfile")
       .map {
@@ -347,7 +348,7 @@ class PostController @Inject()(cache: SyncCacheApi,
   }
 
   // TODO: If the form fails, change the request method to ajax to prevent unnecessary operations.
-  def writeComment(board_seq: Long) = auth.async { implicit request =>
+  def writeComment(board_seq: Long) = (auth.authrized_member andThen board_state_filter.checkCommentWriting(board_seq)).async { implicit request =>
     val form = comment_form.bindFromRequest
     form.fold(
       hasErrors => {
@@ -356,9 +357,9 @@ class PostController @Inject()(cache: SyncCacheApi,
         for {
           r <- boards_repo.isReadValidBoard(board_seq, getPermission)
           if r == true
+          board <- boards_repo.getBoard(board_seq)
           tuple <- posts_repo.getPost(board_seq, post_seq)
           comments <- comments_repo.allWithMemberName(post_seq)
-          board_name <- boards_repo.getNameBySeq(board_seq)
           posts <- posts_repo.getListByBoard(board_seq, page, page_length)
           all_posts_count <- posts_repo.getPostCount(board_seq)
           attachments <- attachments_repo.getAttachments(post_seq)
@@ -368,11 +369,11 @@ class PostController @Inject()(cache: SyncCacheApi,
           }.getOrElse(false)
 
           BadRequest(
-            views.html.post.read(tuple, hasErrors, comments, attachments, is_own)
+            views.html.post.read(tuple, Some(hasErrors, comments), attachments, is_own, board.is_reply)
             (
-              board_name,
+              board.name,
               posts,
-              BoardPaginationInfo(page, page_length, all_posts_count),
+              PaginationInfo(page, page_length, all_posts_count),
               routes.PostController.list(board_seq, _),
               Some(board_seq)
             )
@@ -380,26 +381,22 @@ class PostController @Inject()(cache: SyncCacheApi,
         }
       },
       form => {
-        getSeq.map { author_seq =>
-          comments_repo
-            .insert(form, author_seq.toLong, request.remoteAddress)
-            .map { result =>
-              Redirect(routes.PostController.read(board_seq, form._1, getReadPage))
-            }
-        }.getOrElse(Future.successful(InternalServerError))
+        val author_seq = request.member.seq
+        comments_repo
+          .insert(form, author_seq, request.remoteAddress)
+          .map { result =>
+            Redirect(routes.PostController.read(board_seq, form._1, getReadPage))
+          }
       }
     )
   }
 
   def deleteComment(board_seq: Long, post_seq: Long, comment_seq: Long) = auth.async { implicit request =>
-
-    getSeq.map { seq =>
-      comments_repo.delete(comment_seq, seq.toLong).map { _ =>
-        Redirect(routes.PostController.read(board_seq, post_seq, getReadPage))
-      }
-    }.getOrElse(Future.successful(InternalServerError))
+    val author_seq = request.member.seq
+    comments_repo.delete(comment_seq, author_seq).map { _ =>
+      Redirect(routes.PostController.read(board_seq, post_seq, getReadPage))
+    }
   }
-
 
   private def isWriteValidBoard(board_seq: Long, permission: Byte)(
     implicit request: Request[AnyContent]): Boolean = {
@@ -428,8 +425,15 @@ class PostController @Inject()(cache: SyncCacheApi,
     */
   private def handleFilePartAsFile: FilePartHandler[File] = {
     case FileInfo(partName, filename, contentType) =>
+
+      val fixed_file_name = if (filename.contains("\\")) {
+        filename.substring(filename.lastIndexOf("\\") + 1)
+      } else {
+        filename
+      }
+
       val new_file_hash =
-        DigestUtils.md5Hex(s"${System.currentTimeMillis()}_$filename")
+        DigestUtils.md5Hex(s"${System.currentTimeMillis()}_$fixed_file_name")
       val file = new File(temp_dir_path, new_file_hash)
 
       val fileSink: Sink[ByteString, Future[IOResult]] =
@@ -443,7 +447,7 @@ class PostController @Inject()(cache: SyncCacheApi,
       accumulator.map {
         case IOResult(count, status) =>
           Logger.debug(s"count = $count, status = $status")
-          FilePart(partName, filename, contentType, file)
+          FilePart(partName, fixed_file_name, contentType, file)
       }
   }
 

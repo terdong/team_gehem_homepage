@@ -10,9 +10,9 @@
             @defining(request.session.get("permission").getOrElse("0").toByte) { permission: Byte =>
                 @for(board <- board_list) {
                     @if(permission >= board.list_perm) {
-                        @defining(board.name){board_name =>
+                        @defining(board.name){ board_name =>
                             <li class="breadcrumb-item@if(board_name.equals(active_board_name)){ active">@Messages(s"board.${board_name}")</li>}else{">
-                                <a href="@routes.PostController.list(board.seq, 1)">@Messages(s"board.${board_name}")</a>
+                                <a href="@routes.PostController.list(board.seq, 1)">@Messages(s"board.$board_name")</a>
                                 </li>
                             }
                         }

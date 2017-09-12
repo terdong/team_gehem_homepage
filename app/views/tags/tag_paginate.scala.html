@@ -1,15 +1,7 @@
-@import com.teamgehem.model.BoardPaginationInfo
-@(pagination_info : BoardPaginationInfo, route: Int => Call, board_seq_option:Option[Long], bound: Int = 5)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
-@import b3.clear.fieldConstructor
+@import com.teamgehem.model.PaginationInfo
+@(pagination_info : PaginationInfo, route: Int => Call, bound: Int = 5)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 <nav aria-label="Page navigation">
-@*    @if(request.session.get("email").isDefined) {
-        <a href="@routes.PostController.writePostForm(board_seq_option.getOrElse(0))">
-        @b3.button('class -> "btn btn-default pull-right") {
-            <span class="fa fa-pencil"></span> Write
-        }</a>
-    }*@
-
     <div class="text-center">
         <ul class="pagination justify-content-center">
             @if(pagination_info.current_page == 1) {

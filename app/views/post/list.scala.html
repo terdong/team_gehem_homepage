@@ -1,7 +1,7 @@
 @import com.teamgehem.model.BoardInfo
 @import com.teamgehem.model.BoardSearchInfo
-@import com.teamgehem.model.BoardPaginationInfo
-@(board_name: String, posts: Seq[(Post, String, Int)], pagination_info: BoardPaginationInfo, route: Int => Call, board_seq:Option[Long] = None, search_info: Option[BoardSearchInfo] = None)(implicit request: MessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list: Option[Seq[BoardInfo]])
+@import com.teamgehem.model.PaginationInfo
+@(board_name: String, posts: Seq[(Post, String, Int)], pagination_info: PaginationInfo, route: Int => Call, board_seq:Option[Long] = None, search_info: Option[BoardSearchInfo] = None)(implicit request: MessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list: Option[Seq[BoardInfo]])
 @import b3.clear.fieldConstructor
 @scripts = {
     <script src="@routes.Assets.versioned("javascripts/click_event.js")" type="text/javascript"></script>
@@ -68,5 +68,5 @@
 
     @includes.search(pagination_info.current_page, board_seq, search_info)
 
-    @tags.tag_paginate(pagination_info, route, board_seq)
+    @tags.tag_paginate(pagination_info, route)
 }
