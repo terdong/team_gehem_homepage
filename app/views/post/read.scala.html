@@ -31,24 +31,29 @@
                         <div class="panel-heading">
                             <div class="row">
                                 @*제목*@
-                                <div class="col-md-11">
+                                <div class="col-sm-10">
                                     <strong>@post.subject </strong> <small class="text-muted">
                                     | @Messages(s"board.${board_name}")</small>
                                 </div>
 
                                 @*게시글 액션 이벤트*@
-                                @if(is_own) {
-                                    <div class="col-md-1 text-right" style="padding: 0px 10px;">
-                                        <a title="edit" href="@routes.PostController.editPost(post.board_seq, post.seq)" class="btn btn-default btn-xs">
-                                            <span class="fa fa-pencil"></span>
+                                @if(is_reply) {
+                                    <div class="col-sm-2 text-right" style="padding: 0px 10px;">
+                                        <a title="edit" href="@routes.PostController.writeReplyPostForm(post.seq)" class="btn btn-default btn-xs">
+                                            <i class="fa fa-reply fa-rotate-180" title="reply" aria-hidden="true"></i>
                                         </a>
-                                        <button type="button" title = "delete" data-toggle="modal" data-target="#remove_post_modal" class="btn btn-default btn-xs" >
-                                            <span class="fa fa-times"></span>
-                                        </button>
-                                    </div>
-                                    @tags.tag_simple_modal("remove_post_modal", Messages("post.delete.title"), routes.PostController.deletePost(post.board_seq, post.seq)) {
-                                        @Messages("post.delete.message")
+                                    @if(is_own) {
+                                            <a title="edit" href="@routes.PostController.editPost(post.board_seq, post.seq)" class="btn btn-default btn-xs">
+                                                <i class="fa fa-pencil" aria-hidden="true"></i>
+                                            </a>
+                                            <button type="button" title = "delete" data-toggle="modal" data-target="#remove_post_modal" class="btn btn-default btn-xs" >
+                                                <i class="fa fa-times" aria-hidden="true"></i>
+                                            </button>
+                                        @tags.tag_simple_modal("remove_post_modal", Messages("post.delete.title"), routes.PostController.deletePost(post.board_seq, post.seq)) {
+                                            @Messages("post.delete.message")
+                                        }
                                     }
+                                    </div>
                                 }
                             </div>
                         </div>
@@ -126,11 +131,9 @@
                                     }
                                     </th>
                                     <td>
-                                        @{
-                                            post_in_list.subject
-                                        } @if(p._3 > 0) {
-                                        <span class="badge badge-info">@p._3</span>
-                                    }
+                                        @for( i <- 1 to post_in_list.depth){<i class="fa fa-reply fa-rotate-180"></i>}
+                                        @{post_in_list.subject}
+                                        @if(p._3 > 0){<span class="badge badge-info">@p._3</span>}
                                     </td>
                                     <td>
                                     @{

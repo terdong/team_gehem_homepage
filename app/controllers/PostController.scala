@@ -11,7 +11,7 @@ import akka.util.ByteString
 import com.teamgehem.enumeration.BoardListState._
 import com.teamgehem.model.{BoardInfo, BoardSearchInfo, MemberInfo, PaginationInfo}
 import com.teamgehem.security.{AuthenticatedActionBuilder, BoardStateFilter}
-import models.{Member, Post}
+import models.{Board, Post}
 import org.apache.commons.codec.digest.DigestUtils
 import play.api.cache.SyncCacheApi
 import play.api.data.Form
@@ -202,23 +202,25 @@ class PostController @Inject()(cache: SyncCacheApi,
     for {
       r <- boards_repo.isReadValidBoard(board_seq, getPermission)
       if r == true
-      board <- boards_repo.getBoard(board_seq)
-      tuple <- posts_repo.getPost(board_seq, post_seq)
+      tuple <- posts_repo.getPostWithMemberWithBoard(post_seq)
       comments <- comments_repo.allWithMemberName(post_seq)
       attachments <- attachments_repo.getAttachments(post_seq)
       result <- route
     }yield {
-      posts_repo.updateHitCount(tuple._1)
-      val is_own = getSeq.map(_.toLong == tuple._2.seq).getOrElse(false)
+      val post_and_member = (tuple._1, tuple._2)
+      val board = tuple._3
+      val is_own = getSeq.map(_.toLong == post_and_member._2.seq).getOrElse(false)
 
-      Ok((views.html.post.read(tuple, if(board.is_comment){Some(comment_form, comments)}else{None}, attachments, is_own, board.is_reply) _).tupled(result)).withCookies(Cookie("read_page", page.toString, Some(3600))).bakeCookies()
+      posts_repo.updateHitCount(post_and_member._1)
+      Ok((views.html.post.read(post_and_member , if(board.is_comment){Some(comment_form, comments)}else{None}, attachments, is_own, board.is_reply) _).tupled(result)).withCookies(Cookie("read_page", page.toString, Some(3600))).bakeCookies()
     }
   }
 
-  def writePostForm(board_seq: Long) = auth.async { implicit request =>
+  def writePostForm(board_seq: Long) = auth.authrized_member.async { implicit request =>
     if (board_seq > 0) {
       boards_repo.getBoard(board_seq).map { board =>
-        Ok(views.html.post.write(post_form, board.name, board.seq, board.is_attachment))
+        val form_data = (board.seq, "", "", Nil, None)
+        Ok(views.html.post.write(post_form.fill(form_data), board.name, board.seq, board.is_attachment))
       }
     } else {
       boards_repo
@@ -227,8 +229,7 @@ class PostController @Inject()(cache: SyncCacheApi,
     }
   }
 
-
-  def writePost = auth.async { implicit request =>
+  def writePost = auth.authrized_member.async { implicit request =>
     val form = isWriteValidBoardForm.bindFromRequest
     form.fold(
       hasErrors => {
@@ -236,7 +237,7 @@ class PostController @Inject()(cache: SyncCacheApi,
           BadRequest(views.html.post.write(hasErrors, board.name, board.seq, board.is_attachment))
         }
       },
-      (form: (Long, String, String, Seq[String])) => {
+      (form: (Long, String, String, Seq[String], Option[Long])) => {
         getSeq.fold(Future.successful(InternalServerError("There is no seq"))) { seq =>
           posts_repo.insert(form, seq.toLong, request.remoteAddress).map { post =>
             insertAttachment(post.seq, form._4)
@@ -247,14 +248,28 @@ class PostController @Inject()(cache: SyncCacheApi,
     )
   }
 
+  def writeReplyPostForm(post_seq:Long) = auth.authrized_member.async { implicit request =>
+    for {
+      tuple: (Post, Board) <- posts_repo.getPostWithBoard(post_seq)
+    }yield {
+      val post = tuple._1
+      val board = tuple._2
+      val form_data = (board.seq, post.subject, s">>${post.content.getOrElse("")}", Nil, Some(post_seq))
+      Ok(views.html.post.write(post_form.fill(form_data), board.name, board.seq, board.is_attachment))
+    }
+/*      boards_repo.getBoard(board_seq).map { board =>
+        Ok(views.html.post.write(post_form, board.name, board.seq, board.is_attachment))
+      }*/
+  }
+
   def editPostForm(board_seq: Long, post_seq: Long) = auth.async { implicit request =>
     for {
       r <- posts_repo.isOwnPost(post_seq, getSeq.getOrElse("0").toLong) if r == true
-      tuple: (Post, Member) <- posts_repo.getPost(board_seq, post_seq)
-      board <- boards_repo.getBoard(board_seq)
+      tuple: (Post, Board) <- posts_repo.getPostWithBoard(post_seq)
     } yield {
       val post = tuple._1
-      val form_data = (board_seq, post.subject, post.content.getOrElse(""), Nil)
+      val board = tuple._2
+      val form_data = (board_seq, post.subject, post.content.getOrElse(""), Nil, None)
       Ok(views.html.post.edit(post_form.fill(form_data), board.name, board.seq, board.is_attachment, post_seq))
     }
   }
@@ -357,19 +372,18 @@ class PostController @Inject()(cache: SyncCacheApi,
         for {
           r <- boards_repo.isReadValidBoard(board_seq, getPermission)
           if r == true
-          board <- boards_repo.getBoard(board_seq)
-          tuple <- posts_repo.getPost(board_seq, post_seq)
+          tuple <- posts_repo.getPostWithMemberWithBoard(post_seq)
           comments <- comments_repo.allWithMemberName(post_seq)
           posts <- posts_repo.getListByBoard(board_seq, page, page_length)
           all_posts_count <- posts_repo.getPostCount(board_seq)
           attachments <- attachments_repo.getAttachments(post_seq)
         } yield {
-          val is_own = getSeq.map {
-            _ == tuple._2.seq
-          }.getOrElse(false)
+          val post_and_member = (tuple._1, tuple._2)
+          val board = tuple._3
+          val is_own = getSeq.map {_ == post_and_member._2.seq}.getOrElse(false)
 
           BadRequest(
-            views.html.post.read(tuple, Some(hasErrors, comments), attachments, is_own, board.is_reply)
+            views.html.post.read(post_and_member, Some(hasErrors, comments), attachments, is_own, board.is_reply)
             (
               board.name,
               posts,
@@ -411,7 +425,8 @@ class PostController @Inject()(cache: SyncCacheApi,
         isWriteValidBoard(_, getPermission)),
       "subject" -> nonEmptyText(maxLength = 80),
       "content" -> text,
-      "upload_files" -> seq(text)
+      "upload_files" -> seq(text),
+      "reply_post_seq" -> optional(longNumber)
     )
   )
 
@@ -490,7 +505,8 @@ class PostController @Inject()(cache: SyncCacheApi,
       "board_seq" -> longNumber,
       "subject" -> nonEmptyText(maxLength = 80),
       "content" -> text,
-      "upload_files" -> seq(text)
+      "upload_files" -> seq(text),
+      "reply_post_seq" -> optional(longNumber)
     )
   )
 

@@ -32,11 +32,9 @@
                         }
                         </th>
                         <td>
-                            @{
-                                post.subject
-                            } @if(p._3 > 0) {
-                            <span class="badge badge-info">@p._3</span>
-                        }
+                            @for( i <- 1 to post.depth){<i class="fa fa-reply fa-rotate-180"></i>}
+                            @{post.subject}
+                            @if(p._3 > 0){<span class="badge badge-info">@p._3</span>}
                         </td>
                         <td>
                         @{

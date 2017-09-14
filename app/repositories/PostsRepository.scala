@@ -15,10 +15,11 @@ import scala.concurrent.Future
   * Created by terdo on 2017-04-19 019.
   */
 @Singleton
-class PostsRepository @Inject()(
-                                 protected val dbConfigProvider: DatabaseConfigProvider)
+class PostsRepository @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)
   extends HasDatabaseConfigProvider[JdbcProfile]
     with CommentsTable {
+
+  val Max_Sub_Post_Count = 100
 
   implicit val get_post_result = GetResult(p =>
     Post(p.<<, p.<<, p.<<, p.<<, p.<<, p.<<, p.<<, p.<<, p.<<, p.<<, p.<<))
@@ -76,7 +77,7 @@ class PostsRepository @Inject()(
                 search_info: BoardSearchInfo) = {
     val search_query = convertSearchType(search_info)
     val q =
-      sql"""SELECT p_result.*, m.name, c_result.comment_count FROM (SELECT p.* FROM posts AS p WHERE EXISTS (SELECT * FROM boards AS b WHERE b.list_permission <= ${permission} AND p.board_seq = b.seq) AND #${search_query}) AS p_result INNER JOIN members AS m ON p_result.author_seq = m.seq LEFT OUTER JOIN (SELECT c.post_seq, COUNT(c.post_seq) AS comment_count FROM comments AS c GROUP BY c.post_seq) AS c_result ON p_result.seq = c_result.post_seq ORDER BY p_result.seq DESC NULLS FIRST LIMIT ${page_length} OFFSET ${(page - 1) * page_length}"""
+      sql"""SELECT p_result.*, m.name, c_result.comment_count FROM (SELECT p.* FROM posts AS p WHERE EXISTS (SELECT * FROM boards AS b WHERE b.list_permission <= ${permission} AND p.board_seq = b.seq) AND #${search_query}) AS p_result INNER JOIN members AS m ON p_result.author_seq = m.seq LEFT OUTER JOIN (SELECT c.post_seq, COUNT(c.post_seq) AS comment_count FROM comments AS c GROUP BY c.post_seq) AS c_result ON p_result.seq = c_result.post_seq ORDER BY p_result.thread DESC, p_result.seq DESC NULLS FIRST LIMIT ${page_length} OFFSET ${(page - 1) * page_length}"""
         .as[(models.Post, String, Int)]
 
     db run q
@@ -89,19 +90,19 @@ class PostsRepository @Inject()(
     val search_query = convertSearchType(search_info)
     val q =
       sql"""
-            SELECT p_result.*, m.name, c_result.comment_count FROM (SELECT p.* FROM posts AS p WHERE p.board_seq = ${board_seq} AND #${search_query}) AS p_result INNER JOIN members AS m ON p_result.author_seq = m.seq LEFT OUTER JOIN (SELECT c.post_seq, COUNT(c.post_seq) AS comment_count FROM comments AS c GROUP BY c.post_seq) AS c_result ON p_result.seq = c_result.post_seq ORDER BY p_result.seq DESC NULLS FIRST LIMIT ${page_length} OFFSET ${(page - 1) * page_length}
+            SELECT p_result.*, m.name, c_result.comment_count FROM (SELECT p.* FROM posts AS p WHERE p.board_seq = ${board_seq} AND #${search_query}) AS p_result INNER JOIN members AS m ON p_result.author_seq = m.seq LEFT OUTER JOIN (SELECT c.post_seq, COUNT(c.post_seq) AS comment_count FROM comments AS c GROUP BY c.post_seq) AS c_result ON p_result.seq = c_result.post_seq ORDER BY p_result.thread DESC, p_result.seq DESC NULLS FIRST LIMIT ${page_length} OFFSET ${(page - 1) * page_length}
          """.as[(models.Post, String, Int)]
     db run q
   }
 
   private def all_(page: Int, page_length: Int, permission: Byte) = {
 
-    sql"""SELECT p_result.*, m.name, c_result.comment_count FROM (SELECT p.* FROM posts AS p WHERE EXISTS (SELECT * FROM boards AS b WHERE b.list_permission <= ${permission} AND b.read_permission <= ${permission} AND p.board_seq = b.seq)) AS p_result INNER JOIN members AS m ON p_result.author_seq = m.seq LEFT OUTER JOIN (SELECT c.post_seq, COUNT(c.post_seq) AS comment_count FROM comments AS c GROUP BY c.post_seq) AS c_result ON p_result.seq = c_result.post_seq ORDER BY p_result.seq DESC NULLS FIRST LIMIT ${page_length} OFFSET ${(page - 1) * page_length}"""
+    sql"""SELECT p_result.*, m.name, c_result.comment_count FROM (SELECT p.* FROM posts AS p WHERE EXISTS (SELECT * FROM boards AS b WHERE b.list_permission <= ${permission} AND b.read_permission <= ${permission} AND p.board_seq = b.seq)) AS p_result INNER JOIN members AS m ON p_result.author_seq = m.seq LEFT OUTER JOIN (SELECT c.post_seq, COUNT(c.post_seq) AS comment_count FROM comments AS c GROUP BY c.post_seq) AS c_result ON p_result.seq = c_result.post_seq ORDER BY p_result.thread DESC, p_result.seq DESC NULLS FIRST LIMIT ${page_length} OFFSET ${(page - 1) * page_length}"""
       .as[(models.Post, String, Int)]
   }
 
   def listByBoard_(board_seq: Long, page: Int, page_length: Int) = {
-    sql"""SELECT p_result.*, m.name, c_result.comment_count FROM (SELECT p.* FROM posts AS p WHERE p.board_seq = ${board_seq}) AS p_result INNER JOIN members AS m ON p_result.author_seq = m.seq LEFT OUTER JOIN (SELECT c.post_seq, COUNT(c.post_seq) AS comment_count FROM comments AS c GROUP BY c.post_seq) AS c_result ON p_result.seq = c_result.post_seq ORDER BY p_result.seq DESC NULLS FIRST LIMIT ${page_length} OFFSET ${(page - 1) * page_length}"""
+    sql"""SELECT p_result.*, m.name, c_result.comment_count FROM (SELECT p.* FROM posts AS p WHERE p.board_seq = ${board_seq}) AS p_result INNER JOIN members AS m ON p_result.author_seq = m.seq LEFT OUTER JOIN (SELECT c.post_seq, COUNT(c.post_seq) AS comment_count FROM comments AS c GROUP BY c.post_seq) AS c_result ON p_result.seq = c_result.post_seq ORDER BY p_result.thread DESC, p_result.seq DESC NULLS FIRST LIMIT ${page_length} OFFSET ${(page - 1) * page_length}"""
       .as[(models.Post, String, Int)]
 
   }
@@ -114,17 +115,39 @@ class PostsRepository @Inject()(
     db run listByBoard_(board_seq, page, page_length)
   }
 
-  def getPost(board_seq: Long, post_seq: Long) = {
+/*  def getPost(board_seq: Long, post_seq: Long) = {
     val query = posts.filter(p =>
       p.board_seq === board_seq && p.seq === post_seq) join members on (_.author_seq === _.seq)
 
     db run query.result.head
+  }*/
+
+  def getPostWithMemberWithBoard(post_seq: Long) = {
+
+    val query = for{
+      post <- posts.filter(_.seq === post_seq)
+      member <- members.filter(_.seq === post.author_seq)
+      board <- boards.filter(_.seq === post.board_seq)
+    }yield(post,member,board)
+    //val query = posts.filter(_.seq === post_seq) join (members on (_.author_seq === _.seq) join boards on (_._1.board_seq === _.seq))
+
+    db run query.result.head
   }
 
-  def getPost(post_seq: Long) = {
+  def getPostWithMember(post_seq:Long) = {
     val query = posts.filter(_.seq === post_seq) join members on (_.author_seq === _.seq)
 
     db run query.result.head
+  }
+
+  def getPostWithBoard(post_seq:Long) = {
+    val query = posts.filter(_.seq === post_seq) join boards on (_.board_seq === _.seq)
+
+    db run query.result.head
+  }
+
+  def getPost(post_seq:Long) = {
+    db run posts.filter(_.seq === post_seq).result.head
   }
 
   def isOwnPost(post_seq: Long, author_seq: Long) = {
@@ -159,24 +182,59 @@ class PostsRepository @Inject()(
   def insert(post: Post): Future[Unit] =
     db run (posts += post) map (_ => ())
 
-  def insert(form: (Long, String, String, Seq[String]),
+  def insert(form: (Long, String, String, Seq[String], Option[Long]),
              author_seq: Long,
              ip: String) = {
-    val action = posts.map(_.thread).max.result.flatMap {
-      (thread: Option[Long]) =>
-        insertQueryBase.returning(posts) += (form._1,
-          thread.getOrElse[Long](0) + 100,
-          0,
-          author_seq,
-          form._2,
-          Some(form._3),
-          ip)
+    form._5 match {
+      case Some(reply_post_seq) =>{
+        val query_for_thread = sql"""SELECT thread, depth FROM posts WHERE seq = ${reply_post_seq}""".as[(Long, Int)].head
+        val final_query = query_for_thread.flatMap { tuple =>
+          val parent_thread = tuple._1
+          val depth = tuple._2
+          val prev_thread = (parent_thread  - 1) / Max_Sub_Post_Count * Max_Sub_Post_Count
+          val sub_q1 = sqlu"UPDATE posts SET thread = thread - 1 WHERE thread > ${prev_thread} AND thread < ${parent_thread}"
+/*          val sub_q2 = sqlu"INSERT INTO post (board_seq,thread,depth, author_seq,subject,content,author_ip) VALUES (${form._1}, ${parent_thread} - 1, ${depth} - 1, ${author_seq},${form._2},${form._3},${ip})"*/
+          val sub_q2 = insertQueryBase.returning(posts) += (form._1,
+            parent_thread - 1,
+            depth + 1,
+            author_seq,
+            form._2,
+            Some(form._3),
+            ip)
+          val verification_query = sql"""SELECT count(*) FROM posts WHERE thread >= ${prev_thread} AND thread < ${parent_thread}""".as[Int].head
+          val verification_action = verification_query.flatMap { count =>
+            if (count > Max_Sub_Post_Count) {
+              DBIO.failed(new Exception(s"The number of child threads for that thread has been exceeded ${Max_Sub_Post_Count}."))
+            }
+            else {
+              DBIO.successful(s"It has been inserted.")
+            }
+          }
+          sub_q1 andThen sub_q2 zip verification_action
+        }
+        db.run(final_query.transactionally).map {
+          case (query_result, rollback_result: String) => {
+            query_result
+          }
+        }
+      }
+      case _ => {
+        val action = posts.map(_.thread).max.result.flatMap {
+          (thread: Option[Long]) =>
+            insertQueryBase.returning(posts) += (form._1,
+              thread.getOrElse[Long](0) + 100,
+              0,
+              author_seq,
+              form._2,
+              Some(form._3),
+              ip)
+        }
+        db run action
+      }
     }
-
-    db run action
   }
 
-  def update(form: (Long, String, String, Seq[String]),
+  def update(form: (Long, String, String, Seq[String], Option[Long]),
              post_seq: Long) = {
     val action = posts
       .filter(_.seq === post_seq)
@@ -195,6 +253,6 @@ class PostsRepository @Inject()(
   }
 
   def insertSample = {
-    insert((2,"subject", "content", Nil), 2, "127.0.0.1")
+    insert((2,"subject", "content", Nil, None), 2, "127.0.0.1")
   }
 }
