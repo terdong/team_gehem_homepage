@@ -44,7 +44,7 @@ GET         /board/:board_seq/page/:page/post/:post_seq                         
 POST        /board/write                                                            controllers.PostController.writePost
 GET         /board/all/write                                                        controllers.PostController.writePostForm(board_seq :Long = 0)
 GET         /board/:board_seq/write                                                 controllers.PostController.writePostForm(board_seq :Long)
-GET         /post/:post_seq/reply                                                   controllers.PostController.writeReplyPostForm(post_seq:Long)
+GET         /board/:board_seq/post/:post_seq/reply                                  controllers.PostController.writeReplyPostForm(board_seq: Long, post_seq:Long)
 POST        /board/:board_seq/post/:post_seq/edit                                   controllers.PostController.editPost(board_seq :Long, post_seq:Long)
 GET         /board/:board_seq/post/:post_seq/edit                                   controllers.PostController.editPostForm(board_seq :Long, post_seq:Long)
 

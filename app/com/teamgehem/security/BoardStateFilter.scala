@@ -36,4 +36,17 @@ class BoardStateFilter @Inject()(cache: AsyncCacheApi, action_builder:DefaultAct
       }
     }
   }
+
+  def checkReplyWriting(board_seq: Long) = new ActionFilter[AuthMessagesRequest] {
+    override def executionContext: ExecutionContext = ec
+    override protected def filter[A](request: AuthMessagesRequest[A]) = {
+      cache.get[Board](combineBoardSeq(board_seq)).map{ board_option =>
+        board_option.map(_.is_reply).getOrElse(false) match{
+          case true => None
+          case _ => Some(Results.Forbidden(views.html.error_pages.HTTP403()))
+        }
+      }
+    }
+  }
+
 }

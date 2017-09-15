@@ -2,7 +2,7 @@
 @import com.teamgehem.model.MemberInfo
 @import com.teamgehem.model.PaginationInfo
 @import com.teamgehem.model.BoardSearchInfo
-@(tuple: (Post, Member), comment_data_option: Option[(Form[_], Seq[(Comment, String, Option[String])])], attachments: Seq[Attachment], is_own: Boolean, is_reply : Boolean)(board_name: String, posts: Seq[(Post, String, Int)], board_pagination_info: PaginationInfo, route: Int => Call, board_seq:Option[Long] = None, search_info: Option[BoardSearchInfo] = None)(implicit request: MessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list: Option[Seq[BoardInfo]], member_info_option: Option[MemberInfo])
+@(tuple: (Post, Member), comment_data_option: Option[(Form[_], Seq[(Comment, String, Option[String])])], attachments: Seq[Attachment], is_own: Boolean, is_reply: Boolean, is_comment: Boolean)(board_name: String, posts: Seq[(Post, String, Int)], board_pagination_info: PaginationInfo, route: Int => Call, board_seq: Option[Long] = None, search_info: Option[BoardSearchInfo] = None)(implicit request: MessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list: Option[Seq[BoardInfo]], member_info_option: Option[MemberInfo])
 
 @scripts = {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/filesize/3.5.10/filesize.min.js" type="text/javascript"></script>
@@ -19,139 +19,147 @@
 
 @main("read", "board", scripts, styles) {
 
-    @defining(board_seq.map(_=>board_name).getOrElse("all")) { board_name_on_list =>
+    @defining(board_seq.map(_ => board_name).getOrElse("all")) { board_name_on_list =>
 
         @tags.tag_board_list(board_seq.map(_ => board_name).getOrElse("all"))
 
-        @defining(request.session.get("email").isDefined) { implicit is_reply =>
-            @defining(tuple._1) { implicit post =>
-                @defining(tuple._2) { member =>
-                    <div class="panel panel-default">
+        @defining(tuple._1) { implicit post =>
+            @defining(tuple._2) { member =>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <div class="row">
+                            @*제목*@
+                            <div class="col-sm-10">
+                                <strong>@post.subject </strong> <small class="text-muted">
+                                | @Messages(s"board.${board_name}")</small>
+                            </div>
 
-                        <div class="panel-heading">
-                            <div class="row">
-                                @*제목*@
-                                <div class="col-sm-10">
-                                    <strong>@post.subject </strong> <small class="text-muted">
-                                    | @Messages(s"board.${board_name}")</small>
-                                </div>
+                            @*게시글 액션 이벤트*@
 
-                                @*게시글 액션 이벤트*@
+                            <div class="col-sm-2 text-right" style="padding: 0px 10px;">
                                 @if(is_reply) {
-                                    <div class="col-sm-2 text-right" style="padding: 0px 10px;">
-                                        <a title="edit" href="@routes.PostController.writeReplyPostForm(post.seq)" class="btn btn-default btn-xs">
-                                            <i class="fa fa-reply fa-rotate-180" title="reply" aria-hidden="true"></i>
-                                        </a>
-                                    @if(is_own) {
-                                            <a title="edit" href="@routes.PostController.editPost(post.board_seq, post.seq)" class="btn btn-default btn-xs">
-                                                <i class="fa fa-pencil" aria-hidden="true"></i>
-                                            </a>
-                                            <button type="button" title = "delete" data-toggle="modal" data-target="#remove_post_modal" class="btn btn-default btn-xs" >
-                                                <i class="fa fa-times" aria-hidden="true"></i>
-                                            </button>
-                                        @tags.tag_simple_modal("remove_post_modal", Messages("post.delete.title"), routes.PostController.deletePost(post.board_seq, post.seq)) {
-                                            @Messages("post.delete.message")
-                                        }
+                                    <a title="edit" href="@routes.PostController.writeReplyPostForm(post.board_seq, post.seq)" class="btn btn-default btn-xs">
+                                        <i class="fa fa-reply fa-rotate-180" title="reply" aria-hidden="true"></i>
+                                    </a>
+                                }
+                                @if(is_own) {
+                                    <a title="edit" href="@routes.PostController.editPost(post.board_seq, post.seq)" class="btn btn-default btn-xs">
+                                        <i class="fa fa-pencil" aria-hidden="true"></i>
+                                    </a>
+                                    <button type="button" title = "delete" data-toggle="modal" data-target="#remove_post_modal" class="btn btn-default btn-xs" >
+                                        <i class="fa fa-times" aria-hidden="true"></i>
+                                    </button>
+                                    @tags.tag_simple_modal(
+                                        "remove_post_modal",
+                                        Messages("post.delete.title"),
+                                        routes.PostController.deletePost(post.board_seq, post.seq)
+                                    ) {
+                                        @Messages("post.delete.message")
                                     }
-                                    </div>
                                 }
                             </div>
                         </div>
-
-                        @*게시글 정보*@
-                        <ul class="list-group">
-                            <li class="list-group-item">
-                                <small>
-                                    <div class="row">
-                                        <div class="col-md-3">@Messages("post.author"): @{
-                                            member.name
-                                        }</div>
-                                        <div class="col-md-3">@Messages("post.date"): @{
-                                            post.write_date.toString.split('.')(0)
-                                        }</div>
-                                        <div class="col-md-3">IP: @tags.tag_protect_ip_address(post.author_ip)
-                                        </div>
-                                        <div class="col-md-3">@Messages("post.counter"): @{
-                                            post.hit_count + 1
-                                        }</div>
-                                    </div>
-                                </small>
-                            </li>
-                        </ul>
-
-                        @*게시글 본문*@
-                        @defining(post.content.get) { content =>
-                            <div class="panel-body">
-                                @Html(content)
-                            </div>
-                        }
-
-                        @*첨부파일*@
-                        @if(attachments.length > 0) {
-                            <small>
-                                <li class="list-group-item">
-                                    <ul class="list-inline">
-                                    @for(attachment <- attachments) {
-                                        <li>
-                                        @tags.tag_attachment_download(attachment)
-                                        </li>
-                                    }
-                                    </ul>
-                                </li>
-                            </small>
-                        }
-
-                        @*댓글*@
-                        @comment_data_option.map{ comment_data =>
-                            @includes.comment(comment_data._1, comment_data._2)
-                        }
                     </div>
-                }
 
-                @tags.tag_table_layout(Messages(s"board.${board_name_on_list}")) {
-                    <tr>
-                        <th class="col-md-1">#</th>
-                        <th class="col-md-6">제목</th>
-                        <th class="col-md-2">작성자</th>
-                        <th class="col-md-2">작성일</th>
-                        <th class="col-md-1">조회수</th>
-                    </tr>
-                } {
-                    @for(p <- posts) {
-                        @defining(p._1) { post_in_list =>
-                            @defining(p._2) { member_name =>
-                                <tr class="@{
-                                    "active".when(post.seq.equals(post_in_list.seq))
-                                }" url= @{
-                                    routes.PostController.read(post_in_list.board_seq, post_in_list.seq, board_pagination_info.current_page)
-                                }>
-                                    <th scope="row">
-                                    @{
-                                        post_in_list.seq
+                    @*게시글 정보*@
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <small>
+                                <div class="row">
+                                    <div class="col-md-3">@Messages("post.author"): @{
+                                        member.name
+                                    }</div>
+                                    <div class="col-md-3">@Messages("post.date"): @{
+                                        post.write_date.toString.split('.')(0)
+                                    }</div>
+                                    <div class="col-md-3">IP: @tags.tag_protect_ip_address(post.author_ip)
+                                    </div>
+                                    <div class="col-md-3">@Messages("post.counter"): @{
+                                        post.hit_count + 1
+                                    }</div>
+                                </div>
+                            </small>
+                        </li>
+                    </ul>
+
+                    @*게시글 본문*@
+                    @defining(post.content.get) { content =>
+                        <div class="panel-body">
+                            @Html(content)
+                        </div>
+                    }
+
+                    @*첨부파일*@
+                    @if(attachments.length > 0) {
+                        <small>
+                            <li class="list-group-item">
+                                <ul class="list-inline">
+                                @for(attachment <- attachments) {
+                                    <li>
+                                    @tags.tag_attachment_download(attachment)
+                                    </li>
+                                }
+                                </ul>
+                            </li>
+                        </small>
+                    }
+
+                    @*댓글*@
+                    @comment_data_option.map { comment_data =>
+                        @includes.comment(comment_data._1, comment_data._2, is_comment)
+                    }
+                </div>
+            }
+
+            @tags.tag_table_layout(Messages(s"board.${board_name_on_list}")) {
+                <tr>
+                    <th class="col-md-1">#</th>
+                    <th class="col-md-6">제목</th>
+                    <th class="col-md-2">작성자</th>
+                    <th class="col-md-2">작성일</th>
+                    <th class="col-md-1">조회수</th>
+                </tr>
+            } {
+                @for(p <- posts) {
+                    @defining(p._1) { post_in_list =>
+                        @defining(p._2) { member_name =>
+                            <tr class="@{
+                                "active".when(post.seq.equals(post_in_list.seq))
+                            }" url= @{
+                                routes.PostController.read(post_in_list.board_seq, post_in_list.seq, board_pagination_info.current_page)
+                            }>
+                                <th scope="row">
+                                @{
+                                    post_in_list.seq
+                                }
+                                </th>
+                                <td>
+                                    @for(i <- 1 to post_in_list.depth) {
+                                        <i class="fa fa-reply fa-rotate-180"></i>
                                     }
-                                    </th>
-                                    <td>
-                                        @for( i <- 1 to post_in_list.depth){<i class="fa fa-reply fa-rotate-180"></i>}
-                                        @{post_in_list.subject}
-                                        @if(p._3 > 0){<span class="badge badge-info">@p._3</span>}
-                                    </td>
-                                    <td>
                                     @{
-                                        member_name
+                                        post_in_list.subject
                                     }
-                                    </td>
-                                    <td>
-                                    @{
-                                        post_in_list.write_date.toString.split('.')(0)
+                                    @if(p._3 > 0) {
+                                        <span class="badge badge-info">@p._3</span>
                                     }
-                                    </td>
-                                    <td>
-                                    @{
-                                        post_in_list.hit_count
-                                    }
-                                    </td>
-                                </tr>
-                            }
+                                </td>
+                                <td>
+                                @{
+                                    member_name
+                                }
+                                </td>
+                                <td>
+                                @{
+                                    post_in_list.write_date.toString.split('.')(0)
+                                }
+                                </td>
+                                <td>
+                                @{
+                                    post_in_list.hit_count
+                                }
+                                </td>
+                            </tr>
                         }
                     }
                 }

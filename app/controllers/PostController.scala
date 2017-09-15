@@ -211,8 +211,12 @@ class PostController @Inject()(cache: SyncCacheApi,
       val board = tuple._3
       val is_own = getSeq.map(_.toLong == post_and_member._2.seq).getOrElse(false)
 
+      val is_signed_in = getEmail.isDefined
+      val is_reply = is_signed_in && board.is_reply
+      val is_comment = is_signed_in && board.is_comment
+
       posts_repo.updateHitCount(post_and_member._1)
-      Ok((views.html.post.read(post_and_member , if(board.is_comment){Some(comment_form, comments)}else{None}, attachments, is_own, board.is_reply) _).tupled(result)).withCookies(Cookie("read_page", page.toString, Some(3600))).bakeCookies()
+      Ok((views.html.post.read(post_and_member , if(board.is_comment){Some(comment_form, comments)}else{None}, attachments, is_own, is_reply, is_comment) _).tupled(result)).withCookies(Cookie("read_page", page.toString, Some(3600))).bakeCookies()
     }
   }
 
@@ -248,7 +252,7 @@ class PostController @Inject()(cache: SyncCacheApi,
     )
   }
 
-  def writeReplyPostForm(post_seq:Long) = auth.authrized_member.async { implicit request =>
+  def writeReplyPostForm(board_seq: Long, post_seq:Long) = auth.authrized_member andThen board_state_filter.checkReplyWriting(board_seq) async { implicit request =>
     for {
       tuple: (Post, Board) <- posts_repo.getPostWithBoard(post_seq)
     }yield {
@@ -257,9 +261,6 @@ class PostController @Inject()(cache: SyncCacheApi,
       val form_data = (board.seq, post.subject, s">>${post.content.getOrElse("")}", Nil, Some(post_seq))
       Ok(views.html.post.write(post_form.fill(form_data), board.name, board.seq, board.is_attachment))
     }
-/*      boards_repo.getBoard(board_seq).map { board =>
-        Ok(views.html.post.write(post_form, board.name, board.seq, board.is_attachment))
-      }*/
   }
 
   def editPostForm(board_seq: Long, post_seq: Long) = auth.async { implicit request =>
@@ -382,8 +383,12 @@ class PostController @Inject()(cache: SyncCacheApi,
           val board = tuple._3
           val is_own = getSeq.map {_ == post_and_member._2.seq}.getOrElse(false)
 
+          val is_signed_in= getEmail.isDefined
+          val is_reply = is_signed_in && board.is_reply
+          val is_comment = is_signed_in && board.is_comment
+
           BadRequest(
-            views.html.post.read(post_and_member, Some(hasErrors, comments), attachments, is_own, board.is_reply)
+            views.html.post.read(post_and_member, Some(hasErrors, comments), attachments, is_own, is_reply, is_comment)
             (
               board.name,
               posts,

@@ -1,7 +1,7 @@
 @import com.teamgehem.model.BoardInfo
 @import com.teamgehem.model.MemberInfo
 @import b3.vertical.fieldConstructor
-@(comment_form: Form[_], comments: Seq[(Comment, String, Option[String])])(implicit post: Post, is_reply: Boolean, request: MessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list: Option[Seq[BoardInfo]], member_info_option: Option[MemberInfo])
+@(comment_form: Form[_], comments: Seq[(Comment, String, Option[String])], is_write_and_comment:Boolean)(implicit post: Post, request: MessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list: Option[Seq[BoardInfo]], member_info_option: Option[MemberInfo])
 
 <ul class="list-group">
     @if(comments.length > 0) {
@@ -46,7 +46,7 @@
                                     @Html(comment.content)
                                 </span>
                     }
-                                @if(is_reply) {
+                                @if(is_write_and_comment) {
                                     @defining(s"collapse_${comment.seq}") { collapse =>
                                         <button title="reply"
                                         class="btn btn-link btn-xs"
@@ -83,7 +83,7 @@
         }
         </li>
     }
-    @if(is_reply) {
+    @if(is_write_and_comment) {
         <li class="list-group-item">
             <div class="row" style="padding: 0px 15px;">
 
