@@ -203,7 +203,7 @@ class PostController @Inject()(cache: SyncCacheApi,
       r <- boards_repo.isReadValidBoard(board_seq, getPermission)
       if r == true
       tuple <- posts_repo.getPostWithMemberWithBoard(post_seq)
-      comments <- comments_repo.allWithMemberNameForPagination(post_seq, 1, 5)
+      comments <- comments_repo.allWithMemberNameForPagination(post_seq, 1, comment_page_length)
       comments_count <- comments_repo.commentCount(post_seq)
       attachments <- attachments_repo.getAttachments(post_seq)
       result <- route
@@ -217,7 +217,7 @@ class PostController @Inject()(cache: SyncCacheApi,
       val is_comment = is_signed_in && board.is_comment
 
       posts_repo.updateHitCount(post_and_member._1)
-      Ok((views.html.post.read(post_and_member , if(board.is_comment){Some(comment_form, comments, PaginationInfo(1, 5, comments_count))}else{None}, attachments, is_own, is_reply, is_comment) _).tupled(result)).withCookies(Cookie("read_page", page.toString, Some(3600))).bakeCookies()
+      Ok((views.html.post.read(post_and_member , if(board.is_comment){Some(comment_form, comments, PaginationInfo(1, comment_page_length, comments_count))}else{None}, attachments, is_own, is_reply, is_comment) _).tupled(result)).withCookies(Cookie("read_page", page.toString, Some(3600))).bakeCookies()
     }
   }
 

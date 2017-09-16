@@ -35,7 +35,15 @@
                         <i class="fa fa-angle-double-right" aria-hidden="true"></i>
                     </a>
                 </li>
-                <li id="page_end" class="@if(pagination_info.current_page >= high_bound){disabled}"><a href="javascript:;" class="comment_page" value="@{pagination_info.all_item_count / pagination_info.page_length}">@Messages("pagination.end")</a></li>
+                    @defining(pagination_info.all_item_count % pagination_info.page_length == 0) { is_empty_rest =>
+                        @defining(pagination_info.all_item_count / pagination_info.page_length) { max_page =>
+                            <li id="page_end" class="@if(pagination_info.current_page >= high_bound) {disabled}"><a href="javascript:;" class="comment_page" value="@if(is_empty_rest) {@max_page} else {
+                                @{
+                                    max_page + 1
+                                }
+                            }">@Messages("pagination.end")</a></li>
+                        }
+                    }
                 }
             }
         </ul>

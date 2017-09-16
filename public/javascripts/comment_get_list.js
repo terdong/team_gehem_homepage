@@ -29,7 +29,8 @@ function getHighBound(bound, low_bound, page_length, all_item_count) {
     //console.log("low_bound = " + low_bound +", bound = " + bound + ", page_length = " + page_length + ", op = " + op + ", all_item_count =" + all_item_count);
 
     if ((low_bound + bound) * page_length >= all_item_count) {
-        return parseInt(all_item_count / page_length);
+        var result = parseInt(all_item_count / page_length);
+        return all_item_count % page_length == 0 ? result : result + 1;
     } else {
         return parseInt(low_bound + bound);
     }
@@ -59,7 +60,7 @@ $(document).ready(function () {
 
             var low_bound = getLowBound(selected_page, bound);
             var high_bound = getHighBound(bound, low_bound, page_length, all_comment_count);
-            //console.log("low_bound = " + low_bound + ", higi_bound = " + high_bound);
+            console.log("low_bound = " + low_bound + ", higi_bound = " + high_bound);
 
             // change state of the pagination
             if (selected_page == 1) {

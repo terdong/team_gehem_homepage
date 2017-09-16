@@ -11,7 +11,12 @@ case class PaginationInfo(current_page: Int, page_length: Int, all_item_count:In
 
   def getHighBound(bound: Int, low_bound: Int) = {
     if ((low_bound + bound) * page_length >= all_item_count) {
-      all_item_count / page_length + 1
+      val result = all_item_count / page_length;
+      if(all_item_count % page_length == 0){
+        result
+      }else{
+        result + 1
+      }
     } else {
       low_bound + bound
     }
