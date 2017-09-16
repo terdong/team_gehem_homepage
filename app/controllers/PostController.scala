@@ -11,13 +11,13 @@ import akka.util.ByteString
 import com.teamgehem.enumeration.BoardListState._
 import com.teamgehem.model.{BoardInfo, BoardSearchInfo, MemberInfo, PaginationInfo}
 import com.teamgehem.security.{AuthenticatedActionBuilder, BoardStateFilter}
-import models.{Board, Post}
+import models.{Board, Comment, Post}
 import org.apache.commons.codec.digest.DigestUtils
 import play.api.cache.SyncCacheApi
 import play.api.data.Form
 import play.api.data.Forms.{seq, tuple, _}
 import play.api.i18n.Messages
-import play.api.libs.json.{JsPath, Json, Reads, Writes}
+import play.api.libs.json._
 import play.api.libs.streams.Accumulator
 import play.api.mvc.MultipartFormData.FilePart
 import play.api.mvc._
@@ -47,11 +47,11 @@ class PostController @Inject()(cache: SyncCacheApi,
                                attachments_repo: AttachmentsRepository,
                                comments_repo: CommentsRepository,
                                board_state_filter: BoardStateFilter)
-//cache: AsyncCacheApi)
   extends MessagesAbstractController(cc) {
 
   lazy val attachment_path = config.get[String]("uploads.path")
-  lazy val page_length = config.get[Int]("post.pageLength")
+  lazy val post_page_length = config.get[Int]("post.pageLength")
+  lazy val comment_page_length = config.get[Int]("comment.pageLength")
   lazy val temp_dir_path: String = System.getProperty("java.io.tmpdir")
 
   implicit def getBoardInfo: Option[Seq[BoardInfo]] = cache.get[Seq[BoardInfo]]("board.list.list_permission")
@@ -80,10 +80,10 @@ class PostController @Inject()(cache: SyncCacheApi,
     board_seq match {
       case 0 => {
         for {
-          posts_in_page <- posts_repo.all(page, page_length, permission)
+          posts_in_page <- posts_repo.all(page, post_page_length, permission)
           all_posts_count <- posts_repo.getAllPostCount(permission)
         } yield {
-          Ok(views.html.post.list("all", posts_in_page, PaginationInfo(page, page_length, all_posts_count), route)).withCookies(Cookie(List_Mode, All_List)).bakeCookies()
+          Ok(views.html.post.list("all", posts_in_page, PaginationInfo(page, post_page_length, all_posts_count), route)).withCookies(Cookie(List_Mode, All_List)).bakeCookies()
         }
       }
       case _ => {
@@ -91,10 +91,10 @@ class PostController @Inject()(cache: SyncCacheApi,
           b <- boards_repo.isListValidBoard(board_seq, permission)
           if b == true
           board_name <- boards_repo.getNameBySeq(board_seq)
-          posts_in_page <- posts_repo.getListByBoard(board_seq, page, page_length)
+          posts_in_page <- posts_repo.getListByBoard(board_seq, page, post_page_length)
           posts_count_on_board <- posts_repo.getPostCount(board_seq)
         } yield
-          Ok(views.html.post.list(board_name, posts_in_page, PaginationInfo(page, page_length, posts_count_on_board), route, Some(board_seq))).withCookies(Cookie(List_Mode, Default_List)).bakeCookies()
+          Ok(views.html.post.list(board_name, posts_in_page, PaginationInfo(page, post_page_length, posts_count_on_board), route, Some(board_seq))).withCookies(Cookie(List_Mode, Default_List)).bakeCookies()
       }
     }
   }
@@ -102,14 +102,14 @@ class PostController @Inject()(cache: SyncCacheApi,
   def searchAll(page: Int, type_number: Int, word: String) = Action.async { implicit request =>
     val permission = getPermission
     for {
-      posts_in_page <- posts_repo.searchAll(page, page_length, permission, BoardSearchInfo(type_number, word))
+      posts_in_page <- posts_repo.searchAll(page, post_page_length, permission, BoardSearchInfo(type_number, word))
       posts_count_on_board <- posts_repo.getSearchAllPostCount(permission, BoardSearchInfo(type_number, word))
     } yield
       Ok(
         views.html.post.list(
           "all",
           posts_in_page,
-          PaginationInfo(page, page_length, posts_count_on_board),
+          PaginationInfo(page, post_page_length, posts_count_on_board),
           routes.PostController.searchAll(_, type_number, word),
           search_info = Some(BoardSearchInfo(type_number, word))
         )
@@ -122,7 +122,7 @@ class PostController @Inject()(cache: SyncCacheApi,
       b <- boards_repo.isListValidBoard(board_seq, permission)
       if b == true
       board_name <- boards_repo.getNameBySeq(board_seq)
-      posts_in_page <- posts_repo.search(board_seq, page, page_length, BoardSearchInfo(type_number, word))
+      posts_in_page <- posts_repo.search(board_seq, page, post_page_length, BoardSearchInfo(type_number, word))
       posts_count_on_board <- posts_repo.getSearchPostCount(board_seq, BoardSearchInfo(type_number, word))
     } yield
       Ok(
@@ -130,7 +130,7 @@ class PostController @Inject()(cache: SyncCacheApi,
           .list(
             board_name,
             posts_in_page,
-            PaginationInfo(page, page_length, posts_count_on_board),
+            PaginationInfo(page, post_page_length, posts_count_on_board),
             routes.PostController.search(board_seq, _, type_number, word),
             Some(board_seq),
             Some(BoardSearchInfo(type_number, word))
@@ -156,19 +156,19 @@ class PostController @Inject()(cache: SyncCacheApi,
       case Default_List => {
         for{
           board_name <- boards_repo.getNameBySeq(board_seq)
-          posts <- posts_repo.getListByBoard(board_seq, page, page_length)
+          posts <- posts_repo.getListByBoard(board_seq, page, post_page_length)
           posts_count_on_board <- posts_repo.getPostCount(board_seq)
         }yield{
-          (board_name, posts, PaginationInfo(page, page_length, posts_count_on_board), routes.PostController.list(board_seq, _), Some(board_seq), None)
+          (board_name, posts, PaginationInfo(page, post_page_length, posts_count_on_board), routes.PostController.list(board_seq, _), Some(board_seq), None)
         }
       }
       case All_List => {
         for{
           board_name <- boards_repo.getNameBySeq(board_seq)
-          posts_in_page <- posts_repo.all(page, page_length, permission)
+          posts_in_page <- posts_repo.all(page, post_page_length, permission)
           all_posts_count <- posts_repo.getAllPostCount(permission)
         }yield{
-          (board_name, posts_in_page, PaginationInfo(page, page_length, all_posts_count), routes.PostController.list(0, _), None, None)
+          (board_name, posts_in_page, PaginationInfo(page, post_page_length, all_posts_count), routes.PostController.list(0, _), None, None)
         }
       }
       case Search_List => {
@@ -178,10 +178,10 @@ class PostController @Inject()(cache: SyncCacheApi,
           b <- boards_repo.isListValidBoard(board_seq, permission)
           if b == true
           board_name <- boards_repo.getNameBySeq(board_seq)
-          posts_in_page <- posts_repo.search(board_seq, page, page_length, BoardSearchInfo(type_number, word))
+          posts_in_page <- posts_repo.search(board_seq, page, post_page_length, BoardSearchInfo(type_number, word))
           posts_count_on_board <- posts_repo.getSearchPostCount(board_seq, BoardSearchInfo(type_number, word))
         } yield{
-          (board_name, posts_in_page, PaginationInfo(page, page_length, posts_count_on_board), routes.PostController.search(board_seq, _, type_number, word), Some(board_seq),
+          (board_name, posts_in_page, PaginationInfo(page, post_page_length, posts_count_on_board), routes.PostController.search(board_seq, _, type_number, word), Some(board_seq),
             Some(BoardSearchInfo(type_number, word)))
         }
       }
@@ -190,10 +190,10 @@ class PostController @Inject()(cache: SyncCacheApi,
         val word = URLDecoder.decode(request.cookies.get("word").map(_.value).getOrElse(""),"utf-8")
         for {
           board_name <- boards_repo.getNameBySeq(board_seq)
-          posts_in_page <- posts_repo.searchAll(page, page_length, permission, BoardSearchInfo(type_number, word))
+          posts_in_page <- posts_repo.searchAll(page, post_page_length, permission, BoardSearchInfo(type_number, word))
           posts_count_on_board <- posts_repo.getSearchAllPostCount(permission, BoardSearchInfo(type_number, word))
         } yield {
-          (board_name, posts_in_page, PaginationInfo(page, page_length, posts_count_on_board), routes.PostController.searchAll(_, type_number, word), None, Some(BoardSearchInfo(type_number, word)))
+          (board_name, posts_in_page, PaginationInfo(page, post_page_length, posts_count_on_board), routes.PostController.searchAll(_, type_number, word), None, Some(BoardSearchInfo(type_number, word)))
         }
       }
     }
@@ -203,7 +203,8 @@ class PostController @Inject()(cache: SyncCacheApi,
       r <- boards_repo.isReadValidBoard(board_seq, getPermission)
       if r == true
       tuple <- posts_repo.getPostWithMemberWithBoard(post_seq)
-      comments <- comments_repo.allWithMemberName(post_seq)
+      comments <- comments_repo.allWithMemberNameForPagination(post_seq, 1, 5)
+      comments_count <- comments_repo.commentCount(post_seq)
       attachments <- attachments_repo.getAttachments(post_seq)
       result <- route
     }yield {
@@ -216,7 +217,19 @@ class PostController @Inject()(cache: SyncCacheApi,
       val is_comment = is_signed_in && board.is_comment
 
       posts_repo.updateHitCount(post_and_member._1)
-      Ok((views.html.post.read(post_and_member , if(board.is_comment){Some(comment_form, comments)}else{None}, attachments, is_own, is_reply, is_comment) _).tupled(result)).withCookies(Cookie("read_page", page.toString, Some(3600))).bakeCookies()
+      Ok((views.html.post.read(post_and_member , if(board.is_comment){Some(comment_form, comments, PaginationInfo(1, 5, comments_count))}else{None}, attachments, is_own, is_reply, is_comment) _).tupled(result)).withCookies(Cookie("read_page", page.toString, Some(3600))).bakeCookies()
+    }
+  }
+
+  implicit val commentWrites = Json.writes[Comment]
+  implicit def tuple3[A : Writes, B : Writes , C : Writes] = Writes[(A, B, C)] ( t =>  Json.obj("comment" -> t._1, "author_name" -> t._2, "reply_author_name" -> t._3) )
+
+
+  def commentList(post_seq: Long, page: Int) = Action.async { implicit request =>
+    for {
+      comments: Seq[(Comment, String, Option[String])] <- comments_repo.allWithMemberNameForPagination(post_seq, page, comment_page_length)
+    } yield {
+      Ok(Json.toJson(comments))
     }
   }
 
@@ -375,7 +388,8 @@ class PostController @Inject()(cache: SyncCacheApi,
           if r == true
           tuple <- posts_repo.getPostWithMemberWithBoard(post_seq)
           comments <- comments_repo.allWithMemberName(post_seq)
-          posts <- posts_repo.getListByBoard(board_seq, page, page_length)
+          comments_count <-comments_repo.commentCount(post_seq)
+          posts <- posts_repo.getListByBoard(board_seq, page, post_page_length)
           all_posts_count <- posts_repo.getPostCount(board_seq)
           attachments <- attachments_repo.getAttachments(post_seq)
         } yield {
@@ -388,11 +402,11 @@ class PostController @Inject()(cache: SyncCacheApi,
           val is_comment = is_signed_in && board.is_comment
 
           BadRequest(
-            views.html.post.read(post_and_member, Some(hasErrors, comments), attachments, is_own, is_reply, is_comment)
+            views.html.post.read(post_and_member, Some(hasErrors, comments, PaginationInfo(1, 5, comments_count)), attachments, is_own, is_reply, is_comment)
             (
               board.name,
               posts,
-              PaginationInfo(page, page_length, all_posts_count),
+              PaginationInfo(page, post_page_length, all_posts_count),
               routes.PostController.list(board_seq, _),
               Some(board_seq)
             )
@@ -551,4 +565,11 @@ class PostController @Inject()(cache: SyncCacheApi,
       (JsPath \ "content_type").write[String] and
       (JsPath \ "size").write[Long]
     ) (unlift(UploadedFileInfo.unapply))
+
+  //implicit val commentWrites = Json.writes[Comment]
+  //implicit val commentTupleWrites = Json.writes[Seq[(Comment, String, Option[String])]]
+
+/*  implicit def tuple2Writes[A, B, C](implicit a: Writes[A], b: Writes[B], c: Writes[C]): Writes[Tuple3[A, B,C]] = new Writes[Tuple3[A, B, C]] {
+    def writes(tuple: Tuple3[A, B, C]) = JsArray(Seq(a.writes(tuple._1), b.writes(tuple._2), c.writes(tuple._3)))
+  }*/
 }

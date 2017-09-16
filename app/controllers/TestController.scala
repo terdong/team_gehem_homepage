@@ -21,6 +21,15 @@ class TestController @Inject()(config: Configuration,
                                auth: AuthenticatedActionBuilder)
     extends MessagesAbstractController(cc) {
 
+
+  def test_js_routes_view = Action{ implicit request =>
+    Ok(views.html.test.test_js_route())
+  }
+
+  def test_js_routes = Action{
+    Ok("test_js_routes!")
+  }
+
   def test_auth_admin = auth.authrized_admin{ implicit request =>
     Ok("admin")
   }

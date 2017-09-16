@@ -24,3 +24,5 @@ comment.placeholder=
 post.date=Date
 post.author=Author
 post.counter=Counter
+pagination.front=Front
+pagination.end=End

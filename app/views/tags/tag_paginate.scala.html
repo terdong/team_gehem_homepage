@@ -8,7 +8,7 @@
                 <li class="disabled">
                     <a href="#" aria-label="Previous">
             } else {
-                <li><a href="@route(1)">First</a></li>
+                <li><a href="@route(1)">@Messages("pagination.front")</a></li>
                 <li>
                     <a href="@route(pagination_info.current_page - 1)" aria-label="Previous">
                     }
@@ -16,17 +16,17 @@
         </a>
         </li>
             @defining(pagination_info.getLowBound(bound)) { low_bound =>
-                @defining(pagination_info.getHighBound(bound, low_bound)) { high_bount =>
+                @defining(pagination_info.getHighBound(bound, low_bound)) { high_bound =>
 
                     @for(i <- low_bound.max(1) until pagination_info.current_page) {
                         <li><a href="@route(i)">@i</a></li>
                     }
                 <li class="active"><a href="#">@{pagination_info.current_page}</a></li>
-                    @for(i <- pagination_info.current_page + 1 to high_bount) {
+                    @for(i <- pagination_info.current_page + 1 to high_bound) {
                         <li><a href="@route(i)">@i</a></li>
                     }
 
-                    @if(pagination_info.current_page < high_bount) {
+                    @if(pagination_info.current_page < high_bound) {
                         <li><a href="@route(pagination_info.current_page + 1)" aria-label="Next">
                     } else {
                         <li class="disabled"><a href="#" aria-label="Next">

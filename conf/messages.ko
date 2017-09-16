@@ -24,3 +24,5 @@ comment.placeholder=댓글을 입력하세요.
 post.date=작성일
 post.author=작성자
 post.counter=조회수
+pagination.front=처음
+pagination.end=끝

@@ -29,7 +29,7 @@ class DevController @Inject() (cc: ControllerComponents,
 
   def insertComment100 = auth.authrized_dev.async {
     //for(i <- 1 to 100){
-      comments.insertSample
+      comments.insertSample(105, 100)
     //}
     Future.successful(Redirect(routes.PostController.list(0,1)))
   }

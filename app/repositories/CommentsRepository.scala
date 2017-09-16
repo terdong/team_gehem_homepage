@@ -114,9 +114,9 @@ class CommentsRepository @Inject()(
 
   val atomicCounter = new AtomicInteger()
 
-  def insertSample = {
-    for(i <- 1 to 10) {
-      insert((836, None, s"content_${atomicCounter.getAndIncrement()}"), 2, "127.0.0.1")
+  def insertSample(post_seq:Long, count:Int) = {
+    for(i <- 1 to count) {
+      insert((post_seq, None, s"content_${atomicCounter.getAndIncrement()}"), 2, "127.0.0.1")
     }
   }
 
