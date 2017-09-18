@@ -30,7 +30,7 @@
                         <li><a href="javascript:;" class="comment_page">@i</a></li>
                     }
 
-                <li id="page_next">
+                <li id="page_next" class=" @if(pagination_info.current_page >= high_bound) {disabled}">
                     <a href="javascript:;" class="comment_page" aria-label="Next" value=@{pagination_info.current_page + 1}>
                         <i class="fa fa-angle-double-right" aria-hidden="true"></i>
                     </a>

@@ -1,22 +1,27 @@
-@(title: String)(implicit request: play.api.mvc.RequestHeader)
+@import com.teamgehem.model.BoardInfo
+@(boards_info: Seq[BoardInfo], seq_posts: Seq[Seq[(Long, String, Int, Boolean)]])(implicit request: MessagesRequest[AnyContent])
 
-    @main(title = "Home") {
+    @scripts = {
+        <script src="@routes.Assets.versioned("javascripts/click_event.js")" type="text/javascript"></script>
+    }
 
-            <!-- Heading Row -->
+    @main(title = "Home", scripts = scripts) {
+
+        <!-- Heading Row -->
         <div class="row">
             <div class="col-md-8">
-                <img class="img-responsive img-rounded" src="http://placehold.it/900x350" alt="">
+                @includes.carousel()
+                @*<img class="img-responsive img-rounded" src="http://placehold.it/900x350" alt="">*@
             </div>
                 <!-- /.col-md-8 -->
             <div class="col-md-4">
-                <h1>Business Name or Tagline</h1>
-                <p>This is a template that is great for small businesses. It doesn't have too much fancy flare to it, but it makes a great use of the standard Bootstrap core components. Feel free to use this template for any project you want!</p>
-                <a class="btn btn-primary btn-lg" href="#">Call to Action!</a>
+                <h1><small>Welcome to </small></br> Team Gehem</h1>
+                <p>@Messages("contents.home.introduction")</p>
+                @*<a class="btn btn-primary btn-lg" href="#">Call to Action!</a>*@
             </div>
                 <!-- /.col-md-4 -->
         </div>
             <!-- /.row -->
-
         <hr>
 
             <!-- Call to Action Well -->
@@ -32,24 +37,37 @@
 
             <!-- Content Row -->
         <div class="row">
-            <div class="col-md-4">
-                <h2>Heading 1</h2>
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Saepe rem nisi accusamus error velit animi non ipsa placeat. Recusandae, suscipit, soluta quibusdam accusamus a veniam quaerat eveniet eligendi dolor consectetur.</p>
-                <a class="btn btn-default" href="#">More Info</a>
-            </div>
+        @for((seqs_posts, info) <- seq_posts.zip(boards_info)) {
+                <div class="col-md-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">@Messages(s"board.${info.name}")</h3>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover table-condensed">
+                                <tbody id="clickEvent">
+                                @for(post <- seqs_posts) {
+                                    <tr url= "@{routes.PostController.read(info.seq, post._1, 1)}">
+                                        <td>
+                                            @{
+                                                post._2
+                                            }
+                                            @if(post._3 > 0) {
+                                                <span class="badge badge-info">@post._2</span>
+                                            }
+                                            @if(post._4) {
+                                                <span class="badge badge-warning">today</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
                 <!-- /.col-md-4 -->
-            <div class="col-md-4">
-                <h2>Heading 2</h2>
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Saepe rem nisi accusamus error velit animi non ipsa placeat. Recusandae, suscipit, soluta quibusdam accusamus a veniam quaerat eveniet eligendi dolor consectetur.</p>
-                <a class="btn btn-default" href="#">More Info</a>
-            </div>
-                <!-- /.col-md-4 -->
-            <div class="col-md-4">
-                <h2>Heading 3</h2>
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Saepe rem nisi accusamus error velit animi non ipsa placeat. Recusandae, suscipit, soluta quibusdam accusamus a veniam quaerat eveniet eligendi dolor consectetur.</p>
-                <a class="btn btn-default" href="#">More Info</a>
-            </div>
-                <!-- /.col-md-4 -->
+        }
         </div>
             <!-- /.row -->
     }

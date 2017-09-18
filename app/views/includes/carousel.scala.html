@@ -1,0 +1,54 @@
+@setCarousel(index: Int, caption: String = "", is_active: Boolean = false) = {
+    <div class="item @if(is_active) {active}">
+        <img src='@routes.Assets.versioned(s"images/career/fixed_Picture${index}.jpg")' @if(caption.length > 0) {
+            alt="@caption"}>
+        @if(caption.length > 0) {
+            <div class="carousel-caption">
+            @caption
+            </div>
+        }
+    </div>
+}
+
+@setIndicator(carousel_count: Int) = {
+    <ol class="carousel-indicators">
+    @for(i <- 0 until carousel_count) {
+        <li data-target="#carousel-example-generic" data-slide-to="@{i}" @if(i == 0) {class="active"}></li>
+    }
+    </ol>
+}
+
+<div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
+
+@defining(9) { carousel_count =>
+
+    <!-- Indicators -->
+    @setIndicator(carousel_count)
+
+    <!-- Wrapper for slides -->
+    <div class="carousel-inner" role="listbox">
+        @setCarousel(1, is_active = true)
+        @for(i <- 2 to carousel_count) {
+            @setCarousel(i)
+        }
+    </div>
+
+    <!-- Controls -->
+    <a class="left carousel-control" href="#carousel-example-generic" role="button" data-slide="prev">
+        <span class="fa fa-chevron-left fa-1x" aria-hidden="true" style="position: absolute;
+            top: 50%;
+            z-index: 5;
+            display: inline-block;
+            margin-top: -10px;"></span>
+        <span class="sr-only">Previous</span>
+    </a>
+    <a class="right carousel-control" href="#carousel-example-generic" role="button" data-slide="next">
+        <span class="fa fa-chevron-right fa-1x" aria-hidden="true" style="position: absolute;
+            top: 50%;
+            z-index: 5;
+            display: inline-block;
+            margin-top: -10px;"></span>
+        <span class="sr-only">Next</span>
+    </a>
+}
+</div>

@@ -44,7 +44,7 @@
                                         @if(member_info.seq == comment.author_seq) {
                                             @defining(s"remove_reply_modal_${i}") { modal_name =>
                                                 <button type="button" title = "delete" data-toggle="modal" data-target="#@modal_name" class="btn btn-warning btn-xs" ><span class="fa fa-times"></span></button>
-                                            @tags.tag_simple_modal(modal_name, Messages("post.delete.title"), routes.PostController.deleteComment(post.board_seq, post.seq, comment.seq)) {
+                                            @tags.tag_simple_modal(modal_name, Messages("comment.delete.title"), routes.PostController.deleteComment(post.board_seq, post.seq, comment.seq)) {
                                                 @Messages("post.delete.message")
                                             }
                                             }

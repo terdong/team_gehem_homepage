@@ -42,6 +42,33 @@ class PostsRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
     }
   }
 
+  /*    def isDateToday(time:Long) = {
+      val secondsInADay = 60*60*24;
+      val now = Calendar.getInstance().getTimeInMillis
+
+      val days_now = now / secondsInADay
+      val days_target = time / secondsInADay;
+
+      days_now - days_target >= 1
+    }
+  val get_post_by_boards_query = Compiled((seq:ConstColumn[Long]) => {
+    for {
+      post  <- posts.filter(_.board_seq === seq).sortBy(p => (p.thread.desc, p.seq.desc)).take(5)
+    }yield{
+      (post.subject, comments.filter(_.post_seq === post.seq).length, post.update_date)
+    }
+  })
+*/
+
+  def getPostInfoByBoards(seq_board:Seq[Long], limit:Int = 5) = {
+
+    def setParam(board_seq:Long) = {
+      sql"""SELECT seq, subject, c_result.comment_count, update_date >= NOW()::DATE AND update_date < NOW()::DATE + INTERVAL '1 DAY' as is_today FROM posts LEFT OUTER JOIN (SELECT c.post_seq, COUNT(c.post_seq) AS comment_count FROM comments AS c GROUP BY c.post_seq) AS c_result ON seq = c_result.post_seq WHERE board_seq = ${board_seq} ORDER BY thread DESC, seq DESC NULLS FIRST LIMIT ${limit}""".as[(Long, String, Int, Boolean)]
+    }
+
+    db run DBIO.sequence(seq_board.map(setParam(_)))
+  }
+
   def getPostCount(board_seq: Long = 0) = {
     val query =
       if (board_seq == 0) posts.length
