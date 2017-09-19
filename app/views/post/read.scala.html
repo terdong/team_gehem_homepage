@@ -166,14 +166,19 @@
         }
     }
 
-    @if(request.session.get("email").isDefined) {
-        <a href="@routes.PostController.writePostForm(board_seq.getOrElse(0))">
-        @b3.button('class -> "btn btn-default pull-right") {
-            <span class="fa fa-pencil"></span> Write
-        }</a>
-    }
-
-    @includes.search(board_pagination_info.current_page, board_seq, search_info)
+    <div class="row">
+        <div class="col-sm-4 col-sm-offset-4">
+        @includes.search(board_pagination_info.current_page, board_seq, search_info)
+        </div>
+        <div class="col-sm-2 col-sm-offset-2">
+        @if(request.session.get("email").isDefined) {
+            <a href="@routes.PostController.writePostForm(board_seq.getOrElse(0))">
+            @b3.button('class -> "btn btn-default pull-right") {
+                <span class="fa fa-pencil"></span> Write
+            }</a>
+        }
+        </div>
+    </div>
 
     @tags.tag_paginate(board_pagination_info, route)
 }

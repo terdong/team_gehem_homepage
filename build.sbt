@@ -1,6 +1,6 @@
 name := "team_gehem_homepage"
 
-version := "0.5.0"
+version := "0.5.1"
 
 lazy val `team_gehem_homepage` = (project in file(".")).enablePlugins(PlayScala)
 
@@ -17,6 +17,8 @@ unmanagedResourceDirectories in Test <+= baseDirectory(
 
 resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
+resolvers += "Central Repository" at "http://central.maven.org/maven2/"
+
 //bootstrap
 libraryDependencies ++= Seq(
   "com.adrianhurt" %% "play-bootstrap" % "1.2-P26-B3" exclude("org.webjars", "jquery")
@@ -28,3 +30,6 @@ libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-slick-evolutions" % "3.0.0",
   "org.postgresql" % "postgresql" % "42.1.3"
 )
+
+// https://mvnrepository.com/artifact/com.sksamuel.scrimage/scrimage-core_2.12
+libraryDependencies += "com.sksamuel.scrimage" % "scrimage-core_2.12" % "2.1.8"

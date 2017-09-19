@@ -9,10 +9,11 @@ tinymce.init({
     theme: "modern",
     menubar: false,
     plugins: [
-        'advlist autolink lists link image imagetools charmap print preview hr anchor pagebreak',
+        'advlist autolink lists link image charmap print preview hr anchor pagebreak',
         'searchreplace wordcount visualblocks visualchars code fullscreen',
         'insertdatetime media nonbreaking save table contextmenu directionality',
-        'emoticons template paste textcolor colorpicker textpattern imagetools codesample toc help'
+        'emoticons template paste textcolor colorpicker textpattern codesample toc help'
+        //'imagetools'
     ],
 
     toolbar: 'undo redo | insert | styleselect table | bold italic | forecolor backcolor emoticons | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media | code preview | codesample help | save',
@@ -21,8 +22,10 @@ tinymce.init({
         '//www.tinymce.com/css/codepen.min.css'],
     image_title: true,
     image_advtab: true,
+    image_caption: true,
     relative_urls : false,
-    save_enablewhendirty: true,
+    save_enablewhendirty: true
+
     /*
     // enable automatic uploads of images represented by blob or data URIs
     automatic_uploads: false,
