@@ -1,0 +1,27 @@
+@(error_message:String ="")
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+            <!-- Simple HttpErrorPages | MIT X11 License | https://github.com/AndiDittrich/HttpErrorPages -->
+
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <title>We've got some trouble | 412 - Precondition Failed</title>
+
+        <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/error_pages.css")">
+    </head>
+
+    <body>
+        <div class="cover">
+            <h1>Precondition Failed <small>Error 412</small></h1>
+            @if(error_message.isEmpty) {
+                <p class="lead">One or more conditions given in the request header fields evaluated to false when tested on the server.</p>
+            }else{
+                <p class="lead">@error_message</p>
+            }
+        </div>
+
+    </body>
+</html>

@@ -1,12 +1,19 @@
 package controllers
 
+import java.util.Collections
 import javax.inject.{Inject, Singleton}
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
+import com.google.api.client.http.javanet.NetHttpTransport
+import com.google.api.client.json.jackson2.JacksonFactory
 import com.teamgehem.security.AuthenticatedActionBuilder
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.i18n._
-import play.api.mvc.{MessagesAbstractController, MessagesControllerComponents}
+import play.api.libs.json.Json
+import play.api.mvc.{MessagesAbstractController, MessagesControllerComponents, MessagesRequest}
+import play.api.routing.JavaScriptReverseRouter
+import play.api.{Configuration, Logger}
 import repositories.{MembersRepository, PermissionsRepository}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -15,15 +22,19 @@ import scala.concurrent.{Await, Future}
 import scala.util.{Failure, Random, Success}
 
 @Singleton
-class AccountController @Inject()(auth: AuthenticatedActionBuilder,
+class AccountController @Inject()(config: Configuration,
+                                  auth: AuthenticatedActionBuilder,
                                   mcc: MessagesControllerComponents,
                                   members_repo: MembersRepository,
                                   permission_repo: PermissionsRepository,
                                   rand: Random)
     extends MessagesAbstractController(mcc) {
+
   implicit val messagesProvider: MessagesProvider = {
     MessagesImpl(mcc.langs.availables.head, messagesApi)
   }
+
+  lazy val google_client_id = config.get[String]("google.client.id")
 
   def edit = auth.authrized_member { implicit request =>
     Ok("Hello edit")
@@ -75,24 +86,25 @@ class AccountController @Inject()(auth: AuthenticatedActionBuilder,
       hasErrors =>
         Future.successful(BadRequest(views.html.account.signup(hasErrors))),
       (form: (String, String, String)) => {
-        members_repo.insert(form) map (_ match {
-          case Success(member) =>
-            Ok(views.html.account.signup_complete(member.email, signin_form))
-          case Failure(e) => throw e
-        })
+        request.session.get("id").map { id =>
+          members_repo.insert(id, form) map (_ match {
+            case Success(member) =>
+              Ok(views.html.account.signup_complete(member.email, signin_form)).withSession("seq" -> member.seq.toString,
+                "email" -> member.email,
+                "permission" -> member.permission.toString)
+            case Failure(e) => throw e
+          })
+        }.getOrElse(Future.successful(PreconditionFailed(views.html.error_pages.HTTP412())))
       }
     )
   }
 
+  @deprecated("This is no longer used.","0.5.2")
   def createSignInForm = Action { implicit request =>
     Ok(views.html.account.signin(signin_form))
   }
 
-  /**
-    * 회원인증
-    *
-    * @return
-    */
+  @deprecated("This is no longer used.","0.5.2")
   def signin = Action.async { implicit request =>
     signin_form.bindFromRequest.fold(
       hasErrors => Future.successful(Ok(views.html.account.signin(hasErrors))),
@@ -110,9 +122,72 @@ class AccountController @Inject()(auth: AuthenticatedActionBuilder,
     )
   }
 
-  def signout = Action { implicit request =>
-    Redirect(routes.HomeController.index()).withNewSession
+  def signinOpenIdForm = Action { implicit request =>
+    Ok(views.html.account.signin_open_id(google_client_id))
   }
+
+
+  def signinOpenId = Action(parse.formUrlEncoded).async { implicit request: MessagesRequest[Map[String, Seq[String]]] =>
+    val id_token = request.body("idtoken")(0)
+    //Logger.debug(s"id_token = $id_token")
+
+    val idToken = verifier.verify(id_token)
+
+    if (idToken != null) {
+      val payload = idToken.getPayload()
+      // Print user identifier
+      val userId = payload.getSubject()
+      //Logger.debug("User ID: " + userId)
+
+      // Get profile information from payload
+/*      val email = payload.getEmail()
+      val emailVerified = payload.getEmailVerified.toString
+      val name = payload.get("name").toString
+      val pictureUrl = payload.get("picture").toString
+      val locale =  payload.get("locale").toString
+      val familyName =  payload.get("family_name").toString
+      val givenName =  payload.get("given_name").toString*/
+
+      members_repo.findById(userId).map { members_option =>
+        members_option.headOption.map{ member =>
+          members_repo.updateLastSignin(member.seq)
+
+          Ok(Json.obj(
+            "counter" -> s"${Messages("account.signin.succeed.message")}<br/>${Messages("account.signin.succeed.counter")}" ,
+            "title" -> Messages("account.signin.succeed.title")
+          )).withSession("seq" -> member.seq.toString,
+            "email" -> member.email,
+            "permission" -> member.permission.toString)
+        }.getOrElse(Ok(Json.obj("redirect" -> routes.AccountController.createSignUpForm().url)).withSession("id" -> userId) )
+      }
+    } else {
+      val error_message= Messages("account.signin.empty.id")
+      Logger.debug(error_message)
+      Future.successful(BadRequest(Json.obj("error"-> error_message)))
+    }
+  }
+
+  def getClientId = auth {implicit request =>
+    Ok(Json.obj("client_id" -> google_client_id))
+  }
+
+  def javascriptRoutesForClientId = Action { implicit request =>
+    Ok(
+      JavaScriptReverseRouter("jsRoutes")(
+        routes.javascript.AccountController.getClientId,
+      )
+    ).as("text/javascript")
+  }
+
+  def signout = auth { implicit request =>
+    Redirect(routes.HomeController.index()).withNewSession.flashing("message" -> Messages("account.signout.message"))
+  }
+
+  private  val verifier = new GoogleIdTokenVerifier.Builder( new NetHttpTransport(), new JacksonFactory())
+    .setAudience(Collections.singletonList(google_client_id))
+    // Or, if multiple clients access the backend:
+    //.setAudience(Arrays.asList(CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3))
+    .build()
 
   private val signin_form: Form[SignIn] = Form {
     mapping(

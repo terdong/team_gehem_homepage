@@ -6,7 +6,6 @@
     }
 
     @main(title = "Home", scripts = scripts) {
-
         <!-- Heading Row -->
         <div class="row">
             <div class="col-md-8">
@@ -15,6 +14,7 @@
             </div>
                 <!-- /.col-md-8 -->
             <div class="col-md-4">
+
                 <h1><small>Welcome to </small></br> Team Gehem</h1>
                 <p>@Messages("contents.home.introduction")</p>
                 @*<a class="btn btn-primary btn-lg" href="#">Call to Action!</a>*@
@@ -53,7 +53,7 @@
                                                 post._2
                                             }
                                             @if(post._3 > 0) {
-                                                <span class="badge badge-info">@post._2</span>
+                                                <span class="badge badge-info">@post._3</span>
                                             }
                                             @if(post._4) {
                                                 <span class="badge badge-warning">today</span>

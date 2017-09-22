@@ -87,15 +87,15 @@ $(document).ready(function () {
                 }
             });
 
-            var selected_page_tag = $("<li class='active'><a href='javascript:;' class='comment_page'>" + selected_page + "</a></li>").insertAfter("#page_prev");
+            var selected_page_tag = $("<li class='active'><a href='#' class='comment_page'>" + selected_page + "</a></li>").insertAfter("#page_prev");
 
             for (var i = Math.max(low_bound, 1); i < selected_page; ++i) {
-                var li_tag = "<li><a href='javascript:;' class='comment_page'>" + i + "</a></li>";
+                var li_tag = "<li><a href='#' class='comment_page'>" + i + "</a></li>";
                 $(li_tag).insertBefore(selected_page_tag);
             }
 
             for (var i = high_bound; i > selected_page; --i) {
-                var li_tag = "<li><a href='javascript:;' class='comment_page'>" + i + "</a></li>";
+                var li_tag = "<li><a href='#' class='comment_page'>" + i + "</a></li>";
                 $(li_tag).insertAfter(selected_page_tag);
             }
 

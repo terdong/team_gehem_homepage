@@ -5,6 +5,9 @@ create table "members"
   seq bigserial not null
 		constraint "members_pkey"
 			primary key,
+  id varchar(40) not null
+  constraint "members_id_key"
+      unique,
 	email varchar(80) not null
 	constraint "members_email_key"
 			unique,

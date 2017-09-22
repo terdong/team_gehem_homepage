@@ -3,9 +3,11 @@
 @board_list_option.map { board_list =>
     <ol class="breadcrumb">
         @if(board_list.length > 0) {
-            <li class="breadcrumb-item@if("all".equals(active_board_name)) { active}">
-                <a href="@routes.PostController.list(0, 1)">@Messages("board.all")</a>
-            </li>
+            @defining("all".equals(active_board_name)) { bool =>
+                <li class="breadcrumb-item@if(bool) { active}">
+                    <a href="@routes.PostController.list(0, 1)" @if(bool){style="color: unset;"}>@Messages("board.all")</a>
+                </li>
+            }
             @defining(request.session.get("permission").getOrElse("0").toByte) { permission: Byte =>
                 @for(board <- board_list) {
                     @if(permission >= board.list_perm) {

@@ -4,9 +4,7 @@
 @import com.teamgehem.model.PaginationInfo
 @(comment_form: Form[_], comments: Seq[(Comment, String, Option[String])], pagination_info: PaginationInfo, is_write_and_comment: Boolean)(implicit post: Post, request: MessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list: Option[Seq[BoardInfo]], member_info_option: Option[MemberInfo])
 
-@helper.javascriptRouter("jsRoutes")(
-    routes.javascript.PostController.commentList
-)
+<script type="text/javascript" src="@routes.HomeController.javascriptRoutes"></script>
 <script src="@routes.Assets.versioned("javascripts/comment_get_list.js")" type="text/javascript"></script>
 
 <input type="hidden" name="post_seq_for_js" value="@post.seq"/>

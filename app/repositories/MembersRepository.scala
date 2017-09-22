@@ -45,6 +45,10 @@ class MembersRepository @Inject()(
     db run members.filter(_.email === email).result.head
   }
 
+  def findById(id:String): Future[Seq[Member]] = {
+    db run members.filter(_.id === id).result
+  }
+
   def create: Future[Unit] = {
     db run (members.schema create)
   }
@@ -60,10 +64,10 @@ class MembersRepository @Inject()(
     db run (members += member)
   }
 
-  def insert(member: (String, String, String)): Future[Try[Member]] = {
+  def insert(id :String, member: (String, String, String)): Future[Try[Member]] = {
     val action: FixedSqlAction[Member, NoStream, Write] = (members map (m =>
-      (m.email, m.name, m.nick)) returning members
-      += (member._1, member._2, member._3))
+      (m.id, m.email, m.name, m.nick)) returning members
+      += (id, member._1, member._2, member._3))
     db run (action.asTry)
   }
 
@@ -93,7 +97,7 @@ class MembersRepository @Inject()(
   }
 
   def insertSample = {
-    insert(("terdong@gmail.com", "김동희", "ThePresident"))
+    insert("0987654321",("terdong@gmail.com", "김동희", "ThePresident"))
   }
 
 }

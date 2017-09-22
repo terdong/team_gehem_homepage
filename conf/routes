@@ -1,13 +1,22 @@
 # Routes
 GET           /                                                                       controllers.HomeController.index
 GET           /result                                                                 controllers.HomeController.result
+GET           /javascriptRoutes                                                       controllers.HomeController.javascriptRoutes
+
+# Contents
+GET           /about                                                                  controllers.HomeController.about
+GET           /contact                                                                controllers.HomeController.contact
 
 # Account
 POST          /signup                                                                 controllers.AccountController.signup
 GET           /signup                                                                 controllers.AccountController.createSignUpForm
-POST          /signin                                                                 controllers.AccountController.signin
-GET           /signin                                                                 controllers.AccountController.createSignInForm
+#deprecated  POST          /signin                                                    controllers.AccountController.signin
+#deprecated  GET           /signin_deprecated                                         controllers.AccountController.createSignInForm
+GET           /signin                                                                 controllers.AccountController.signinOpenIdForm
+POST          /signin                                                                 controllers.AccountController.signinOpenId
 GET           /signout                                                                controllers.AccountController.signout
+POST          /getClientId                                                            controllers.AccountController.getClientId
+GET           /javascriptRoutesForClientId                                            controllers.AccountController.javascriptRoutesForClientId
 
 POST          /edit                                                                   controllers.AccountController.edit
 GET           /edit                                                                   controllers.AccountController.editForm
@@ -52,7 +61,7 @@ GET           /board/:board_seq/post/:post_seq                                  
 
 POST          /board/:board_seq/post/comment/write                                    controllers.PostController.writeComment(board_seq:Long)
 GET           /board/:board_seq/post/:post_seq/comment/:comment_seq/delete            controllers.PostController.deleteComment(board_seq:Long, post_seq:Long, comment_seq:Long)
-GET           /post/:post_seq/comment/page/:page                                              controllers.PostController.commentList(post_seq:Long, page:Int)
+GET           /post/:post_seq/comment/page/:page                                      controllers.PostController.commentList(post_seq:Long, page:Int)
 
 POST          /upload/file                                                            controllers.PostController.uploadFile
 POST          /upload/file/delete                                                     controllers.PostController.deleteFile
@@ -64,6 +73,8 @@ GET           /files/:post_seq                                                  
 #Developer
 GET           /dev/insert_post_100                                                    controllers.DevController.insertPost100
 GET           /dev/insert_comment_100                                                 controllers.DevController.insertComment100
+GET           /dev/google_sign_in                                                     controllers.DevController.google_sign_in
+POST          /dev/google_sign_in                                                     controllers.DevController.authenticate_google_sign_in
 
 
 #######################################################################################################################

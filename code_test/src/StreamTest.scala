@@ -39,4 +39,6 @@ object StreamTest extends App {
 
   Stream.fill(5)(100) take 10 foreach println
 
+  println("end")
+
 }

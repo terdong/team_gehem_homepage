@@ -19,35 +19,13 @@
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
                 <li class="@("active".when(tab == "about"))">
-                    <a href="#" )>About</a>
+                    <a href="@routes.HomeController.about()" )>About</a>
                 </li>
                 <li class="dropdown @("active".when(tab == "board"))">
                     <a href="@routes.PostController.list(0, 1)" >Board </a>
-                @*
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Board <b class="caret"></b></a>
-                    <ul class="dropdown-menu">
-
-
-
-                    @header.board_list.map { list =>
-                        <li>
-                            <a href="@routes.PostController.listAll(1)">All</a>
-                        </li>
-                    @for(board_info <- list) {
-
-                        <li>
-                            <a href="@routes.PostController.list(board_info.seq, 1)">@{
-                                board_info.name
-                            }</a>
-                        </li>
-                    }
-                    }
-
-                    </ul>
-                *@
                 </li>
                 <li>
-                    <a href="#">Contact</a>
+                    <a href="@routes.HomeController.contact()")>Contact</a>
                 </li>
 
 
@@ -76,9 +54,6 @@
                         </ul>
                     </li>
                 }()
-
-
-
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li class="dropdown">
@@ -86,22 +61,12 @@
                         <i class="fa fa-user fa-fw"></i> <i class="fa fa-caret-down"></i>
                     </a>
                     <ul class="dropdown-menu dropdown-user">
-
                         @tags.tag_contents_by_permission(){
-                            <li><a>@{request.session.get("email")} 님</a></li>
-                            <li><a href="@routes.AccountController.edit"><i class="fa fa-user fa-fw"></i> User Profile</a>
-                            </li>
-                            <li><a href="#"><i class="fa fa-gear fa-fw"></i> Settings</a>
-                            </li>
-                            <li class="divider"></li>
-                            <li><a href="@routes.AccountController.signout"><i class="fa fa-sign-out fa-fw"></i>
-                                Sign Out</a></li>
-
+                            @includes.member_menu()
                         }{
-                                <li><a href="@routes.AccountController.signin"><i class="fa fa-sign-in fa-fw"></i> Sign In</a></li>
-                                <li class="divider"></li>
-                                <li><a href="@routes.AccountController.signup"><i class="fa fa-user-plus fa-fw"></i> Sign Up</a></li>
-
+                                <li><a href="@routes.AccountController.signinOpenId"><i class="fa fa-sign-in fa-fw"></i> Sign In</a></li>
+                     @*           <li class="divider"></li>
+                                <li><a href="@routes.AccountController.signup"><i class="fa fa-user-plus fa-fw"></i> Sign Up</a></li>*@
                         }
 
                     </ul>

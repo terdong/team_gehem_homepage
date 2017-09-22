@@ -177,6 +177,10 @@ class PostsRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
     db run posts.filter(_.seq === post_seq).result.head
   }
 
+  def getPost(board_seq:Long, post_subject:String) = {
+    db run posts.filter(p => p.board_seq === board_seq && p.subject === post_subject).result.head
+  }
+
   def isOwnPost(post_seq: Long, author_seq: Long) = {
     db run posts
       .filter(p => p.seq === post_seq && p.author_seq === author_seq)

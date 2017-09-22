@@ -1,8 +1,8 @@
 name := "team_gehem_homepage"
 
-version := "0.5.1"
+version := "0.5.2"
 
-lazy val `team_gehem_homepage` = (project in file(".")).enablePlugins(PlayScala)
+lazy val `team_gehem_homepage` = (project in file(".")).enablePlugins(PlayScala, LauncherJarPlugin)
 
 resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"
 
@@ -33,3 +33,8 @@ libraryDependencies ++= Seq(
 
 // https://mvnrepository.com/artifact/com.sksamuel.scrimage/scrimage-core_2.12
 libraryDependencies += "com.sksamuel.scrimage" % "scrimage-core_2.12" % "2.1.8"
+
+// https://mvnrepository.com/artifact/com.google.api-client/google-api-client
+libraryDependencies += "com.google.api-client" % "google-api-client" % "1.22.0"
+
+libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"

@@ -8,6 +8,7 @@ import scala.language.postfixOps
   * Created by terdong on 2017-03-19 019.
   */
 case class Member(seq: Long,
+                  id: String,
                   email: String,
                   name: String,
                   nick: String,
@@ -24,6 +25,8 @@ trait MembersTable extends PermissionsTable {
 
   protected class Members(tag: Tag) extends Table[Member](tag, "members") {
     def seq = column[Long]("seq", O.PrimaryKey, O.AutoInc)
+
+    def id = column[String]("id", O.Length(40), O.Unique)
 
     def email = column[String]("email", O.Length(80), O.Unique)
 
@@ -49,14 +52,16 @@ trait MembersTable extends PermissionsTable {
 
     def * =
       (seq,
-       email,
-       name,
-       nick,
-       permission,
-       level,
-       exp,
-       register_date,
-       update_date,
-       last_logged) <> (Member.tupled, Member.unapply)
+        id,
+        email,
+        name,
+        nick,
+        permission,
+        level,
+        exp,
+        register_date,
+        update_date,
+        last_logged) <> (Member.tupled, Member.unapply)
   }
+
 }

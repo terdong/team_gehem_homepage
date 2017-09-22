@@ -1,0 +1,13 @@
+@()(implicit request: RequestHeader)
+@import views.html.helper.CSRF
+@CSRF.formField
+
+@request.session.get("email").map { email => <li><a>@email 님</a></li> }
+
+<li><a href="@routes.AccountController.edit"><i class="fa fa-user fa-fw"></i>User Profile</a></li>
+
+@*<li><a href="#"><i class="fa fa-gear fa-fw"></i> Settings</a></li>*@
+
+<li class="divider"></li>
+
+<li><a href="@routes.AccountController.signout" id="signout"><i class="fa fa-sign-out fa-fw"></i>Sign Out</a></li>

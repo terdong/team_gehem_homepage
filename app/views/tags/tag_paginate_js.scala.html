@@ -21,23 +21,23 @@
                 @defining(pagination_info.getHighBound(bound, low_bound)) { high_bound =>
 
                     @for(i <- low_bound.max(1) until pagination_info.current_page) {
-                        <li><a href="javascript:;" class="comment_page">@i</a></li>
+                        <li><a href="#" class="comment_page">@i</a></li>
                     }
 
-                <li class="active"><a href="javascript:;" class="comment_page">@{pagination_info.current_page}</a></li>
+                <li class="active"><a href="#" class="comment_page">@{pagination_info.current_page}</a></li>
 
                     @for(i <- pagination_info.current_page + 1 to high_bound) {
-                        <li><a href="javascript:;" class="comment_page">@i</a></li>
+                        <li><a href="#" class="comment_page">@i</a></li>
                     }
 
                 <li id="page_next" class=" @if(pagination_info.current_page >= high_bound) {disabled}">
-                    <a href="javascript:;" class="comment_page" aria-label="Next" value=@{pagination_info.current_page + 1}>
+                    <a href="#" class="comment_page" aria-label="Next" value=@{pagination_info.current_page + 1}>
                         <i class="fa fa-angle-double-right" aria-hidden="true"></i>
                     </a>
                 </li>
                     @defining(pagination_info.all_item_count % pagination_info.page_length == 0) { is_empty_rest =>
                         @defining(pagination_info.all_item_count / pagination_info.page_length) { max_page =>
-                            <li id="page_end" class="@if(pagination_info.current_page >= high_bound) {disabled}"><a href="javascript:;" class="comment_page" value="@if(is_empty_rest) {@max_page} else {
+                            <li id="page_end" class="@if(pagination_info.current_page >= high_bound) {disabled}"><a href="#" class="comment_page" value="@if(is_empty_rest) {@max_page} else {
                                 @{
                                     max_page + 1
                                 }
