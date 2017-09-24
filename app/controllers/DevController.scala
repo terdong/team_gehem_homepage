@@ -42,6 +42,7 @@ class DevController @Inject() (config: Configuration,
   }
 
   def google_sign_in = Action { implicit request =>
+
     Ok(views.html.dev.google_sign_in())
   }
 

@@ -1,6 +1,6 @@
 name := "team_gehem_homepage"
 
-version := "0.5.2"
+version := "0.5.3"
 
 lazy val `team_gehem_homepage` = (project in file(".")).enablePlugins(PlayScala, LauncherJarPlugin)
 
@@ -38,3 +38,5 @@ libraryDependencies += "com.sksamuel.scrimage" % "scrimage-core_2.12" % "2.1.8"
 libraryDependencies += "com.google.api-client" % "google-api-client" % "1.22.0"
 
 libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
+
+mappings in Universal  += file ( "eb/Procfile" ) ->  "Procfile"
