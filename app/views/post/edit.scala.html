@@ -1,6 +1,6 @@
 @import com.teamgehem.security.AuthMessagesRequest
 @import com.teamgehem.model.BoardInfo
-@(form: Form[_], board_name:String, board_seq:Long, is_attachment:Boolean, post_seq: Long)(implicit request: AuthMessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list: Option[Seq[BoardInfo]])
+@(form: Form[_], board_name:String, board_seq:Long, is_attachment:Boolean, post_seq: Long)(implicit request: AuthMessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list: Option[Seq[BoardInfo]], context:com.teamgehem.model.TGContext)
 @implicit_is_attachment = @{is_attachment}
 
 @tags.tag_post_write {

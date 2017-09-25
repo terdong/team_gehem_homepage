@@ -1,4 +1,4 @@
-@(title: String, tab: String = "", scripts: Html = Html(""), styles: Html = Html(""), modals: Html = Html(""))(content: Html)(implicit request: play.api.mvc.RequestHeader)
+@(title: String="", tab: String = "", scripts: Html = Html(""), styles: Html = Html(""), modals: Html = Html(""))(content: Html)(implicit request: play.api.mvc.RequestHeader, context:com.teamgehem.model.TGContext)
 
 <!DOCTYPE html>
 <html>
@@ -26,7 +26,7 @@
         @tags.tag_contents_by_permission(1){
             <script src="https://apis.google.com/js/api:client.js" type="text/javascript"></script>
             <script src="@routes.Assets.versioned("javascripts/member_menu.js")" type="text/javascript"></script>
-            <script src="@routes.AccountController.javascriptRoutesForClientId()" type="text/javascript"></script>
+            <script type="text/javascript" src="@routes.AccountController.javascriptRoutesForClientId"></script>
         }()
 
         @*<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.7.1/js/bootstrap-datepicker.min.js" type="text/javascript"></script>

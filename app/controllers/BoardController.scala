@@ -2,16 +2,15 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 
-import com.teamgehem.enumeration.BoardCacheString.{List_Permission, combineBoardSeq}
-import com.teamgehem.model.BoardInfo
+import com.teamgehem.controller.TGBasicController
 import com.teamgehem.security.{AuthMessagesRequest, AuthenticatedActionBuilder}
-import models.Board
-import play.api.cache.AsyncCacheApi
+import play.api.cache.{AsyncCacheApi, SyncCacheApi}
 import play.api.data.Forms._
 import play.api.data._
 import play.api.i18n._
 import play.api.mvc._
 import repositories.{BoardsRepository, MembersRepository, PermissionsRepository, PostsRepository}
+import services.CacheManager
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
@@ -21,18 +20,16 @@ import scala.concurrent.{Await, Future}
   * Created by terdo on 2017-04-20 020.
   */
 @Singleton
-class BoardController @Inject()(cache: AsyncCacheApi,
+class BoardController @Inject()(cache_manager:CacheManager,
+                                 async_cache: AsyncCacheApi,
+                                sync_cache:SyncCacheApi,
                                 auth: AuthenticatedActionBuilder,
-                                cc: MessagesControllerComponents,
+                                mcc: MessagesControllerComponents,
                                 members_repo: MembersRepository,
                                 boards_repo: BoardsRepository,
                                 posts_repo: PostsRepository,
                                 permissions_repo: PermissionsRepository)
-  extends MessagesAbstractController(cc) {
-
-  implicit val messagesProvider: MessagesProvider = {
-    MessagesImpl(cc.langs.availables.head, messagesApi)
-  }
+  extends TGBasicController(mcc, sync_cache) {
 
   def boards = auth.authrized_admin.async { implicit request: AuthMessagesRequest[AnyContent] =>
     okWithFormBoards_(board_form, routes.BoardController.createBoard)
@@ -48,6 +45,7 @@ class BoardController @Inject()(cache: AsyncCacheApi,
           b.is_reply,
           b.is_comment,
           b.is_attachment,
+          b.is_notice,
           b.list_permission,
           b.read_permission,
           b.write_permission,
@@ -126,6 +124,7 @@ class BoardController @Inject()(cache: AsyncCacheApi,
       "is_reply" -> boolean,
       "is_comment" -> boolean,
       "is_attachment" -> boolean,
+      "is_notice" -> boolean,
       "list_perm" -> byteNumber(min = 0, max = 99),
       "read_perm" -> byteNumber(min = 0, max = 99),
       "write_perm" -> byteNumber(min = 0, max = 99),
@@ -142,6 +141,7 @@ class BoardController @Inject()(cache: AsyncCacheApi,
       "is_reply" -> boolean,
       "is_comment" -> boolean,
       "is_attachment" -> boolean,
+      "is_notice" -> boolean,
       "list_perm" -> byteNumber(min = 0, max = 99),
       "read_perm" -> byteNumber(min = 0, max = 99),
       "write_perm" -> byteNumber(min = 0, max = 99),
@@ -158,12 +158,7 @@ class BoardController @Inject()(cache: AsyncCacheApi,
   }
 
   private def cacheUpdatedBoard = {
-    boards_repo.getAllSeqAndNameAndListPermission.map(_.map(BoardInfo tupled)).foreach(cache.set(List_Permission, _))
-    boards_repo.getAvailableBoards.foreach {
-      _.foreach { (board: Board) =>
-        cache.set(combineBoardSeq(board.seq), board)
-      }
-    }
+    cache_manager.updateBoardCache
   }
 
 }

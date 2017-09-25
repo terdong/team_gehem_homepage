@@ -6,9 +6,11 @@ import javax.inject.Inject
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.jackson2.JacksonFactory
+import com.teamgehem.controller.TGBasicController
 import com.teamgehem.security.AuthenticatedActionBuilder
+import play.api.cache.SyncCacheApi
+import play.api.mvc.{MessagesControllerComponents, MessagesRequest}
 import play.api.{Configuration, Logger}
-import play.api.mvc.{MessagesAbstractController, MessagesControllerComponents, MessagesRequest}
 import repositories.{CommentsRepository, PostsRepository}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -19,11 +21,12 @@ import scala.concurrent.Future
   * Created by DongHee Kim on 2017-08-31 031.
   */
 class DevController @Inject() (config: Configuration,
-                               cc: MessagesControllerComponents,
+                               mcc: MessagesControllerComponents,
+                               sync_cache:SyncCacheApi,
                                auth: AuthenticatedActionBuilder,
                                posts: PostsRepository,
                                comments: CommentsRepository,
-                              ) extends MessagesAbstractController(cc) {
+                              ) extends TGBasicController(mcc, sync_cache) {
 
   def insertPost100 = auth.authrized_dev.async {
 

@@ -10,7 +10,8 @@ import akka.stream.scaladsl.{FileIO, Sink}
 import akka.util.ByteString
 import com.sksamuel.scrimage.Image
 import com.sksamuel.scrimage.nio.JpegWriter
-import com.teamgehem.enumeration.BoardCacheString
+import com.teamgehem.controller.TGBasicController
+import com.teamgehem.enumeration.CacheString
 import com.teamgehem.enumeration.BoardListState._
 import com.teamgehem.model.{BoardInfo, BoardSearchInfo, MemberInfo, PaginationInfo}
 import com.teamgehem.security.{AuthenticatedActionBuilder, BoardStateFilter}
@@ -40,24 +41,24 @@ import scala.util.Try
   */
 
 @Singleton
-class PostController @Inject()(cache: SyncCacheApi,
+class PostController @Inject()(sync_cache: SyncCacheApi,
                                config: Configuration,
                                auth: AuthenticatedActionBuilder,
-                               cc: MessagesControllerComponents,
+                               mcc: MessagesControllerComponents,
                                members_repo: MembersRepository,
                                boards_repo: BoardsRepository,
                                posts_repo: PostsRepository,
                                attachments_repo: AttachmentsRepository,
                                comments_repo: CommentsRepository,
                                board_state_filter: BoardStateFilter)
-  extends MessagesAbstractController(cc) {
+  extends TGBasicController(mcc, sync_cache) {
 
   lazy val attachment_path = config.get[String]("uploads.path")
   lazy val post_page_length = config.get[Int]("post.pageLength")
   lazy val comment_page_length = config.get[Int]("comment.pageLength")
   lazy val temp_dir_path: String = System.getProperty("java.io.tmpdir")
 
-  implicit def getBoardInfo: Option[Seq[BoardInfo]] = cache.get[Seq[BoardInfo]](BoardCacheString.List_Permission)
+  implicit def getBoardInfo: Option[Seq[BoardInfo]] = sync_cache.get[Seq[BoardInfo]](CacheString.List_Permission)
 
   implicit def getMemberInfo(implicit request: MessagesRequest[AnyContent]) = {
     for {

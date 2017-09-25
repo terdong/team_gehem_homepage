@@ -1,4 +1,4 @@
-@(name: String, form:Form[SignIn])(implicit request: play.api.mvc.RequestHeader,messages: Messages)
+@(name: String, form:Form[SignIn])(implicit request: play.api.mvc.RequestHeader,messages: Messages, context:com.teamgehem.model.TGContext)
 
 @main("signup complete") {
 <p class="lead text-success text-center">@{name}님의 회원가입이 완료되었습니다.</p>

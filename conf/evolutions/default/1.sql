@@ -33,6 +33,7 @@ create table "boards"
 	is_reply boolean not null,
 	is_comment boolean not null,
 	is_attachment boolean not null,
+	is_notice boolean not null,
 	list_permission SMALLINT not null,
 	read_permission SMALLINT not null,
 	write_permission SMALLINT not null,
@@ -103,9 +104,31 @@ create table "comments"
 	author_ip varchar(50) not null,
 	write_date timestamp default now() not null
 );
+create table "navigations"
+(
+  seq bigserial not null
+    constraint navigations_pkey
+    primary key,
+  name varchar(30) not null
+    constraint navigations_name_key
+    unique,
+  shortcut varchar(30) not null
+    constraint navigations_shortcut_key
+    unique,
+  description varchar(2000),
+  status boolean not null,
+  post_seq bigint not null
+    constraint navigations_posts_seq_fk
+    references "posts"
+    on update restrict on delete cascade,
+  priority integer default 0 not null,
+  register_date timestamp default now() not null
+);
+
 
 # --- !Downs
 
+DROP TABLE "navigations";
 DROP TABLE "comments";
 DROP TABLE "attachments";
 DROP TABLE "permissions";

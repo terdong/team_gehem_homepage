@@ -1,4 +1,5 @@
-@(signup_form: Form[_])(implicit request: play.api.mvc.RequestHeader, messages: Messages)
+@import com.teamgehem.model.TGContext
+@(signup_form: Form[_])(implicit request: play.api.mvc.RequestHeader, messages: Messages, context : TGContext)
 @import b3.vertical.fieldConstructor
 @main("signup") {
 

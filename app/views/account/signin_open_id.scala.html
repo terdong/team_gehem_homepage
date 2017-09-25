@@ -1,4 +1,4 @@
-@(client_id: String)(implicit request: MessagesRequest[AnyContent])
+@(client_id: String)(implicit request: MessagesRequest[AnyContent], context:com.teamgehem.model.TGContext)
 @import views.html.helper.CSRF
 @styles = {
     <link rel="stylesheet" media="screen" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-social/5.1.1/bootstrap-social.min.css">

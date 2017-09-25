@@ -16,6 +16,7 @@ case class Board(seq: Long,
                  is_reply: Boolean,
                  is_comment: Boolean,
                  is_attachment: Boolean,
+                 is_notice:Boolean,
                  list_permission: Byte,
                  read_permission: Byte,
                  write_permission: Byte,
@@ -56,6 +57,8 @@ trait BoardsTable {
       */
     def is_attachment = column[Boolean]("is_attachment")
 
+    def is_notice = column[Boolean]("is_notice")
+
     def list_permission =
       column[Byte]("list_permission", O.Length(2))
 
@@ -80,6 +83,7 @@ trait BoardsTable {
         is_reply,
         is_comment,
         is_attachment,
+        is_notice,
         list_permission,
         read_permission,
         write_permission,

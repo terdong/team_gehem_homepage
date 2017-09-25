@@ -13,7 +13,7 @@ import scala.concurrent.ExecutionContext
   * Created by DongHee Kim on 2017-09-11 011.
   */
 class BoardStateFilter @Inject()(cache: AsyncCacheApi, action_builder:DefaultActionBuilder)(implicit ec: ExecutionContext) {
-  import com.teamgehem.enumeration.BoardCacheString._
+  import com.teamgehem.enumeration.CacheString._
   def checkCommentWriting(board_seq: Long) = new ActionFilter[AuthMessagesRequest] {
     override def executionContext: ExecutionContext = ec
     override protected def filter[A](request: AuthMessagesRequest[A]) = {

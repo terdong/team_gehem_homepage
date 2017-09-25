@@ -1,4 +1,4 @@
-@(menu_name:String, members:Seq[(Member, String)])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@(menu_name:String, members:Seq[(Member, String)])(implicit request: RequestHeader, messagesProvider: MessagesProvider, context:com.teamgehem.model.TGContext)
 @import tags._
 
 @implicitFieldConstructor = @{ b3.vertical.fieldConstructor }

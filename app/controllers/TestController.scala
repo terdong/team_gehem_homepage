@@ -2,7 +2,9 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 
+import com.teamgehem.controller.TGBasicController
 import com.teamgehem.security.AuthenticatedActionBuilder
+import play.api.cache.SyncCacheApi
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.i18n.Messages
@@ -17,9 +19,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
   */
 @Singleton
 class TestController @Inject()(config: Configuration,
-                               cc: MessagesControllerComponents,
+                               mcc: MessagesControllerComponents,
+                               sync_cache:SyncCacheApi,
                                auth: AuthenticatedActionBuilder)
-    extends MessagesAbstractController(cc) {
+    extends TGBasicController(mcc, sync_cache) {
 
   def test_js_routes_view = Action{ implicit request =>
     Ok(views.html.test.test_js_route())

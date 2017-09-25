@@ -22,6 +22,11 @@ class BoardsRepository @Inject()(
   def all: Future[Seq[Board]] =
     db run boards.sortBy(_.seq.nullsFirst).result
 
+  def getNoticeBoardSeqList(count : Int) = {
+    val query = boards.filter(_.is_notice === true).sortBy(_.priority.desc.nullsFirst).map(_.seq).take(count)
+    db run query.result
+  }
+
   def getAllSeqAndNameAndListPermission = {
     val query = for {
       board <- boards.filter(_.status === true).sortBy(_.priority.desc.nullsFirst)
@@ -102,6 +107,7 @@ class BoardsRepository @Inject()(
     Boolean,
     Boolean,
     Boolean,
+    Boolean,
     Byte,
     Byte,
     Byte,
@@ -114,6 +120,7 @@ class BoardsRepository @Inject()(
         b.is_reply,
         b.is_comment,
         b.is_attachment,
+        b.is_notice,
         b.list_permission,
         b.read_permission,
         b.write_permission,
@@ -128,11 +135,12 @@ class BoardsRepository @Inject()(
       form_data._8,
       form_data._9,
       form_data._10,
+      form_data._11,
       name)
     db run action
   }
 
-  def update(form: (Long, String, String, Boolean, Boolean, Boolean, Boolean, Byte, Byte, Byte, Int),
+  def update(form: (Long, String, String, Boolean, Boolean, Boolean, Boolean, Boolean, Byte, Byte, Byte, Int),
              name: String) = {
     val action = boards
       .filter(_.seq === form._1)
@@ -144,13 +152,14 @@ class BoardsRepository @Inject()(
             b.is_reply,
             b.is_comment,
             b.is_attachment,
+            b.is_notice,
             b.list_permission,
             b.read_permission,
             b.write_permission,
             b.priority,
             b.author))
       .update(
-        (form._2, Some(form._3), form._4, form._5, form._6, form._7, form._8, form._9, form._10, form._11, name))
+        (form._2, Some(form._3), form._4, form._5, form._6, form._7, form._8, form._9, form._10, form._11,  form._12, name))
 
     db run action
   }

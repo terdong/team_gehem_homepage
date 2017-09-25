@@ -1,5 +1,5 @@
 @import com.teamgehem.model.BoardInfo
-@(boards_info: Seq[BoardInfo], seq_posts: Seq[Seq[(Long, String, Int, Boolean)]])(implicit request: MessagesRequest[AnyContent])
+@(boards_info: Seq[BoardInfo], seq_posts: Seq[Seq[(Long, String, Int, Boolean)]])(implicit request: MessagesRequest[AnyContent], context:com.teamgehem.model.TGContext)
 
     @scripts = {
         <script src="@routes.Assets.versioned("javascripts/click_event.js")" type="text/javascript"></script>

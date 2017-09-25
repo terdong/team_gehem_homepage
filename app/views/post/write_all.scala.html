@@ -1,6 +1,6 @@
 @import com.teamgehem.security.AuthMessagesRequest
 @import com.teamgehem.model.BoardInfo
-@(form: Form[_], boards_info:Seq[(Long, String, Boolean)])(implicit request: AuthMessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list:Option[Seq[BoardInfo]])
+@(form: Form[_], boards_info:Seq[(Long, String, Boolean)])(implicit request: AuthMessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list:Option[Seq[BoardInfo]], context:com.teamgehem.model.TGContext)
 @implicitFC = @{
     b3.horizontal.fieldConstructor("col-md-1", "col-md-11")
 }

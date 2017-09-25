@@ -1,4 +1,4 @@
-@(content:Html)(board_name_option:Option[String] = None, is_edit :Boolean = false)(implicit request: com.teamgehem.security.AuthMessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list:Option[Seq[com.teamgehem.model.BoardInfo]], is_attachment:Boolean)
+@(content:Html)(board_name_option:Option[String] = None, is_edit :Boolean = false)(implicit request: com.teamgehem.security.AuthMessagesRequest[AnyContent], messagesProvider: MessagesProvider, board_list:Option[Seq[com.teamgehem.model.BoardInfo]], is_attachment:Boolean, context:com.teamgehem.model.TGContext)
 
 @scripts = {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" type="text/javascript"></script>

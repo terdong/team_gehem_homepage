@@ -4,6 +4,7 @@ GET           /result                                                           
 GET           /javascriptRoutes                                                       controllers.HomeController.javascriptRoutes
 
 # Contents
+GET           /_:name                                                             controllers.HomeController.navigation(name:String, short_cut:String,post_seq:Long)
 GET           /about                                                                  controllers.HomeController.about
 GET           /contact                                                                controllers.HomeController.contact
 
@@ -36,6 +37,13 @@ GET           /permissions/:permission_code/delete                              
 GET           /members                                                                controllers.AdminController.members
 POST          /members/:member_email/edit                                             controllers.AdminController.editMember(member_email:String)
 GET           /members/:member_email/edit                                             controllers.AdminController.editMemberForm(member_email:String)
+
+GET           /navigations                                                            controllers.AdminController.navigations
+POST          /navigations/create                                                     controllers.AdminController.createNavigation
+POST          /navigations/edit                                                       controllers.AdminController.editNavigation
+GET           /navigations/:navigation_seq/edit                                       controllers.AdminController.editNavigationForm(navigation_seq:Long)
+GET           /navigations/:navigation_seq/delete                                     controllers.AdminController.deleteNavigation(navigation_seq:Long)
+GET           /navigations/:navigation_seq/active                                     controllers.AdminController.setActiveNavigation(navigation_seq:Long, is_active:Boolean)
 
 # Post
 GET           /board/all                                                              controllers.PostController.list(board_seq:Long = 0, page:Int = 1)

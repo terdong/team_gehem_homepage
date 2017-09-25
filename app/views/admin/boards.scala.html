@@ -1,5 +1,5 @@
 @import com.teamgehem.security.AuthMessagesRequest
-@(boards: Seq[Board], permissions: Seq[Permission], form: Form[_], url: Call)(implicit request: AuthMessagesRequest[AnyContent], messagesProvider: MessagesProvider)
+@(boards: Seq[Board], permissions: Seq[Permission], form: Form[_], url: Call)(implicit request: AuthMessagesRequest[AnyContent], messagesProvider: MessagesProvider, context:com.teamgehem.model.TGContext)
 
 @implicitFieldConstructor = @{
     b3.vertical.fieldConstructor
@@ -25,6 +25,7 @@
                         <th>답글권한</th>
                         <th>댓글권한</th>
                         <th>파일첨부권한</th>
+                        <th>공지여부</th>
                         <th>목록권한</th>
                         <th>읽기권한</th>
                         <th>쓰기권한</th>
@@ -58,6 +59,9 @@
                         }</td>
                         <td>@{
                             board.is_attachment
+                        }</td>
+                        <td>@{
+                            board.is_notice
                         }</td>
                         <td>@{
                             board.list_permission
@@ -124,6 +128,7 @@
             </div>
             <div class="col-md-2">
             @b3.checkbox(form("is_attachment"), '_text -> "is_attachment")
+            @b3.checkbox(form("is_notice"), '_text -> "is_notice")
             </div>
         </div>
             @b3.textarea(form("description"), '_label -> "Contents")

@@ -35,3 +35,4 @@ account.signin.google=구글로 로그인하기
 account.signout.message=로그아웃 되었습니다.
 account.signin.succeed.message=로그인을 성공 하였습니다.
 account.signin.empty.id=유효하지 않은 계정입니다.
+post.title=제목

@@ -6,12 +6,14 @@ import javax.inject.{Inject, Singleton}
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.jackson2.JacksonFactory
+import com.teamgehem.controller.TGBasicController
 import com.teamgehem.security.AuthenticatedActionBuilder
+import play.api.cache.SyncCacheApi
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.i18n._
 import play.api.libs.json.Json
-import play.api.mvc.{MessagesAbstractController, MessagesControllerComponents, MessagesRequest}
+import play.api.mvc.{MessagesControllerComponents, MessagesRequest}
 import play.api.routing.JavaScriptReverseRouter
 import play.api.{Configuration, Logger}
 import repositories.{MembersRepository, PermissionsRepository}
@@ -23,16 +25,13 @@ import scala.util.{Failure, Random, Success}
 
 @Singleton
 class AccountController @Inject()(config: Configuration,
-                                  auth: AuthenticatedActionBuilder,
                                   mcc: MessagesControllerComponents,
+                                  sync_cache: SyncCacheApi,
+                                  auth: AuthenticatedActionBuilder,
                                   members_repo: MembersRepository,
                                   permission_repo: PermissionsRepository,
                                   rand: Random)
-    extends MessagesAbstractController(mcc) {
-
-  implicit val messagesProvider: MessagesProvider = {
-    MessagesImpl(mcc.langs.availables.head, messagesApi)
-  }
+    extends TGBasicController(mcc, sync_cache){
 
   lazy val google_client_id = config.get[String]("google.client.id")
 
@@ -174,7 +173,7 @@ class AccountController @Inject()(config: Configuration,
   def javascriptRoutesForClientId = Action { implicit request =>
     Ok(
       JavaScriptReverseRouter("jsRoutes")(
-        routes.javascript.AccountController.getClientId,
+        routes.javascript.AccountController.getClientId
       )
     ).as("text/javascript")
   }

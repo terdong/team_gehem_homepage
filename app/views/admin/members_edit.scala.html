@@ -1,4 +1,4 @@
-@(editForm: Form[_], member:Member, permission:Seq[Permission])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@(editForm: Form[_], member:Member, permission:Seq[Permission])(implicit request: RequestHeader, messagesProvider: MessagesProvider, context:com.teamgehem.model.TGContext)
 @implicitFC = @{
     b3.horizontal.fieldConstructor("col-md-2", "col-md-10")
 }

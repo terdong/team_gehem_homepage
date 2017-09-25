@@ -1,4 +1,4 @@
-@(permissions:Seq[Permission], form:Form[Permission])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@(permissions:Seq[Permission], form:Form[Permission])(implicit request: RequestHeader, messagesProvider: MessagesProvider, context:com.teamgehem.model.TGContext)
 
 @implicitFieldConstructor = @{ b3.vertical.fieldConstructor }
 @script = {
