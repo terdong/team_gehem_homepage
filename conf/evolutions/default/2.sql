@@ -1,11 +1,11 @@
 # --- !Ups
 
 insert into "permissions" values
-  (00, true, '방문자'),
-  (01, true, '인증 전'),
-  (02, true, '멤버'),
-  (09, true, '관리자'),
-  (99, true, '사용금지');
+  (00, true, 'account.permission.visitor'),
+  (01, true, 'account.permission.waiting_auth'),
+  (02, true, 'account.permission.member'),
+  (09, true, 'account.permission.admin'),
+  (99, true, 'account.permission.max');
 
 # --- !Downs
 
