@@ -1,13 +1,43 @@
-@import com.teamgehem.model.TGContext
-@(signup_form: Form[_])(implicit request: play.api.mvc.RequestHeader, messages: Messages, context : TGContext)
-@import b3.vertical.fieldConstructor
-@main("signup") {
+@(signup_form: Form[_], permission_content: Option[String] = None)(implicit request: play.api.mvc.RequestHeader, messages: Messages, context: com.teamgehem.model.TGContext)
+@implicitFieldConstructor = @{
+    b3.horizontal.fieldConstructor("col-md-4", "col-md-4")
+}
 
-    @b3.formCSRF(routes.AccountController.signup) {
-        @b3.text(signup_form("email"), 'placeholder -> "E-mail", 'type -> "email", 'autofocus -> true)
-        @b3.text(signup_form("name"), 'placeholder -> "name")
-        @b3.text(signup_form("nickName"), 'placeholder -> "nickName")
-        @b3.submit('class -> "btn btn-lg btn-success btn-block") {signup}
+@defining(permission_content.isDefined) { is_edit_mode =>
+    @main(if(is_edit_mode) {
+        "edit"
+    } else {
+        "signup"
+    }) {
+        @b3.formCSRF(if(is_edit_mode){routes.AccountController.edit}else{routes.AccountController.signup}) {
+            <div class="form-group">
+                <div class="col-md-4 col-md-offset-4 bg-primary"><h4 class="text-center">
+                    @if(is_edit_mode) {
+                        @Messages("account.edit.title")
+                    }else{
+                        @Messages("account.signup.title")
+                    }
+                </h4></div>
+            </div>
+            @b3.text(signup_form("email"), '_label -> "Email", 'placeholder -> "E-mail", 'type -> "email", if(is_edit_mode) {
+                'readonly -> true
+            } else {
+                'autofocus -> true
+            })
+            @if(is_edit_mode) {
+                <div class="form-group">
+                    <label class="control-label col-md-4" for="email">Permission</label>
+                    <div class="col-md-4">
+                        <input label="permission" type="text" value="@permission_content.get" class="form-control" readonly="true">
+                    </div>
+                </div>
+            }
+            @b3.text(signup_form("name"), '_label -> "Name", 'placeholder -> "name")
+            @b3.text(signup_form("nickName"), '_label -> "Nick Name", 'placeholder -> "nickName")
+            @b3.submit('class -> "btn btn-lg btn-success btn-block") {
+                @if(is_edit_mode) {Edit} else {Sign Up}
+            }
+        }
+
     }
-
 }

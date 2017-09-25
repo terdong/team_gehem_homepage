@@ -86,14 +86,14 @@ class MembersRepository @Inject()(
     db run action
   }
 
-  def update(email: String, form: (String, String)) = {
+  def update(form: (String, String, String)) = {
     val action = members
-      .filter(_.email === email)
+      .filter(_.email === form._1)
       .map(m => (m.name, m.nick, m.update_date))
       .update(
-        (form._1, form._2, new java.sql.Timestamp(System.currentTimeMillis())))
+        (form._2, form._3, new java.sql.Timestamp(System.currentTimeMillis())))
 
-    db run action
+    db run action.asTry
   }
 
   def insertSample = {

@@ -25,7 +25,7 @@ class PermissionsRepository @Inject()(
 
   def getContentByCode(code: Byte) = {
     val query = permissions.filter(_.permission_code === code).map(_.content)
-    db run (query result).head
+    db run (query result).headOption
   }
 
   def create: Future[Unit] = {
