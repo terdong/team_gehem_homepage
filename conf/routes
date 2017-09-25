@@ -2,11 +2,7 @@
 GET           /                                                                       controllers.HomeController.index
 GET           /result                                                                 controllers.HomeController.result
 GET           /javascriptRoutes                                                       controllers.HomeController.javascriptRoutes
-
-# Contents
-GET           /_:name                                                             controllers.HomeController.navigation(name:String, short_cut:String,post_seq:Long)
-GET           /about                                                                  controllers.HomeController.about
-GET           /contact                                                                controllers.HomeController.contact
+GET           /javascriptRoutesMain                                                   controllers.HomeController.javascriptRoutesMain
 
 # Account
 POST          /signup                                                                 controllers.AccountController.signup
@@ -17,7 +13,6 @@ GET           /signin                                                           
 POST          /signin                                                                 controllers.AccountController.signinOpenId
 GET           /signout                                                                controllers.AccountController.signout
 POST          /getClientId                                                            controllers.AccountController.getClientId
-GET           /javascriptRoutesForClientId                                            controllers.AccountController.javascriptRoutesForClientId
 
 POST          /edit                                                                   controllers.AccountController.edit
 GET           /edit                                                                   controllers.AccountController.editForm
@@ -122,3 +117,9 @@ GET           /test/form                                                        
 POST          /test/form_test                                                         controllers.TestController.test_form_post
 GET           /test/test_js_routes_view                                               controllers.TestController.test_js_routes_view
 DELETE        /test/test_js_routes                                                    controllers.TestController.test_js_routes
+
+
+# Contents
+GET           /:name                                                                 controllers.HomeController.navigation(name:String)
+#GET           /about                                                                  controllers.HomeController.about
+#GET           /contact                                                                controllers.HomeController.contact

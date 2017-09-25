@@ -9,16 +9,22 @@ import com.teamgehem.model.BoardInfo
 import play.api.cache.{AsyncCacheApi, SyncCacheApi}
 import play.api.mvc._
 import play.api.routing.JavaScriptReverseRouter
-import repositories.PostsRepository
+import repositories.{NavigationsRepository, PostsRepository}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 @Singleton
-class HomeController @Inject()(cc: MessagesControllerComponents, posts_repo: PostsRepository, cache: AsyncCacheApi, sync_cache: SyncCacheApi)
+class HomeController @Inject()(cc: MessagesControllerComponents,
+                               posts_repo: PostsRepository,
+                               navis_repo: NavigationsRepository,
+                               cache: AsyncCacheApi,
+                               sync_cache: SyncCacheApi
+                               //result_cache: Cached
+                              )
   extends TGBasicController(cc, sync_cache) with DbResultChecker {
 
 
-//  lazy val notice_board_count =
+  //  lazy val notice_board_count =
 
   def index = Action.async { implicit request =>
     //Logger.debug(request.headers.headers.mkString("\n"))
@@ -41,29 +47,26 @@ class HomeController @Inject()(cc: MessagesControllerComponents, posts_repo: Pos
     Ok(views.html.result())
   }
 
-  def navigation(name:String, short_cut:String, post_seq:Long) = Action.async { implicit request =>
-    implicit val result: (Option[String]) => Result = (content) => Ok(views.html.navigation(content, short_cut))
-    posts_repo.getContent(post_seq)
-  }
-
-  def about() = Action.async { implicit request =>
-    posts_repo.getPost(6, "about").map { result =>
-      Ok(views.html.contents.about(result.content))
+  def navigation(name: String) = //result_cache(s"navigation_$name") {
+    Action.async { implicit request =>
+      implicit val result: ((String, Option[String])) => Result = (t) => Ok(views.html.navigation(t._2, t._1))
+      navis_repo.getPostContentByName(name)
     }
-    //Future.successful(Ok(""))
-  }
-
-  def contact() = Action.async { implicit request =>
-    posts_repo.getPost(6, "contact").map { result =>
-      Ok(views.html.contents.about(result.content))
-    }
-  }
+  //}
 
   def javascriptRoutes = Action { implicit request =>
     Ok(
       JavaScriptReverseRouter("jsRoutes")(
         routes.javascript.AccountController.signinOpenId,
         routes.javascript.PostController.commentList
+      )
+    ).as("text/javascript")
+  }
+
+  def javascriptRoutesMain = Action { implicit request =>
+    Ok(
+      JavaScriptReverseRouter("jsRoutes")(
+        routes.javascript.AccountController.getClientId
       )
     ).as("text/javascript")
   }

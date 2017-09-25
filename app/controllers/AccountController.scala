@@ -14,7 +14,6 @@ import play.api.data.Forms._
 import play.api.i18n._
 import play.api.libs.json.Json
 import play.api.mvc.{MessagesControllerComponents, MessagesRequest}
-import play.api.routing.JavaScriptReverseRouter
 import play.api.{Configuration, Logger}
 import repositories.{MembersRepository, PermissionsRepository}
 
@@ -168,14 +167,6 @@ class AccountController @Inject()(config: Configuration,
 
   def getClientId = auth {implicit request =>
     Ok(Json.obj("client_id" -> google_client_id))
-  }
-
-  def javascriptRoutesForClientId = Action { implicit request =>
-    Ok(
-      JavaScriptReverseRouter("jsRoutes")(
-        routes.javascript.AccountController.getClientId
-      )
-    ).as("text/javascript")
   }
 
   def signout = auth { implicit request =>

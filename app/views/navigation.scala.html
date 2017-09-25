@@ -1,4 +1,4 @@
-@(content_option: Option[String], short_cut:String)(implicit flash : Flash, request: MessagesRequest[AnyContent], context:com.teamgehem.model.TGContext)
+@(content_option: Option[String], short_cut:String)(implicit request: MessagesRequest[AnyContent], context:com.teamgehem.model.TGContext)
 @main(tab = short_cut) {
     @defining(content_option.getOrElse("")) { content =>
         @Html(content)

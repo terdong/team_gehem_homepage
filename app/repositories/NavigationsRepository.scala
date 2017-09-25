@@ -17,6 +17,13 @@ import scala.util.{Failure, Try}
 class NavigationsRepository @Inject()(protected val dbConfigProvider:DatabaseConfigProvider)extends HasDatabaseConfigProvider[JdbcProfile] with NavigationsTable{
 
 
+  def getPostContentByName(name:String) = {
+    val query = for{
+      (n, p) <- navigations.filter(_.name === name) join posts on (_.post_seq === _.seq)
+    }yield(n.shortcut, p.content)
+    db run query.result.head.asTry
+  }
+
   def getValidList = {
     db run navigations.filter(_.status === true).result.asTry
   }

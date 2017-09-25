@@ -4,25 +4,25 @@
         @op_list.map { list =>
             @for(nav_info <- list) {
                 <li class="@("active".when(tab == nav_info.short_cut))">
-                    <a href="@routes.HomeController.navigation(nav_info.name, nav_info.short_cut, nav_info.post_seq)">@{
+                    @*
+                    @b3.hidden("post_seq", nav_info.post_seq)
+                    @b3.hidden("tab", nav_info.short_cut)*@
+       @*             <form action="@routes.HomeController.navigation(nav_info.name)" method="GET" class="form-vertical " role="form">
+                        @b3.hidden("post_seq", nav_info.post_seq)
+                        @b3.hidden("tab", nav_info.short_cut)
+                    </form>
+                    <a href="#" type="submit" class=""> Experience </a>*@
+
+             @*       @b3.form() {
+
+                        @b3.submit('class -> "btn btn-default"){ @nav_info.name }
+                    }*@
+
+
+                    <a href="@routes.HomeController.navigation(nav_info.name)"@* class="navigation_click"*@>@{
                         nav_info.name
                     }</a>
                 </li>
             }
         }
 }
-
-@*
-@for(nav_info <- context.navigation_list) {
-
-}
-
-<li class="@("active".when(tab == "experience"))">
-<a href="@routes.HomeController.about()" )>Experience</a>
-</li>
-<li class="@("active".when(tab == "skills"))">
-<a href="@routes.HomeController.about()" )>Skills</a>
-</li>
-<li>
-<a href="@routes.HomeController.contact()" )>Education</a>
-</li>*@
