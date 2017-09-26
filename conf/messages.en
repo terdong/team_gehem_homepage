@@ -43,3 +43,10 @@ account.permission.member=Member
 account.permission.admin=Administrator
 account.permission.max=Max
 account.permission.waiting_auth=Waiting for authentication
+contents.home.resume.introduction=This is the resume homepage of Scala Programmer "DongHee Kim".</br></br>\
+I posted my experience as a programmer, my education, my special skills, and the projects I participated in and the development of this homepage.</br></br>\
+Login authentication uses Google OAuth 2.0, and you can automatically get semi-admin permission when signing up. (this permission just can not delete a post)</br>You can see by clicking the top menus.</br></br>\
+If you have any questions, please feel free to contact me at the below phone or email. Thank you.</br>\
+account.permission.devloper=Developer
+account.permission.semi_admin=Semi_Administrator
+account.permission.developer=Developer

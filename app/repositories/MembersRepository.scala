@@ -66,8 +66,8 @@ class MembersRepository @Inject()(
 
   def insert(id :String, member: (String, String, String)): Future[Try[Member]] = {
     val action: FixedSqlAction[Member, NoStream, Write] = (members map (m =>
-      (m.id, m.email, m.name, m.nick)) returning members
-      += (id, member._1, member._2, member._3))
+      (m.id, m.email, m.name, m.nick, m.permission)) returning members
+      += (id, member._1, member._2, member._3, 8))
     db run (action.asTry)
   }
 

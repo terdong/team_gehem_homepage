@@ -1,6 +1,6 @@
 name := "team_gehem_homepage"
 
-version := "0.5.7"
+version := "0.5.8"
 
 lazy val `team_gehem_homepage` = (project in file(".")).enablePlugins(PlayScala, LauncherJarPlugin)
 
@@ -10,7 +10,7 @@ resolvers += "Akka Snapshot Repository" at "http://repo.akka.io/snapshots/"
 
 scalaVersion := "2.12.2"
 
-libraryDependencies ++= Seq(ehcache, ws, specs2 % Test, guice, evolutions)
+libraryDependencies ++= Seq(ehcache, ws, specs2 % Test, guice, evolutions, filters)
 
 unmanagedResourceDirectories in Test <+= baseDirectory(
   _ / "target/web/public/test")
@@ -38,5 +38,7 @@ libraryDependencies += "com.sksamuel.scrimage" % "scrimage-core_2.12" % "2.1.8"
 libraryDependencies += "com.google.api-client" % "google-api-client" % "1.22.0"
 
 libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
+
+libraryDependencies += "com.mohiva" %% "play-html-compressor" % "0.7.1"
 
 mappings in Universal  += file ( "eb/Procfile" ) ->  "Procfile"

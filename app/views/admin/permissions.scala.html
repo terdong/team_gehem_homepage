@@ -24,7 +24,7 @@
                         <th scope="row">@{i}</th>
                         <td>@{permission.permission_code}</td>
                         <td>@{permission.active}</td>
-                        <td>@{permission.content}</td>
+                        <td>@Messages(permission.content)</td>
                         <td>
                             <a href="@routes.AdminController.deletePermission(permission.permission_code)" >
                                 <button type="button" class="btn btn-danger btn-sm"> <span class="fa fa-times"></span> Delete</button>

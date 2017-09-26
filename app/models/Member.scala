@@ -35,7 +35,7 @@ trait MembersTable extends PermissionsTable {
     def nick = column[String]("nick", O.Length(12))
 
     def permission =
-      column[Byte]("permission", O.Length(2), O.Default(2))
+      column[Byte]("permission", O.Length(2), O.Default(8))
 
     def level = column[Int]("level", O.Default(0))
 

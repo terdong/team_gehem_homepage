@@ -13,7 +13,7 @@ create table "members"
 			unique,
 	name varchar(30) not null,
 	nick varchar(12) not null,
-	permission SMALLINT default 2 not null,
+	permission SMALLINT default 1 not null,
 	level integer default 0 not null,
 	exp integer default 0 not null,
 	register_date timestamp default now() not null,

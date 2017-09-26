@@ -31,11 +31,11 @@ class BoardController @Inject()(cache_manager:CacheManager,
                                 permissions_repo: PermissionsRepository)
   extends TGBasicController(mcc, sync_cache) {
 
-  def boards = auth.authrized_admin.async { implicit request: AuthMessagesRequest[AnyContent] =>
+  def boards = auth.authrized_semi_admin.async { implicit request: AuthMessagesRequest[AnyContent] =>
     okWithFormBoards_(board_form, routes.BoardController.createBoard)
   }
 
-  def editBoardForm(board_seq: Long) = auth.authrized_admin.async {
+  def editBoardForm(board_seq: Long) = auth.authrized_semi_admin.async {
     implicit request =>
       boards_repo.getBoard(board_seq).flatMap { b =>
         val form_data = (b.seq,
@@ -75,7 +75,7 @@ class BoardController @Inject()(cache_manager:CacheManager,
     )
   }
 
-  def createBoard = auth.authrized_admin.async { implicit request =>
+  def createBoard = auth.authrized_semi_admin.async { implicit request =>
     board_form.bindFromRequest.fold(
       hasErrors => okWithFormBoards_(hasErrors, routes.BoardController.createBoard),
       form => {
@@ -92,7 +92,7 @@ class BoardController @Inject()(cache_manager:CacheManager,
   }
 
   def setActiveBoard(board_seq: Long, is_active: Boolean) =
-    auth.authrized_admin.async { implicit request =>
+    auth.authrized_semi_admin.async { implicit request =>
       boards_repo.setActiveBoard(board_seq, is_active).map{ _ =>
         cacheUpdatedBoard
         Redirect(routes.BoardController.boards())

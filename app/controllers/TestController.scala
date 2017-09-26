@@ -32,7 +32,7 @@ class TestController @Inject()(config: Configuration,
     Ok("test_js_routes!")
   }
 
-  def test_auth_admin = auth.authrized_admin{ implicit request =>
+  def test_auth_admin = auth.authrized_semi_admin{ implicit request =>
     Ok("admin")
   }
   def test_auth_member = auth.authrized_member{ implicit request =>

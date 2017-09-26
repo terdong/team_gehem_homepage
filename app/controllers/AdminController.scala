@@ -34,7 +34,7 @@ class AdminController @Inject()(mcc: MessagesControllerComponents,
                                )
   extends TGBasicController(mcc, sync_cache) with DbResultChecker {
 
-  def members = auth.authrized_admin.async { implicit request =>
+  def members = auth.authrized_semi_admin.async { implicit request =>
     for {
       members <- members_repo.allWithPermission
     } yield Ok(views.html.admin.members("members", members))
@@ -58,7 +58,7 @@ class AdminController @Inject()(mcc: MessagesControllerComponents,
       )
   }
 
-  def editMemberForm(email: String) = auth.authrized_admin.async {
+  def editMemberForm(email: String) = auth.authrized_semi_admin.async {
     implicit request =>
       for {
         member <- members_repo.findByEmail(email)
@@ -75,7 +75,7 @@ class AdminController @Inject()(mcc: MessagesControllerComponents,
       }
   }
 
-  def permissions = auth.authrized_admin.async { implicit request =>
+  def permissions = auth.authrized_semi_admin.async { implicit request =>
     permissions_(permissionForm)
   }
 
@@ -97,7 +97,7 @@ class AdminController @Inject()(mcc: MessagesControllerComponents,
         .map(_ => Redirect(routes.AdminController.permissions))
   }
 
-  def navigations = auth.authrized_admin.async { implicit request =>
+  def navigations = auth.authrized_semi_admin.async { implicit request =>
     getNavigationResult_(navigation_form, routes.AdminController.createNavigation)
   }
 
@@ -115,7 +115,7 @@ class AdminController @Inject()(mcc: MessagesControllerComponents,
       })
   }
 
-  def editNavigationForm(seq: Long) = auth.authrized_admin.async { implicit request =>
+  def editNavigationForm(seq: Long) = auth.authrized_semi_admin.async { implicit request =>
 
     implicit val func_r: Navigation => Future[Result] = (nav) => {
       val form_data = (Some(nav.seq),
