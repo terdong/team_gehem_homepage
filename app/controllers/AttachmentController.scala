@@ -9,6 +9,7 @@ import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.{MessagesAbstractController, MessagesControllerComponents}
 import play.api.{Configuration, Logger}
 import repositories._
+import views.html.helper.CSRF
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -41,7 +42,7 @@ class AttachmentController @Inject()(cache: AsyncCacheApi,
       }
   }
 
-  def files(post_seq: Long) = auth.async { request =>
+  def files(post_seq: Long) = auth.async { implicit request =>
     attachments_repo.getAttachments(post_seq).map { attachments =>
       val jsons: Seq[JsObject] = for {
         attachment <- attachments
@@ -51,7 +52,7 @@ class AttachmentController @Inject()(cache: AsyncCacheApi,
           "uuid" -> attachment.hash,
           "size" -> attachment.size,
           "is_image" -> attachment.mime_type.split("/")(0).equals("image"),
-          "deleteFileParams" -> Json.obj("sub_path" -> attachment.sub_path)
+          "deleteFileParams" -> Json.obj("sub_path" -> attachment.sub_path, "csrfToken" -> CSRF.getToken.value)
         )
       Ok(Json.toJson(jsons))
     }

@@ -1,6 +1,6 @@
 package controllers
 
-import java.io.File
+import java.io.{File, FileInputStream}
 import java.net.{URLDecoder, URLEncoder}
 import java.nio.file.{Files, Paths}
 import javax.inject.{Inject, Singleton}
@@ -8,13 +8,15 @@ import javax.inject.{Inject, Singleton}
 import akka.stream.IOResult
 import akka.stream.scaladsl.{FileIO, Sink}
 import akka.util.ByteString
+import com.google.inject.Provider
 import com.sksamuel.scrimage.Image
 import com.sksamuel.scrimage.nio.JpegWriter
 import com.teamgehem.controller.TGBasicController
-import com.teamgehem.enumeration.CacheString
 import com.teamgehem.enumeration.BoardListState._
+import com.teamgehem.enumeration.CacheString
 import com.teamgehem.model.{BoardInfo, BoardSearchInfo, MemberInfo, PaginationInfo}
 import com.teamgehem.security.{AuthenticatedActionBuilder, BoardStateFilter}
+import fly.play.s3.{BucketFile, S3, S3Exception}
 import models.{Board, Comment, Post}
 import org.apache.commons.codec.digest.DigestUtils
 import play.api.cache.SyncCacheApi
@@ -25,15 +27,14 @@ import play.api.libs.json._
 import play.api.libs.streams.Accumulator
 import play.api.mvc.MultipartFormData.FilePart
 import play.api.mvc._
-import play.api.{Configuration, Logger}
+import play.api.{Application, Configuration, Logger}
 import play.core.parsers.Multipart.{FileInfo, FilePartHandler}
 import repositories._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
-import scala.reflect.io.Path
-import scala.util.Try
+import scala.reflect.io.Streamable
 
 
 /**
@@ -50,7 +51,8 @@ class PostController @Inject()(sync_cache: SyncCacheApi,
                                posts_repo: PostsRepository,
                                attachments_repo: AttachmentsRepository,
                                comments_repo: CommentsRepository,
-                               board_state_filter: BoardStateFilter)
+                               board_state_filter: BoardStateFilter,
+                               appProvider: Provider[Application])
   extends TGBasicController(mcc, sync_cache) {
 
   lazy val attachment_path = config.get[String]("uploads.path")
@@ -321,8 +323,15 @@ class PostController @Inject()(sync_cache: SyncCacheApi,
           posts_repo.delete(post_seq).map { _ =>
             attachments_repo.getAttachments(post_seq).map { attachments =>
               for (attachment <- attachments) {
-                val path = Path(s"${attachment_path}/${attachment.sub_path}/${attachment.hash}")
-                Try(path.delete)
+                implicit val app = appProvider.get()
+                val bucket = S3("com.teamgehem.files")
+                (bucket - attachment.hash).map { _ =>
+                  Logger.debug("Deleted the file")
+                }.recover {
+                  case S3Exception(status, code, message, originalXml) => Logger.debug(s"Bucket Delete File Error: $message")
+                }
+        /*        val path = Path(s"${attachment_path}/${attachment.sub_path}/${attachment.hash}")
+                Try(path.delete)*/
               }
               attachments_repo.deleteAttachements(post_seq)
             }
@@ -370,11 +379,21 @@ class PostController @Inject()(sync_cache: SyncCacheApi,
         val hash = map("qquuid").head
 
         if (map.contains("sub_path")) {
+
+          implicit val app = appProvider.get()
+          val bucket = S3("com.teamgehem.files")
+          (bucket - hash).map { _ =>
+            Logger.debug("Deleted the file")
+          }.recover {
+            case S3Exception(status, code, message, originalXml) => Logger.debug(s"Bucket Delete File Error: $message")
+          }
+
+          /*
           val sub_path = map("sub_path").head
           attachments_repo.deleteAttachment(hash)
           val path =
             Path(s"${attachment_path}/${sub_path}/${hash}")
-          Try(path.delete)
+          Try(path.delete)*/
         } else {
           val path =
             Paths.get(s"${temp_dir_path}/${hash}")
@@ -504,18 +523,45 @@ class PostController @Inject()(sync_cache: SyncCacheApi,
   }
 
   private def insertAttachment(post_seq: Long, seq_file_info: Seq[String]) = {
-    seq_file_info.foreach {
-      json_str =>
-        Json
-          .fromJson[UploadedFileInfo](Json.parse(json_str))
-          .map {
-            (file_info: UploadedFileInfo) =>
-              val path =
-                Paths.get(s"${temp_dir_path}/${file_info.hash}")
-              if (Files.exists(path)) {
-                val sub_path = java.time.LocalDate.now.toString
+      seq_file_info.foreach {
+        json_str =>
+          Json
+            .fromJson[UploadedFileInfo](Json.parse(json_str))
+            .map {
+              (file_info: UploadedFileInfo) =>
+                val full_path = s"${temp_dir_path}/${file_info.hash}"
+                val path = Paths.get(full_path)
+                if (Files.exists(path)) {
+                  val sub_path = java.time.LocalDate.now.toString
 
-                val new_directory_path =
+                  implicit val app = appProvider.get()
+                  val bucket = S3("com.teamgehem.files")
+
+                  try {
+                    val fis = new FileInputStream(full_path)
+                    val size = Streamable.bytes(fis)
+                    fis.close()
+                    Files.delete(path)
+
+                   (bucket + BucketFile(file_info.hash, file_info.content_type, size))
+                      .map { _ =>
+                        Logger.debug("Saved the file")
+                        attachments_repo.insertAttachment(
+                          file_info.hash,
+                          file_info.file_name,
+                          sub_path,
+                          file_info.content_type,
+                          file_info.size,
+                          post_seq)
+                      }
+                      .recover {
+                        case S3Exception(status, code, message, originalXml) => Logger.debug(s"Bucket Send File Error: $message")
+                      }
+                  } catch {
+                    case e: Exception => Logger.debug(s"File Error: ${e.getMessage}")
+                  }
+
+                  /*                val new_directory_path =
                   Path(s"$attachment_path/${sub_path}")
                 if (!new_directory_path.exists) {
                   new_directory_path.createDirectory()
@@ -523,18 +569,12 @@ class PostController @Inject()(sync_cache: SyncCacheApi,
 
                 val new_file_path = Paths.get(
                   s"${new_directory_path.path}/${file_info.hash}")
-                Files.move(path, new_file_path)
+                Files.move(path, new_file_path)*/
 
-                attachments_repo.insertAttachment(
-                  file_info.hash,
-                  file_info.file_name,
-                  sub_path,
-                  file_info.content_type,
-                  file_info.size,
-                  post_seq)
-              }
-          }
-    }
+
+                }
+            }
+      }
   }
 
   private val post_form = Form(

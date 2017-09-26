@@ -4,9 +4,14 @@
 
 $(document).ready(function () {
 
+    var route_upload = jsRoutes.controllers.PostController.uploadFile();
+    var route_delete= jsRoutes.controllers.PostController.deleteFile();
+    var csrf = $("input[name='csrfToken']").val();
+
     $('#fine-uploader').fineUploader({
         request: {
-            endpoint: '/upload/file'
+            endpoint: route_upload.url,
+            params:{csrfToken: csrf}
         },
         thumbnails: {
             placeholders: {
@@ -19,8 +24,9 @@ $(document).ready(function () {
         },
         deleteFile: {
             enabled: true,
-            method: "POST",
-            endpoint: "/upload/file/delete"
+            method: route_delete.method,
+            endpoint: route_delete.url,
+            params:{csrfToken: csrf}
         },
         autoUpload: true,
 
@@ -39,7 +45,7 @@ $(document).ready(function () {
                 file_info = JSON.parse(file_info);
 
                 var button = $('.qq-file-id-' + id).children('.qq-uuid');
-                button.attr("data-clipboard-text", "/images/" + file_info.hash);
+                button.attr("data-clipboard-text", "http://d2bbobgydxzko3.cloudfront.net/" + file_info.hash);
                 button.removeClass("qq-hide");
                 button.click(function(){
                     hash_button_click(file_info.file_name);

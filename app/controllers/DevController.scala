@@ -1,16 +1,20 @@
 package controllers
 
+import java.io.{File, FileInputStream}
 import java.util.Collections
 import javax.inject.Inject
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.jackson2.JacksonFactory
+import com.google.inject.Provider
 import com.teamgehem.controller.TGBasicController
 import com.teamgehem.security.AuthenticatedActionBuilder
+import fly.play.s3.{BucketFile, S3, S3Exception}
+import org.apache.commons.io.IOUtils
 import play.api.cache.SyncCacheApi
 import play.api.mvc.{MessagesControllerComponents, MessagesRequest}
-import play.api.{Configuration, Logger}
+import play.api.{Application, Configuration, Logger}
 import repositories.{CommentsRepository, PostsRepository}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -26,7 +30,59 @@ class DevController @Inject() (config: Configuration,
                                auth: AuthenticatedActionBuilder,
                                posts: PostsRepository,
                                comments: CommentsRepository,
+                               //client: WSClient, configuration: Configuration,
+                               appProvider: Provider[Application]
                               ) extends TGBasicController(mcc, sync_cache) {
+  def addFile = auth.authrized_dev.async{ implicit request =>
+
+    implicit val app = appProvider.get()
+
+    val bucket = S3("com.teamgehem.files")
+
+    val file_name = "C:/Users/terdo/Pictures/IMG_2349_.jpg"
+    val file = new File(file_name)
+    val size = IOUtils.toByteArray(new FileInputStream(file))
+
+    Logger.debug(s"size = ${size.length}, file_length = ${file.length()}")
+
+    val result = bucket + BucketFile(file.getName, "image/jpeg", size)
+    result
+      .map { unit =>
+        Logger.info("Saved the file")
+        Ok.sendFile(file)
+      }
+      .recover {
+        case S3Exception(status, code, message, originalXml) => { Logger.info("Error: " + message);  Ok.sendFile(file)}
+      }
+
+
+/*    val result_list = bucket.list
+
+    result_list.map { items =>
+      items.map {
+        case BucketItem(name, isVirtual) => {
+          Logger.debug(name)
+        }
+      }
+    }
+    val url = bucket.url("fixed_planet_nirn___geographical__v2__by_hori873-d6h7sh0.jpg")
+    Logger.debug(s"url = $url")
+
+    val result = bucket get "fixed_planet_nirn___geographical__v2__by_hori873-d6h7sh0.jpg"
+    val r = result.map {
+      case b:BucketFile => {
+        Logger.debug(b.toString)
+        Ok(views.html.dev.dev_ok(b.toString))
+      }
+      case BucketFile(name, contentType, content, acl, headers) => {
+        val result = s"$name, $contentType, $content, $acl, $headers"
+        Logger.debug(result)
+        Ok(views.html.dev.dev_ok(result))
+      }
+      case _ =>  Ok(views.html.dev.dev_ok("nothing happend"))
+    }
+    r*/
+  }
 
   def insertPost100 = auth.authrized_dev.async {
 

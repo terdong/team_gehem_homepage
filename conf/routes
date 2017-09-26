@@ -3,6 +3,7 @@ GET           /                                                                 
 GET           /result                                                                 controllers.HomeController.result
 GET           /javascriptRoutes                                                       controllers.HomeController.javascriptRoutes
 GET           /javascriptRoutesMain                                                   controllers.HomeController.javascriptRoutesMain
+GET           /javascriptRoutesUpload                                                 controllers.HomeController.javascriptRoutesUpload
 
 # Account
 POST          /signup                                                                 controllers.AccountController.signup
@@ -78,6 +79,7 @@ GET           /dev/insert_post_100                                              
 GET           /dev/insert_comment_100                                                 controllers.DevController.insertComment100
 GET           /dev/google_sign_in                                                     controllers.DevController.google_sign_in
 POST          /dev/google_sign_in                                                     controllers.DevController.authenticate_google_sign_in
+GET           /dev/s3/add_file                                                        controllers.DevController.addFile
 
 
 #######################################################################################################################
@@ -120,6 +122,6 @@ DELETE        /test/test_js_routes                                              
 
 
 # Contents
-GET           /:name                                                                 controllers.HomeController.navigation(name:String)
+GET           /_:name                                                                  controllers.HomeController.navigation(name:String)
 #GET           /about                                                                  controllers.HomeController.about
 #GET           /contact                                                                controllers.HomeController.contact

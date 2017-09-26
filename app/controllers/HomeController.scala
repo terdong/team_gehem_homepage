@@ -70,4 +70,13 @@ class HomeController @Inject()(cc: MessagesControllerComponents,
       )
     ).as("text/javascript")
   }
+
+  def javascriptRoutesUpload = Action { implicit request =>
+    Ok(
+      JavaScriptReverseRouter("jsRoutes")(
+        routes.javascript.PostController.uploadFile,
+        routes.javascript.PostController.deleteFile
+      )
+    ).as("text/javascript")
+  }
 }

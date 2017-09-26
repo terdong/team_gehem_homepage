@@ -1,6 +1,9 @@
 @()(implicit request: play.api.mvc.RequestHeader)
 <ul class="dropdown-menu">
     <li>
+        <a href=@routes.DevController.addFile()>add_file</a>
+    </li>
+    <li>
         <a href=@routes.DevController.insertPost100()>insertSamplePost100</a>
     </li>
     <li>
