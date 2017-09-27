@@ -19,3 +19,4 @@ Play Framework 2.6.x with scala
 
 ## Plugin
 + TinyMCE
++ 
