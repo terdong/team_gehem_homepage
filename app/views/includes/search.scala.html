@@ -1,26 +1,26 @@
 @import com.teamgehem.model.BoardSearchInfo
-@(page: Int, board_seq_option: Option[Long], search_info: Option[BoardSearchInfo])
+@(page: Int, board_seq_option: Option[Long], search_info: Option[BoardSearchInfo])(implicit request: MessagesRequest[AnyContent], messagesProvider: MessagesProvider)
 <div class="input-group">
     <div class="input-group-btn">
         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" id="AdvancedSearch" aria-expanded="false">
             @search_info.map { info =>
                 @{
                     info.search_type match {
-                        case 0 => "제목"
-                        case 1 => "내용"
-                        case 2 => "제목+내용"
-                        case 3 => "작성자"
-                        case 4 => "댓글"
-                        case _ => "제목"
+                        case 0 => Messages("board.search.subject.title")
+                        case 1 => Messages("board.search.content.title")
+                        case 2 => s"${Messages("board.search.subject.title")} + ${Messages("board.search.content.title")}"
+                        case 3 => Messages("board.search.author.title")
+                        case 4 => Messages("board.search.comment.title")
+                        case _ => Messages("board.search.subject.title")
                     }
                 }
-            }.getOrElse("제목") <span class="caret"></span></button>
+            }.getOrElse("subject") <span class="caret"></span></button>
         <ul class="dropdown-menu" id="dropdown">
-            <li><a >제목</a></li>
-            <li><a >내용</a></li>
-            <li><a >제목+내용</a></li>
-            <li><a >작성자</a></li>
-            <li><a >댓글</a></li>
+            <li><a >@Messages("board.search.subject.title")</a></li>
+            <li><a >@Messages("board.search.content.title")</a></li>
+            <li><a >@Messages("board.search.subject.title") + @Messages("board.search.content.title")</a></li>
+            <li><a >@Messages("board.search.author.title")</a></li>
+            <li><a >@Messages("board.search.comment.title")</a></li>
         </ul>
     </div>
         <!-- /btn-group -->
@@ -30,6 +30,6 @@
             board_seq_option.map(board_seq => routes.PostController.search(board_seq, 1, 0, "")).getOrElse(routes.PostController.searchAll(1, 0, ""))
         }" id="search_button" class="btn btn-default" type="button" val=@{
             page
-        }>검색</a>
+        }>@Messages("board.search.title")</a>
     </span>
 </div>

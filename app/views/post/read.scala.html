@@ -113,10 +113,10 @@
             @tags.tag_table_layout(Messages(s"board.${board_name_on_list}")) {
                 <tr>
                     <th class="col-md-1">#</th>
-                    <th class="col-md-6">제목</th>
-                    <th class="col-md-2">작성자</th>
-                    <th class="col-md-2">작성일</th>
-                    <th class="col-md-1">조회수</th>
+                    <th class="col-md-6">@Messages("post.title")</th>
+                    <th class="col-md-2">@Messages("post.author")</th>
+                    <th class="col-md-2">@Messages("post.date")</th>
+                    <th class="col-md-1">@Messages("post.counter")</th>
                 </tr>
             } {
                 @for(p <- posts) {

@@ -2,14 +2,19 @@ $(document).ready(function () {
     function convertType(value) {
         switch (value.replace(/ /g, '')) {
             case '제목':
+            case 'subject':
                 return 0;
             case '내용':
+            case 'content':
                 return 1;
             case '제목+내용':
+            case 'subject + content':
                 return 2;
             case '작성자':
+            case 'author':
                 return 3;
             case '댓글':
+            case 'comment':
                 return 4;
             default:
                 return 0;

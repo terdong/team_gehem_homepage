@@ -465,7 +465,6 @@ class PostController @Inject()(sync_cache: SyncCacheApi,
 
 
   private def changeDomainOnForm(form: (Long, String, String, Seq[String], Option[Long])) = {
-    Logger.debug(images_url)
     val content = form._3.replace(images_url, cloud_front_url )
     form.copy(_3 = content)
   }

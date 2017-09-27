@@ -50,3 +50,8 @@ contents.home.resume.introduction=<p>This is the resume homepage of Scala Progra
 <p>Thank you.</p>
 account.permission.semi_admin=Semi_Administrator
 account.permission.developer=Developer
+board.search.subject.title=subject
+board.search.content.title=content
+board.search.comment.title=comment
+board.search.author.title=author
+board.search.title=Search

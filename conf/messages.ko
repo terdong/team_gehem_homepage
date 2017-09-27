@@ -49,3 +49,8 @@ contents.home.resume.introduction=이곳은 스칼라 프로그래머 "김 동�
 문의사항은 아래에 있는 연락처로 연락주시기 바랍니다. 감사합니다.</br>
 account.permission.semi_admin=매니저
 account.permission.developer=개발자
+board.search.title=검색
+board.search.subject.title=제목
+board.search.content.title=내용
+board.search.comment.title=댓글
+board.search.author.title=작성자
