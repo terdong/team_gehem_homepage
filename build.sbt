@@ -1,6 +1,6 @@
 name := "team_gehem_homepage"
 
-version := "0.5.9"
+version := "0.5.10"
 
 lazy val `team_gehem_homepage` = (project in file(".")).enablePlugins(PlayScala, LauncherJarPlugin)
 
@@ -44,3 +44,7 @@ libraryDependencies += "com.mohiva" %% "play-html-compressor" % "0.7.1"
 libraryDependencies += "net.kaliber" %% "play-s3" % "9.0.0"
 
 mappings in Universal  += file ( "eb/Procfile" ) ->  "Procfile"
+
+import NativePackagerHelper._
+
+mappings in Universal ++= directory(".ebextensions")

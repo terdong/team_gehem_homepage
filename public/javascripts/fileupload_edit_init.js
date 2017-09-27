@@ -49,7 +49,7 @@ $(document).ready(function () {
                 file_info = JSON.parse(file_info);
 
                 var button = $('.qq-file-id-' + id).children('.qq-uuid');
-                button.attr("data-clipboard-text", "http://d2bbobgydxzko3.cloudfront.net/" + file_info.hash);
+                button.attr("data-clipboard-text", "/images/" + file_info.hash);
                 button.removeClass("qq-hide");
                 button.click(function(){
                     hash_button_click(file_info.file_name);
