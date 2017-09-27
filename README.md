@@ -12,6 +12,7 @@ This project is the web site of the web and game development studio "Team Gehem"
 + Admin (Account, Board)
 + Board
 + Introduction contents
++ Be hosted on Amazon Elastic Beanstalk(and used S3)
 
 ## Upcoming features
 + Wiki
@@ -20,4 +21,7 @@ This project is the web site of the web and game development studio "Team Gehem"
 Play Framework 2.6.x with scala
 
 ## Plugin
-+ TinyMCE
++ [Bootstrap](https://getbootstrap.com/)
++ [TinyMCE](https://www.tinymce.com)
++ [Find Uploader](https://fineuploader.com)
++ [Slick](http://slick.lightbend.com/)
