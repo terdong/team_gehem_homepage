@@ -10,7 +10,7 @@ This project is the web site of the web and game development studio "Team Gehem"
 
 ## Features being implemented
 + Admin (Account, Board)
-+ Board
++ BBS
 + Introduction contents
 + Be hosted on Amazon Elastic Beanstalk(and used S3)
 
