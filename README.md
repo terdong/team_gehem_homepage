@@ -8,7 +8,7 @@ This project is the web site of the web and game development studio "Team Gehem"
 ## Demo
 + [My resume site](http://resume.teamgehem.com)
 
-## Features being implemented
+## Features
 + Admin (Account, Board)
 + BBS
 + Introduction contents
@@ -16,6 +16,8 @@ This project is the web site of the web and game development studio "Team Gehem"
 
 ## Upcoming features
 + Wiki
++ Chatting
++ Streaming
 
 ## SDK
 Play Framework 2.6.x with scala
