@@ -9,9 +9,8 @@ This project is the web site of the web and game development studio "Team Gehem"
 + [My resume site](http://resume.teamgehem.com)
 
 ## Features
-+ Admin (Account, Board)
++ Admin (Account, Board, Permission, Navigation)
 + BBS
-+ Introduction contents
 + Be hosted on Amazon Elastic Beanstalk(and used S3)
 
 ## Upcoming features
