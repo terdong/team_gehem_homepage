@@ -12,6 +12,7 @@ This project is the web site of the web and game development studio "Team Gehem"
 + Admin (Account, Board, Permission, Navigation)
 + BBS
 + Be hosted on Amazon Elastic Beanstalk(and used S3)
++ Authentication and Authorization - Google OAuth 2.0 APIs
 
 ## Upcoming features
 + Wiki
