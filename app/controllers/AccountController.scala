@@ -35,6 +35,11 @@ class AccountController @Inject()(config: Configuration,
 
   lazy val google_client_id = config.get[String]("google.client.id")
 
+  def delete = auth.authrized_member.async { implicit request: AuthMessagesRequest[AnyContent] =>
+    implicit val result = Redirect(routes.HomeController.index).withNewSession.flashing("message" -> Messages("account.edit.delete.complete"))
+    members_repo.delete(request.member.seq)
+  }
+
   def edit = auth.authrized_member.async { implicit request: AuthMessagesRequest[AnyContent] =>
     val form = edit_form.bindFromRequest
     val r = for {

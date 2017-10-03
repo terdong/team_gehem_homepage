@@ -49,6 +49,10 @@ class MembersRepository @Inject()(
     db run members.filter(_.id === id).result
   }
 
+  def delete(member_seq :Long) = {
+    db run members.filter(_.seq === member_seq).delete.asTry
+  }
+
   def create: Future[Unit] = {
     db run (members.schema create)
   }

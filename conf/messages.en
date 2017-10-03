@@ -55,3 +55,6 @@ board.search.content.title=content
 board.search.comment.title=comment
 board.search.author.title=author
 board.search.title=Search
+account.edit.delete.title=Delete Account
+account.edit.delete.message=Are you sure you want to delete this account?
+account.edit.delete.complete=Your account has been deleted.
