@@ -82,6 +82,7 @@ GET           /dev/insert_comment_100                                           
 GET           /dev/google_sign_in                                                     controllers.DevController.google_sign_in
 POST          /dev/google_sign_in                                                     controllers.DevController.authenticate_google_sign_in
 GET           /dev/s3/add_file                                                        controllers.DevController.addFile
+GET           /dev/error                                                              controllers.DevController.error
 
 
 #######################################################################################################################
@@ -124,6 +125,6 @@ DELETE        /test/test_js_routes                                              
 
 
 # Contents
-GET           /:name                                                                 controllers.HomeController.navigation(name:String)
+GET           /:name                                                                  controllers.HomeController.navigation(name:String)
 #GET           /about                                                                  controllers.HomeController.about
 #GET           /contact                                                                controllers.HomeController.contact

@@ -23,9 +23,6 @@ class HomeController @Inject()(cc: MessagesControllerComponents,
                               )
   extends TGBasicController(cc, sync_cache) with DbResultChecker {
 
-
-  //  lazy val notice_board_count =
-
   def index = Action.async { implicit request =>
     //Logger.debug(request.headers.headers.mkString("\n"))
     for {

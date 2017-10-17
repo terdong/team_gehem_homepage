@@ -33,6 +33,14 @@ class DevController @Inject() (config: Configuration,
                                //client: WSClient, configuration: Configuration,
                                appProvider: Provider[Application]
                               ) extends TGBasicController(mcc, sync_cache) {
+
+
+  def error = Action {
+
+    if (true) throw new RuntimeException("foo")
+    Forbidden("for")
+  }
+
   def addFile = auth.authrized_dev.async{ implicit request =>
 
     implicit val app = appProvider.get()

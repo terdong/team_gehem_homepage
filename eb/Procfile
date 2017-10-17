@@ -1,1 +1,1 @@
-web: sh bin/team_gehem_homepage -Dhttp.port=5000 -Dconfig.resource=production.conf
+web: sh bin/team_gehem_homepage -Dhttp.port=5000 -Dconfig.resource=production.conf -Dlogger.resource=prod_logger.xml
