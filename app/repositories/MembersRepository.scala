@@ -100,8 +100,9 @@ class MembersRepository @Inject()(
     db run action.asTry
   }
 
-  def insertSample = {
-    insert("0987654321",("terdong@gmail.com", "김동희", "ThePresident"))
+  def insertSample(id:String, email:String) = {
+//    insert("0987654321",("test@teamgehem.com", "김동희", "ThePresident"))
+    insert(id,(email, "김동희", "ThePresident"))
   }
 
 }

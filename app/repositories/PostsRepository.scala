@@ -284,6 +284,6 @@ class PostsRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
   }
 
   def insertSample = {
-    insert((2,"subject", "content", Nil, None), 2, "127.0.0.1")
+    insert((14,"subject", "content", Nil, None), 11, "127.0.0.1")
   }
 }

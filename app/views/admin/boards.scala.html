@@ -11,29 +11,36 @@
     } yield (permission.permission_code.toString -> permission.content)
 }
 
-@main("boards", "admin") {
+@scripts = {
+    <script type="text/javascript" src="https://cdn.datatables.net/v/bs/dt-1.10.16/datatables.min.js"></script>
+    <script src="@routes.Assets.versioned("javascripts/table_sorting.js")" type="text/javascript"></script>
+}
+@styles ={
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs/dt-1.10.16/datatables.min.css"/>
+}
+
+@main("boards", "admin", scripts = scripts, styles = styles) {
 
     <div class="panel panel-default">
         <div class="panel-heading">Boards</div>
         <div class="table-responsive">
-            <table class="table table-bordered table-hover table-condensed">
+            <table id="sorting_table" class="table table-bordered table-hover table-condensed">
                 <thead>
                     <tr>
                         <th>#</th>
                         <th>name</th>
-                        <th>state</th>
-                        <th>is_eply</th>
-                        <th>is_comment</th>
-                        <th>is_attachment</th>
-                        <th>is_notice</th>
-                        <th>permit.list</th>
-                        <th>permit.read</th>
-                        <th>permit.write</th>
+                        <th>reply</th>
+                        <th>comment</th>
+                        <th>attachment</th>
+                        <th>notice</th>
+                        <th>list</th>
+                        <th>read</th>
+                        <th>write</th>
                         <th>author</th>
                         <th>priority</th>
                         <th>date</th>
                         <th>edit</th>
-                        <th>set_state</th>
+                        <th>state</th>
                         <th>del</th>
                     </tr>
                 </thead>
@@ -46,11 +53,6 @@
                         <td>@{
                             board.name
                         }</td>
-                        <td>
-                            <a href="#" class="btn btn-primary btn-xs disabled" role="button">
-                                <span class="fa @if(board.status) {fa-check} else {fa-times}"></span>
-                            </a>
-                        </td>
                         <td>@{
                             board.is_reply
                         }</td>

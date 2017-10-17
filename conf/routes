@@ -79,6 +79,7 @@ GET           /files/:post_seq                                                  
 #Developer
 GET           /dev/insert_post_100                                                    controllers.DevController.insertPost100
 GET           /dev/insert_comment_100                                                 controllers.DevController.insertComment100
+GET           /dev/insertMemeber100                                                   controllers.DevController.insertMemeber100
 GET           /dev/google_sign_in                                                     controllers.DevController.google_sign_in
 POST          /dev/google_sign_in                                                     controllers.DevController.authenticate_google_sign_in
 GET           /dev/s3/add_file                                                        controllers.DevController.addFile

@@ -15,10 +15,11 @@ import org.apache.commons.io.IOUtils
 import play.api.cache.SyncCacheApi
 import play.api.mvc.{MessagesControllerComponents, MessagesRequest}
 import play.api.{Application, Configuration, Logger}
-import repositories.{CommentsRepository, PostsRepository}
+import repositories.{CommentsRepository, MembersRepository, PostsRepository}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.util.Random
 
 /**
   * Package: controllers
@@ -30,6 +31,7 @@ class DevController @Inject() (config: Configuration,
                                auth: AuthenticatedActionBuilder,
                                posts: PostsRepository,
                                comments: CommentsRepository,
+                               members:MembersRepository,
                                //client: WSClient, configuration: Configuration,
                                appProvider: Provider[Application]
                               ) extends TGBasicController(mcc, sync_cache) {
@@ -106,6 +108,15 @@ class DevController @Inject() (config: Configuration,
       comments.insertSample(105, 100)
     //}
     Future.successful(Redirect(routes.PostController.list(0,1)))
+  }
+
+  def insertMemeber100 = auth.authrized_dev.async {
+    val x = Random.alphanumeric
+
+    //for(i <- 1 to 10){
+      members.insertSample(x.take(10).mkString, s"${x.take(8).mkString}@teamgehem.com")
+    //}
+    Future.successful(Redirect(routes.HomeController.index()))
   }
 
   def google_sign_in = Action { implicit request =>
