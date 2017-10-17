@@ -32,7 +32,10 @@ footer {
     }
 }
 
-
 textarea{
     resize:vertical;
+}
+
+#clickEvent tr{
+    cursor:pointer;
 }
