@@ -4,6 +4,7 @@ GET           /result                                                           
 GET           /javascriptRoutes                                                       controllers.HomeController.javascriptRoutes
 GET           /javascriptRoutesMain                                                   controllers.HomeController.javascriptRoutesMain
 GET           /javascriptRoutesUpload                                                 controllers.HomeController.javascriptRoutesUpload
+GET           /javascriptRoutesAdmin                                                  controllers.AdminController.javascriptRoutesAdmin
 
 # Account
 POST          /signup                                                                 controllers.AccountController.signup

@@ -8,6 +8,7 @@ import play.api.cache.{AsyncCacheApi, SyncCacheApi}
 import play.api.data.Forms._
 import play.api.data._
 import play.api.i18n._
+import play.api.libs.json.Json
 import play.api.mvc._
 import repositories.{BoardsRepository, MembersRepository, PermissionsRepository, PostsRepository}
 import services.CacheManager
@@ -35,9 +36,8 @@ class BoardController @Inject()(cache_manager:CacheManager,
     okWithFormBoards_(board_form, routes.BoardController.createBoard)
   }
 
-  def editBoardForm(board_seq: Long) = auth.authrized_semi_admin.async {
-    implicit request =>
-      boards_repo.getBoard(board_seq).flatMap { b =>
+  def editBoardForm(board_seq: Long) = auth.authrized_semi_admin.async { implicit request =>
+      boards_repo.getBoard(board_seq).map { b =>
         val form_data = (b.seq,
           b.name,
           b.description.getOrElse(""),
@@ -50,7 +50,10 @@ class BoardController @Inject()(cache_manager:CacheManager,
           b.read_permission,
           b.write_permission,
           b.priority)
-        okWithFormBoards_(board_edit_form.fill(form_data), routes.BoardController.editBoard)
+        //okWithFormBoards_(board_edit_form.fill(form_data), routes.BoardController.editBoard)
+
+        Ok(Json.toJson(board_edit_form.fill(form_data).data))
+        //Ok(Json.obj("client_id" -> "hello"))
       }
   }
 

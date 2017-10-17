@@ -11,6 +11,7 @@ import play.api.data.Form
 import play.api.data.Forms._
 import play.api.i18n.Messages
 import play.api.mvc._
+import play.api.routing.JavaScriptReverseRouter
 import repositories._
 import services.CacheManager
 
@@ -160,6 +161,15 @@ class AdminController @Inject()(mcc: MessagesControllerComponents,
       Redirect(routes.AdminController.navigations)
     }
     navigations_repo.delete(seq)
+  }
+
+  def javascriptRoutesAdmin = Action { implicit request =>
+    Ok(
+      JavaScriptReverseRouter("jsRoutes")(
+        routes.javascript.BoardController.editBoardForm,
+        routes.javascript.BoardController.editBoard
+      )
+    ).as("text/javascript")
   }
 
   private val member_form = Form(

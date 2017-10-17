@@ -13,7 +13,10 @@
 
 @scripts = {
     <script type="text/javascript" src="https://cdn.datatables.net/v/bs/dt-1.10.16/datatables.min.js"></script>
+    <script type="text/javascript" src="@routes.AdminController.javascriptRoutesAdmin()"></script>
     <script src="@routes.Assets.versioned("javascripts/table_sorting.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.versioned("javascripts/jquery.formautofill.min.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.versioned("javascripts/get_board_info.js")" type="text/javascript"></script>
 }
 @styles ={
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs/dt-1.10.16/datatables.min.css"/>
@@ -82,7 +85,9 @@
                         }</td>
                         <td>@tags.tag_cleanly_date(board.register_date)</td>
                         <td>
-                            <a title = "edit" href="@routes.BoardController.editBoardForm(board.seq)" class="btn btn-info btn-xs active" role="button"><span class="fa fa-pencil-square-o" aria-hidden="true"></span></a>
+                           @* <a title = "edit" href="@routes.BoardController.editBoardForm(board.seq)" class="btn btn-info btn-xs active" role="button"><span class="fa fa-pencil-square-o" aria-hidden="true"></span></a>*@
+                            <button class="button_edit btn btn-info btn-xs active" data-board-seq="@board.seq" data-type="number"><span class="fa fa-pencil-square-o" aria-hidden="true"></span></button>
+
                         </td>
                         <td>
                         @defining(board.status) { status =>
@@ -107,12 +112,13 @@
 
     <hr />
 
-    @b3.formCSRF(url) {
+    @b3.formCSRF(url, 'id -> "board_form") {
 
         @defining(form.data.get("seq")) { seq =>
             @if(seq.isDefined) {
                 @b3.hidden("seq", seq)
             }
+            @b3.hidden(form("seq"))
 
         <div class="row">
             <div class="col-md-4">
