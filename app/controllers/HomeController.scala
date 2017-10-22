@@ -2,14 +2,23 @@ package controllers
 
 import javax.inject._
 
+import akka.NotUsed
+import akka.stream.Materializer
+import akka.stream.scaladsl.{BroadcastHub, Concat, Keep, MergeHub, Sink, Source}
 import com.teamgehem.controller.TGBasicController
 import com.teamgehem.enumeration.CacheString
 import com.teamgehem.helper.DbResultChecker
 import com.teamgehem.model.BoardInfo
+import play.api.{Environment, Logger, Mode}
 import play.api.cache.{AsyncCacheApi, SyncCacheApi}
+import play.api.http.ContentTypes
+import play.api.libs.EventSource
+import play.api.libs.iteratee.Enumeratee
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc._
 import play.api.routing.JavaScriptReverseRouter
 import repositories.{NavigationsRepository, PostsRepository}
+import services.Counter
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -18,10 +27,14 @@ class HomeController @Inject()(cc: MessagesControllerComponents,
                                posts_repo: PostsRepository,
                                navis_repo: NavigationsRepository,
                                cache: AsyncCacheApi,
-                               sync_cache: SyncCacheApi
+                               sync_cache: SyncCacheApi,
+                               counter: Counter,
                                //result_cache: Cached
-                              )
+                               environment: Environment
+                              )(implicit mat: Materializer)
   extends TGBasicController(cc, sync_cache) with DbResultChecker {
+
+  val isProd = environment.mode.equals(Mode.Prod)
 
   def index = Action.async { implicit request =>
     //Logger.debug(request.headers.headers.mkString("\n"))
@@ -51,6 +64,53 @@ class HomeController @Inject()(cc: MessagesControllerComponents,
     }
   //}
 
+  def connDeathWatch(addr: String): Enumeratee[JsValue, JsValue] =
+    Enumeratee.onIterateeDone{ () => Logger.info(s"$addr - SSE disconnected") }
+
+  def welcome: Source[JsValue, NotUsed] = Source.single[JsValue](Json.obj(
+    "message" -> "Welcome! Write a message and hit ENTER."
+  ))
+
+  private[this] val (chatSink: Sink[JsValue, NotUsed], chatSource: Source[JsValue, NotUsed]) =
+    MergeHub.source[JsValue]
+      .toMat(BroadcastHub.sink[JsValue])(Keep.both)
+      .run()
+
+  def chatFeed = Action { req =>
+    val userAddress = req.remoteAddress
+    Logger.info(s"${userAddress} - connected")
+    val watchFlow = EventSource.flow[JsValue].watchTermination()((_, termination) => termination.onComplete(_ => {
+      Logger.info(s"$userAddress - SSE disconnected")
+    }))
+
+    if(isProd && req.cookies.get("chat").isDefined){
+      Ok.chunked(chatSource via watchFlow).as(ContentTypes.EVENT_STREAM)
+    }else{
+      val combined_source = Source.combine(welcome, chatSource)(Concat(_))
+      val cookie_chat = Cookie("chat","1", Some(3600), httpOnly = false)
+
+      val result = Ok.chunked(combined_source via watchFlow).as(ContentTypes.EVENT_STREAM)
+
+      if(req.session.get("nick").isDefined){
+        result.withCookies(cookie_chat).bakeCookies()
+      }else{
+        val cookie_nick = Cookie("temp_nick",s"guest_${ counter.nextCount()}", Some(3600), httpOnly = false)
+        result.withCookies(cookie_chat, cookie_nick).bakeCookies()
+      }
+
+    }
+  }
+
+  def postMessage = Action(parse.json) { req =>
+    val optionNick = req.session.get("nick")
+    val message = (Json.toJson(req.body) \ "message").as[String]
+    val mixed_message = s"${optionNick.map{nick => nick}.getOrElse{ req.cookies.get("temp_nick").map(cookie=>cookie.value).getOrElse("guest_??") }}: ${message}"
+    Source.single(Json.obj(
+      "message" ->mixed_message
+    )).runWith(chatSink)
+    Ok
+  }
+
   def javascriptRoutes = Action { implicit request =>
     Ok(
       JavaScriptReverseRouter("jsRoutes")(
@@ -63,7 +123,9 @@ class HomeController @Inject()(cc: MessagesControllerComponents,
   def javascriptRoutesMain = Action { implicit request =>
     Ok(
       JavaScriptReverseRouter("jsRoutes")(
-        routes.javascript.AccountController.getClientId
+        routes.javascript.AccountController.getClientId,
+        routes.javascript.HomeController.chatFeed,
+        routes.javascript.HomeController.postMessage
       )
     ).as("text/javascript")
   }

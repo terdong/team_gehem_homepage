@@ -16,7 +16,8 @@ class MemberAuthenticatedBuilder(parser: BodyParser[AnyContent])(
           email: String <- req.session.get("email")
           permission: String <- req.session.get("permission")
           seq: String <- req.session.get("seq")
-        } yield (MemberInfo(email, permission.toByte, seq.toLong))
+          nick:String <- req.session.get("nick")
+        } yield (MemberInfo(email, permission.toByte, seq.toLong, nick))
       },
       parser
     ) {

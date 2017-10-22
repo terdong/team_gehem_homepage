@@ -39,3 +39,37 @@ textarea{
 #clickEvent tr{
     cursor:pointer;
 }
+
+.chat {
+    margin-top: 50px;
+    box-sizing: border-box;
+}
+.chat .head {
+    border:1px solid black;
+    border-bottom: 0;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    width: 300px;
+    padding: 5px;
+    height: 2em;
+}
+
+.chat .log {
+    border:1px solid black;
+    width: 300px;
+    height: 500px;
+    overflow: auto;
+}
+.chat .log div {
+    padding: 2px;
+    /*border-bottom: 1px solid black;*/
+}
+.chat input {
+    border:1px solid black;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    width: 300px;
+    height: 2em;
+    border-top: 0;
+    padding: 5px;
+}

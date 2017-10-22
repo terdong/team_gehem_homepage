@@ -89,7 +89,8 @@ class AccountController @Inject()(config: Configuration,
             case Success(member) =>
               Ok(views.html.account.signup_complete(member.email, "account.signup.success")).withSession("seq" -> member.seq.toString,
                 "email" -> member.email,
-                "permission" -> member.permission.toString)
+                "permission" -> member.permission.toString,
+                "nick" -> member.nick)
             case Failure(e) => throw e
           })
         }.getOrElse(Future.successful(PreconditionFailed(views.html.error_pages.HTTP412())))
@@ -114,7 +115,8 @@ class AccountController @Inject()(config: Configuration,
               .index())
             .withSession("seq" -> member.seq.toString,
                          "email" -> member.email,
-                         "permission" -> member.permission.toString)
+                         "permission" -> member.permission.toString,
+                          "nick" -> member.nick)
         }
       }
     )
@@ -155,7 +157,8 @@ class AccountController @Inject()(config: Configuration,
             "title" -> Messages("account.signin.succeed.title")
           )).withSession("seq" -> member.seq.toString,
             "email" -> member.email,
-            "permission" -> member.permission.toString)
+            "permission" -> member.permission.toString,
+            "nick" -> member.nick)
         }.getOrElse(Ok(Json.obj("redirect" -> routes.AccountController.createSignUpForm().url)).withSession("id" -> userId) )
       }
     } else {

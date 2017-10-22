@@ -6,6 +6,10 @@ GET           /javascriptRoutesMain                                             
 GET           /javascriptRoutesUpload                                                 controllers.HomeController.javascriptRoutesUpload
 GET           /javascriptRoutesAdmin                                                  controllers.AdminController.javascriptRoutesAdmin
 
+# main
+GET          /chatFeed                                                               controllers.HomeController.chatFeed
+POST          /postMessage                                                            controllers.HomeController.postMessage
+
 # Account
 POST          /signup                                                                 controllers.AccountController.signup
 GET           /signup                                                                 controllers.AccountController.createSignUpForm

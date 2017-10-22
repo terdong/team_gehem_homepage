@@ -68,8 +68,9 @@ class PostController @Inject()(sync_cache: SyncCacheApi,
       email <- getEmail
       permission <- request.session.get("permission")
       seq <- getSeq
+      nick <- getNick
     } yield {
-      MemberInfo(email, permission.toByte, seq.toLong)
+      MemberInfo(email, permission.toByte, seq.toLong, nick)
     }
   }
 
@@ -78,6 +79,8 @@ class PostController @Inject()(sync_cache: SyncCacheApi,
   def getSeq(implicit request: MessagesRequest[AnyContent]) = request.session.get("seq")
 
   def getEmail(implicit request: MessagesRequest[AnyContent]) = request.session.get("email")
+
+  def getNick(implicit request: MessagesRequest[AnyContent]) = request.session.get("nick")
 
   def getReadPage(implicit request: MessagesRequest[AnyContent]) = {
     request.cookies.get("read_page").map(_.value.toInt).getOrElse(1)

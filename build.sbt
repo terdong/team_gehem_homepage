@@ -43,6 +43,11 @@ libraryDependencies += "com.mohiva" %% "play-html-compressor" % "0.7.1"
 
 libraryDependencies += "net.kaliber" %% "play-s3" % "9.0.0"
 
+libraryDependencies ++=  Seq(
+  "com.typesafe.play" %% "play-iteratees" % "2.6.1",
+  "com.typesafe.play" %% "play-iteratees-reactive-streams" % "2.6.1"
+)
+
 mappings in Universal  += file ( "eb/Procfile" ) ->  "Procfile"
 
 import NativePackagerHelper._
