@@ -1,0 +1,65 @@
+@(tab: String)(implicit request: play.api.mvc.RequestHeader, context:com.teamgehem.model.TGContext)
+<!-- Navigation -->
+<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="@routes.HomeController.index()">
+                <img src='@routes.Assets.versioned("images/ci-0_custom3.png")' height="30" alt="">
+            </a>
+        </div>
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                @includes.nav_menu(tab)
+
+                <li class="dropdown @("active".when(tab == "board"))">
+                    <a href="@routes.PostController.list(0, 1)" >Board</a>
+                </li>
+
+                @tags.tag_contents_by_permission(8){
+                    <li class="dropdown @("active".when(tab == "admin"))">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin <b class="caret"></b></a>
+                        @includes.nav_admin()
+                    </li>
+                }()
+
+                @tags.tag_contents_by_permission(9){
+                    <li class="dropdown @("active".when(tab == "dev"))">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dev <b class="caret"></b></a>
+
+                        @includes.nav_dev()
+                    </li>
+                }()
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                        <i class="fa fa-user fa-fw"></i> <i class="fa fa-caret-down"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-user">
+                        @tags.tag_contents_by_permission(){
+                            @includes.nav_member()
+                        }{
+                                <li><a href="@routes.AccountController.signinOpenId"><i class="fa fa-sign-in fa-fw"></i> Sign In</a></li>
+                     @*           <li class="divider"></li>
+                                <li><a href="@routes.AccountController.signup"><i class="fa fa-user-plus fa-fw"></i> Sign Up</a></li>*@
+                        }
+
+                    </ul>
+                    <!-- /.dropdown-user -->
+                </li>
+                <!-- /.dropdown -->
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>

@@ -1,0 +1,28 @@
+@(tab: String)(implicit request: RequestHeader, context: com.teamgehem.model.TGContext)
+
+@defining(context.navigation_list){ op_list =>
+        @op_list.map { list =>
+            @for(nav_info <- list) {
+                <li class="@("active".when(tab == nav_info.short_cut))">
+                    @*
+                    @b3.hidden("post_seq", nav_info.post_seq)
+                    @b3.hidden("tab", nav_info.short_cut)*@
+       @*             <form action="@routes.HomeController.navigation(nav_info.name)" method="GET" class="form-vertical " role="form">
+                        @b3.hidden("post_seq", nav_info.post_seq)
+                        @b3.hidden("tab", nav_info.short_cut)
+                    </form>
+                    <a href="#" type="submit" class=""> Experience </a>*@
+
+             @*       @b3.form() {
+
+                        @b3.submit('class -> "btn btn-default"){ @nav_info.name }
+                    }*@
+
+
+                    <a href="@routes.HomeController.navigation(nav_info.name)"@* class="navigation_click"*@>@{
+                        nav_info.name
+                    }</a>
+                </li>
+            }
+        }
+}

@@ -1,0 +1,12 @@
+@(action:Call, board_seq:Long, form:Form[_])(implicit request: com.teamgehem.security.AuthMessagesRequest[AnyContent], messagesProvider: MessagesProvider)
+
+@implicitFC = @{
+    b3.horizontal.fieldConstructor("col-md-1", "col-md-11")
+}
+@b3.formCSRF(action, 'id -> "postForm") {
+    @b3.hidden(form("board_seq"))
+    @b3.hidden(form("reply_post_seq"))
+    @b3.text(form("subject"), '_label -> "Subject")
+    @b3.textarea(form("content"), '_label -> "Content", 'rows -> 5)
+    @b3.submit('class -> "btn btn-default pull-right"){<span class="fa fa-check"></span> Save}
+}

@@ -1,20 +1,136 @@
 # Routes
-# This file defines all application routes (Higher priority routes first)
-# ~~~~
+GET           /                                                                       controllers.HomeController.index
+GET           /result                                                                 controllers.HomeController.result
+GET           /javascriptRoutes                                                       controllers.HomeController.javascriptRoutes
+GET           /javascriptRoutesMain                                                   controllers.HomeController.javascriptRoutesMain
+GET           /javascriptRoutesUpload                                                 controllers.HomeController.javascriptRoutesUpload
+GET           /javascriptRoutesAdmin                                                  controllers.AdminController.javascriptRoutesAdmin
 
-# An example controller showing a sample home page
-GET        /                    controllers.HomeController.index
+# main
+GET          /chatFeed                                                               controllers.HomeController.chatFeed
+POST          /postMessage                                                            controllers.HomeController.postMessage
 
-GET        /str2                controllers.HomeController.str2
+# Account
+POST          /signup                                                                 controllers.AccountController.signup
+GET           /signup                                                                 controllers.AccountController.createSignUpForm
+#deprecated  POST          /signin                                                    controllers.AccountController.signin
+#deprecated  GET           /signin_deprecated                                         controllers.AccountController.createSignInForm
+GET           /signin                                                                 controllers.AccountController.signinOpenIdForm
+POST          /signin                                                                 controllers.AccountController.signinOpenId
+GET           /signout                                                                controllers.AccountController.signout
+POST          /getClientId                                                            controllers.AccountController.getClientId
 
-GET        /str                 controllers.HomeController.str(str:String)
+POST          /edit                                                                   controllers.AccountController.edit
+GET           /edit                                                                   controllers.AccountController.editForm
 
-GET        /formtest            controllers.HomeController.formtest
+GET           /delete                                                                 controllers.AccountController.delete
+
+# Admin
+POST          /createBoard                                                            controllers.BoardController.createBoard
+GET           /boards                                                                 controllers.BoardController.boards
+POST          /boards/edit                                                            controllers.BoardController.editBoard
+GET           /boards/:board_seq/edit                                                 controllers.BoardController.editBoardForm(board_seq:Long)
+GET           /boards/:board_seq/delete                                               controllers.BoardController.deleteBoard(board_seq:Long)
+GET           /boards/:board_seq/active                                               controllers.BoardController.setActiveBoard(board_seq:Long, is_active:Boolean)
+
+POST          /createPermission                                                       controllers.AdminController.createPermission
+GET           /permissions                                                            controllers.AdminController.permissions
+GET           /permissions/:permission_code/delete                                    controllers.AdminController.deletePermission(permission_code:Int)
+
+GET           /members                                                                controllers.AdminController.members
+POST          /members/:member_email/edit                                             controllers.AdminController.editMember(member_email:String)
+GET           /members/:member_email/edit                                             controllers.AdminController.editMemberForm(member_email:String)
+
+GET           /navigations                                                            controllers.AdminController.navigations
+POST          /navigations/create                                                     controllers.AdminController.createNavigation
+POST          /navigations/edit                                                       controllers.AdminController.editNavigation
+GET           /navigations/:navigation_seq/edit                                       controllers.AdminController.editNavigationForm(navigation_seq:Long)
+GET           /navigations/:navigation_seq/delete                                     controllers.AdminController.deleteNavigation(navigation_seq:Long)
+GET           /navigations/:navigation_seq/active                                     controllers.AdminController.setActiveNavigation(navigation_seq:Long, is_active:Boolean)
+
+# Post
+GET           /board/all                                                              controllers.PostController.list(board_seq:Long = 0, page:Int = 1)
+GET           /board/all/page/:page                                                   controllers.PostController.list(board_seq:Long = 0, page:Int)
+GET           /board/:board_seq                                                       controllers.PostController.list(board_seq:Long, page:Int = 1)
+GET           /board/:board_seq/page/:page                                            controllers.PostController.list(board_seq:Long, page:Int)
+
+GET           /board/all/search                                                       controllers.PostController.searchAll(page:Int = 1, type_number:Int = 0, word:String="")
+GET           /board/all/search/page/:page/type/:type_number/word/:word               controllers.PostController.searchAll(page:Int, type_number:Int, word:String)
+GET           /board/:board_seq/search                                                controllers.PostController.search(board_seq:Long, page:Int = 1, type_number:Int = 0, word:String="")
+GET           /board/:board_seq/search/page/:page/type/:type_number/word/:word        controllers.PostController.search(board_seq:Long, page:Int, type_number:Int, word:String)
+
+GET           /board/:board_seq/page/:page/post/:post_seq                             controllers.PostController.read(board_seq :Long, post_seq:Long, page:Int)
+
+POST          /board/write                                                            controllers.PostController.writePost
+GET           /board/all/write                                                        controllers.PostController.writePostForm(board_seq :Long = 0)
+GET           /board/:board_seq/write                                                 controllers.PostController.writePostForm(board_seq :Long)
+GET           /board/:board_seq/post/:post_seq/reply                                  controllers.PostController.writeReplyPostForm(board_seq: Long, post_seq:Long)
+POST          /board/:board_seq/post/:post_seq/edit                                   controllers.PostController.editPost(board_seq :Long, post_seq:Long)
+GET           /board/:board_seq/post/:post_seq/edit                                   controllers.PostController.editPostForm(board_seq :Long, post_seq:Long)
+
+GET           /board/:board_seq/post/:post_seq                                        controllers.PostController.deletePost(board_seq :Long, post_seq:Long)
+
+POST          /board/:board_seq/post/comment/write                                    controllers.PostController.writeComment(board_seq:Long)
+GET           /board/:board_seq/post/:post_seq/comment/:comment_seq/delete            controllers.PostController.deleteComment(board_seq:Long, post_seq:Long, comment_seq:Long)
+GET           /post/:post_seq/comment/page/:page                                      controllers.PostController.commentList(post_seq:Long, page:Int)
+
+POST          /upload/file                                                            controllers.PostController.uploadFile
+POST          /upload/file/delete                                                     controllers.PostController.deleteFile
+
+GET           /images/:hash                                                           controllers.AttachmentController.images(hash: String)
+GET           /file/:hash                                                             controllers.AttachmentController.file(hash:String)
+GET           /files/:post_seq                                                        controllers.AttachmentController.files(post_seq:Long)
+
+#Developer
+GET           /dev/insert_post_100                                                    controllers.DevController.insertPost100
+GET           /dev/insert_comment_100                                                 controllers.DevController.insertComment100
+GET           /dev/insertMemeber100                                                   controllers.DevController.insertMemeber100
+GET           /dev/google_sign_in                                                     controllers.DevController.google_sign_in
+POST          /dev/google_sign_in                                                     controllers.DevController.authenticate_google_sign_in
+GET           /dev/s3/add_file                                                        controllers.DevController.addFile
+GET           /dev/error                                                              controllers.DevController.error
+
+
+#######################################################################################################################
 
 # An example controller showing how to use dependency injection
-GET        /count               controllers.CountController.count
+GET           /count                                                                  controllers.CountController.count
 # An example controller showing how to write asynchronous code
-GET        /message             controllers.AsyncController.message
+GET           /message                                                                controllers.AsyncController.message
 
 # Map static resources from the /public folder to the /assets URL path
-GET        /assets/*file        controllers.Assets.versioned(path="/public", file: Asset)
+GET           /assets/*file                                                           controllers.Assets.versioned(path="/public", file: Asset)
+
+#Test
+GET           /test/auth/admin                                                        controllers.TestController.test_auth_admin
+GET           /test/auth/member                                                       controllers.TestController.test_auth_member
+GET           /test/posts                                                             controllers.Default.todo
+GET           /test/option_param                                                      controllers.TestController.test_option_param(param:Option[String])
+GET           /test/default_param                                                     controllers.TestController.test_default_param(param:Int ?= 99)
+GET           /test/sendFile                                                          controllers.TestController.test_sendFile
+GET           /test/sendFile2/*name                                                   controllers.TestController.test_sendFile2(name:String)
+GET           /test/configuration                                                     controllers.TestController.test_configuration
+GET           /test/assets                                                            controllers.TestController.test_assets
+GET           /test/flash                                                             controllers.TestController.test_flash
+GET           /test/json                                                              controllers.TestController.test_json
+#GET         /test/error                                                             controllers.TestController.test_error
+GET           /test/param                                                             controllers.TestController.test_param(param:Int = 999999999)
+GET           /test/param/:param                                                      controllers.TestController.test_param(param:Int)
+GET           /test/set_authorized                                                    controllers.TestController.test_set_authorized
+GET           /test/get_authorized                                                    controllers.TestController.test_get_authorized
+GET           /test/set_cookie                                                        controllers.TestController.test_set_cookie
+GET           /test/remove_cookie                                                     controllers.TestController.test_remove_cookie
+GET           /test/get_request                                                       controllers.TestController.test_get_request
+GET           /test/get_headers                                                       controllers.TestController.test_get_headers
+GET           /test/messages                                                          controllers.TestController.test_messages
+GET           /test/messages2                                                         controllers.TestController.test_messages2
+GET           /test/form                                                              controllers.TestController.test_form
+POST          /test/form_test                                                         controllers.TestController.test_form_post
+GET           /test/test_js_routes_view                                               controllers.TestController.test_js_routes_view
+DELETE        /test/test_js_routes                                                    controllers.TestController.test_js_routes
+
+
+# Contents
+GET           /:name                                                                  controllers.HomeController.navigation(name:String)
+#GET           /about                                                                  controllers.HomeController.about
+#GET           /contact                                                                controllers.HomeController.contact

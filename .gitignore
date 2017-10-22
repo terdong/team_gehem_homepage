@@ -6,3 +6,7 @@ target
 /.project
 /.settings
 /RUNNING_PID
+/out
+upload
+uploads
+/output

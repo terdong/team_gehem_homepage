@@ -1,0 +1,8 @@
+@(attachment:Attachment)
+
+<a id="file_info_@{attachment.seq}" title="download" href="@{s"http://d2bbobgydxzko3.cloudfront.net/${attachment.hash}"}" class="btn btn-default btn-xs"><span class="fa fa-download"></span>
+    @{attachment.name}(<span class="file_size" value="@{attachment.size}"></span>)(@{attachment.download_count})
+</a>
+@*<a id="file_info_@{attachment.seq}" title="download" href="@routes.AttachmentController.file(attachment.hash)" class="btn btn-default btn-xs"><span class="fa fa-download"></span>
+    @{attachment.name}(<span class="file_size" value="@{attachment.size}"></span>)(@{attachment.download_count})
+</a>*@

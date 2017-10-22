@@ -1,0 +1,10 @@
+@()(implicit request: play.api.mvc.RequestHeader, messages: MessagesProvider, context:com.teamgehem.model.TGContext)
+@main("Result") {
+
+        <div class="row text-center">
+                @defining(request.flash.get("success")) { str =>
+                    <p>@str</p>
+                }
+                <a href="@routes.HomeController.index()" class="btn btn-success" role="button"><i class="fa fa-repeat" aria-hidden="true"> @Messages("result.button")</i></a>
+        </div>
+}

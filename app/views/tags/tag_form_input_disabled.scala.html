@@ -1,0 +1,8 @@
+@(title: String, value: String, input_type: String = "text")
+
+<div class="form-group">
+    <label class="control-label col-md-2">@title</label>
+    <div class="col-md-10">
+        <input type=@input_type class="form-control" disabled="disabled" value="@value">
+    </div>
+</div>

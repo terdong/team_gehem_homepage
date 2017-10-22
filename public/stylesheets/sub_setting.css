@@ -1,0 +1,75 @@
+body {
+    padding-top: 70px; /* Required padding for .navbar-fixed-top. Change if height of navigation changes. */
+}
+
+/*
+.navbar-fixed-top .nav {
+    padding: 15px 0;
+}
+li.dropdown a {
+    color: #337ab7;
+}
+*/
+
+.navbar-fixed-top .navbar-brand {
+    padding: 0 15px;
+}
+
+footer {
+    padding: 30px 0;
+    text-align: center
+}
+
+/*@media (min-width: 768px) {
+    body {
+        padding-top: 70px; !* Required padding for .navbar-fixed-top. Change if height of navigation changes. *!
+    }
+}*/
+
+@media {
+    .navbar-fixed-top .navbar-brand {
+        padding: 10px
+    }
+}
+
+textarea{
+    resize:vertical;
+}
+
+#clickEvent tr{
+    cursor:pointer;
+}
+
+.chat {
+    margin-top: 50px;
+    box-sizing: border-box;
+}
+.chat .head {
+    border:1px solid black;
+    border-bottom: 0;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    width: 300px;
+    padding: 5px;
+    height: 2em;
+}
+
+.chat .log {
+    border:1px solid black;
+    width: 300px;
+    height: 500px;
+    overflow: auto;
+}
+.chat .log div {
+    padding: 2px;
+    /*border-bottom: 1px solid black;*/
+}
+.chat input {
+    border:1px solid black;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    width: 300px;
+    height: 2em;
+    border-top: 0;
+    padding: 5px;
+}

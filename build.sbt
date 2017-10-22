@@ -1,37 +1,55 @@
-import sbt.Keys.libraryDependencies
+name := "team_gehem_homepage"
 
-name := "team_gehem"
+version := "0.5.29"
 
-version := "1.0"
+lazy val `team_gehem_homepage` = (project in file(".")).enablePlugins(PlayScala, LauncherJarPlugin)
 
-lazy val root = (project in file(".")).enablePlugins(PlayScala)
+resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"
 
-scalaVersion := "2.11.8"
+resolvers += "Akka Snapshot Repository" at "http://repo.akka.io/snapshots/"
 
-scalacOptions += "-feature"
+scalaVersion := "2.12.2"
 
-libraryDependencies ++= Seq(
-  cache,
-  ws,
-  "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0" % Test
-)
+libraryDependencies ++= Seq(ehcache, ws, specs2 % Test, guice, evolutions)
 
-libraryDependencies += "org.scala-lang.modules" %% "scala-async" % "0.9.6"
-
-// slick
-libraryDependencies ++= Seq(
-  "com.typesafe.play" %% "play-slick" % "2.0.2",
-  "com.typesafe.play" %% "play-slick-evolutions" % "2.0.2",
-  "org.postgresql" % "postgresql" % "42.0.0"
-)
+unmanagedResourceDirectories in Test <+= baseDirectory(
+  _ / "target/web/public/test")
 
 resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
+resolvers += "Central Repository" at "http://central.maven.org/maven2/"
+
 //bootstrap
 libraryDependencies ++= Seq(
-  "com.adrianhurt" %% "play-bootstrap" % "1.1.1-P25-B3-SNAPSHOT",
-  "org.webjars" % "bootstrap" % "3.3.7",
-  "org.webjars" % "jquery" % "3.2.0",
-  "org.webjars" % "font-awesome" % "4.7.0",
-  "org.webjars" % "bootstrap-datepicker" % "1.6.4"
+  "com.adrianhurt" %% "play-bootstrap" % "1.2-P26-B3" exclude("org.webjars", "jquery")
 )
+
+// slick
+libraryDependencies ++= Seq(
+  "com.typesafe.play" %% "play-slick" % "3.0.1",
+  "com.typesafe.play" %% "play-slick-evolutions" % "3.0.1",
+  "org.postgresql" % "postgresql" % "42.1.3"
+)
+
+// https://mvnrepository.com/artifact/com.sksamuel.scrimage/scrimage-core_2.12
+libraryDependencies += "com.sksamuel.scrimage" % "scrimage-core_2.12" % "2.1.8"
+
+// https://mvnrepository.com/artifact/com.google.api-client/google-api-client
+libraryDependencies += "com.google.api-client" % "google-api-client" % "1.22.0"
+
+libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
+
+libraryDependencies += "com.mohiva" %% "play-html-compressor" % "0.7.1"
+
+libraryDependencies += "net.kaliber" %% "play-s3" % "9.0.0"
+
+libraryDependencies ++=  Seq(
+  "com.typesafe.play" %% "play-iteratees" % "2.6.1",
+  "com.typesafe.play" %% "play-iteratees-reactive-streams" % "2.6.1"
+)
+
+mappings in Universal  += file ( "eb/Procfile" ) ->  "Procfile"
+
+import NativePackagerHelper._
+
+mappings in Universal ++= directory(".ebextensions")

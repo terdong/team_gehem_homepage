@@ -1,0 +1,27 @@
+@import com.teamgehem.model.BoardInfo
+@(active_board_name: String)(implicit request: MessagesRequest[AnyContent], board_list_option: Option[Seq[BoardInfo]])
+@board_list_option.map { board_list =>
+    <ol class="breadcrumb">
+        @if(board_list.length > 0) {
+            @defining("all".equals(active_board_name)) { bool =>
+                <li class="breadcrumb-item@if(bool) { active}">
+                    <a href="@routes.PostController.list(0, 1)" @if(bool){style="color: unset;"}>@Messages("board.all")</a>
+                </li>
+            }
+            @defining(request.session.get("permission").getOrElse("0").toByte) { permission: Byte =>
+                @for(board <- board_list) {
+                    @if(permission >= board.list_perm) {
+                        @defining(board.name) { board_name =>
+                            @defining(board_name.equals(active_board_name)) { bool =>
+                                <li class="breadcrumb-item@if(bool) { active}">
+                                    <a href="@routes.PostController.list(board.seq, 1)" @if(bool){style="color: unset;"}>@Messages(s"board.$board_name")</a>
+                                </li>
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+</ol>
+

@@ -1,0 +1,16 @@
+@()(implicit request: play.api.mvc.RequestHeader)
+
+<ul class="dropdown-menu">
+    <li>
+        <a href=@routes.AdminController.members()>members</a>
+    </li>
+    <li>
+        <a href=@routes.BoardController.boards()>boards</a>
+    </li>
+    <li>
+        <a href=@routes.AdminController.permissions()>permissions</a>
+    </li>
+    <li>
+        <a href=@routes.AdminController.navigations()>navigations</a>
+    </li>
+</ul>

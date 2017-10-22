@@ -1,0 +1,5 @@
+@()(implicit flash:Flash)
+
+@defining(flash.get("hi")){ msg =>
+  @msg
+}

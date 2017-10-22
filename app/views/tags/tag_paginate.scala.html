@@ -1,0 +1,41 @@
+@import com.teamgehem.model.PaginationInfo
+@(pagination_info : PaginationInfo, route: Int => Call, bound: Int = 5)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+
+<nav aria-label="Page navigation">
+    <div class="text-center">
+        <ul class="pagination justify-content-center">
+            @if(pagination_info.current_page == 1) {
+                <li class="disabled">
+                    <a href="#" aria-label="Previous">
+            } else {
+                <li><a href="@route(1)">@Messages("pagination.front")</a></li>
+                <li>
+                    <a href="@route(pagination_info.current_page - 1)" aria-label="Previous">
+                    }
+            <i class="fa fa-angle-double-left" aria-hidden="true"></i>
+        </a>
+        </li>
+            @defining(pagination_info.getLowBound(bound)) { low_bound =>
+                @defining(pagination_info.getHighBound(bound, low_bound)) { high_bound =>
+
+                    @for(i <- low_bound.max(1) until pagination_info.current_page) {
+                        <li><a href="@route(i)">@i</a></li>
+                    }
+                <li class="active"><a href="#">@{pagination_info.current_page}</a></li>
+                    @for(i <- pagination_info.current_page + 1 to high_bound) {
+                        <li><a href="@route(i)">@i</a></li>
+                    }
+
+                    @if(pagination_info.current_page < high_bound) {
+                        <li><a href="@route(pagination_info.current_page + 1)" aria-label="Next">
+                    } else {
+                        <li class="disabled"><a href="#" aria-label="Next">
+                        }
+                    <i class="fa fa-angle-double-right" aria-hidden="true"></i>
+                </a>
+                </li>
+                }
+            }
+        </ul>
+    </div>
+</nav>

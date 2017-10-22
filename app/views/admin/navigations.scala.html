@@ -1,0 +1,90 @@
+@import com.teamgehem.security.AuthMessagesRequest
+@(navigations: Seq[Navigation], form: Form[_], url: Call)(implicit request: AuthMessagesRequest[AnyContent], messagesProvider: MessagesProvider, context:com.teamgehem.model.TGContext)
+
+@implicitFieldConstructor = @{
+    b3.vertical.fieldConstructor
+}
+@scripts = {
+    <script type="text/javascript" src="https://cdn.datatables.net/v/bs/dt-1.10.16/datatables.min.js"></script>
+    <script src="@routes.Assets.versioned("javascripts/table_sorting.js")" type="text/javascript"></script>
+}
+@styles ={
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs/dt-1.10.16/datatables.min.css"/>
+}
+@main("navigations", "admin", scripts, styles) {
+    @tags.tag_table_layout("Navigation List"){
+        <tr>
+            <th>#</th>
+            <th>name</th>
+            <th>shortcut</th>
+            <th>description</th>
+            <th>status</th>
+            <th>post_seq</th>
+            <th>priority</th>
+            <th>register_date</th>
+            <th>edit</th>
+            <th>set_state</th>
+            <th>del</th>
+        </tr>
+    }{
+        @for(nav <- navigations) {
+            <tr>
+                <th scope="row">@nav.seq</th>
+                <td>@nav.name</td>
+                <td>@nav.shortcut</td>
+                <td><span style="display: inline-block; width: 400px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@nav.description</span></td>
+                <td>
+                    <a href="#" class="btn btn-primary btn-xs disabled" role="button">
+                        <span class="fa @if(nav.status) {fa-check} else {fa-times}"></span>
+                    </a>
+                </td>
+                <td>@nav.post_seq</td>
+                <td>@nav.priority</td>
+                <td>@tags.tag_cleanly_date(nav.register_date)</td>
+                <td>
+                    <a title = "edit" href="@routes.AdminController.editNavigationForm(nav.seq)" class="btn btn-info btn-xs active" role="button"><span class="fa fa-pencil-square-o" aria-hidden="true"></span></a>
+                </td>
+                <td>
+                @defining(nav.status) { status =>
+                    <a title = "active" href="@routes.AdminController.setActiveNavigation(nav.seq, true)" class="btn btn-warning btn-xs @if(status) {disabled} else {active}" role="button"><span class="fa fa-check"></span></a>
+                    <a title = "inactive" href="@routes.AdminController.setActiveNavigation(nav.seq, false)" class="btn btn-warning btn-xs @if(status) {active} else {disabled}" role="button"><span class="fa fa-times"></span></a>
+                }
+                </td>
+                <td>
+                    <button type="button" title = "remove" data-toggle="modal" data-target= "#remove_board_@{
+                        nav.seq
+                    }" class="btn btn-danger btn-xs" ><span class="fa fa-trash-o" aria-hidden="true"></span></button>
+                </td>
+                @tags.tag_simple_modal(s"remove_board_${nav.seq}", "Warnning", routes.AdminController.deleteNavigation(nav.seq)) {
+                    Are you sure you want to remove "@nav.name" Navigation?
+                }
+            </tr>
+        }
+    }
+
+    <hr />
+
+    @b3.formCSRF(url) {
+        @defining(form.data.get("seq")) { seq =>
+            @if(seq.isDefined) {
+                @b3.hidden("seq", seq)
+            }
+        <div class="row">
+            <div class="col-md-4">
+                @b3.text(form("name"), '_label -> "name")
+                @b3.text(form("shortcut"), '_label -> "shortcut")
+                @b3.textarea(form("description"), '_label -> "description")
+            </div>
+            <div class="col-md-4">
+                @b3.checkbox(form("status"), '_text -> "status", 'checked -> "true")
+                @b3.text(form("post_seq"), '_label -> "post_seq")
+                @b3.text(form("priority"), '_label -> "priority")
+                @b3.submit('class -> "btn btn-default") {
+                    <span class="fa fa-check"></span>
+                    @if(seq.isDefined) {Edit} else {Create}
+                }
+            </div>
+        </div>
+        }
+    }
+}

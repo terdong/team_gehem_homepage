@@ -1,0 +1,10 @@
+@(name: String, message_key:String)(implicit request: play.api.mvc.RequestHeader,messages: Messages, context:com.teamgehem.model.TGContext)
+@scripts= {
+    <script src="@routes.Assets.versioned("javascripts/string_format.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.versioned("javascripts/sign_up.js")" type="text/javascript"></script>
+}
+
+@main("signup complete", scripts = scripts) {
+<p class="lead text-success text-center">@{name} @Messages(message_key)</p>
+    <span id="result_counter" data-str='@Messages("account.signin.succeed.counter")'></span>
+}

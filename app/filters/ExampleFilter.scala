@@ -29,5 +29,4 @@ class ExampleFilter @Inject()(
       result.withHeaders("X-ExampleFilter" -> "foo")
     }
   }
-
 }

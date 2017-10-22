@@ -7,6 +7,11 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="scala-sdk-2.11.8" level="application" />
+    <orderEntry type="library" name="scala-sdk-2.12.3" level="application" />
+    <orderEntry type="library" name="SBT: io.monix:monix-eval_2.12:3.0.0-M1:jar" level="project" />
+    <orderEntry type="library" name="SBT: io.monix:monix-execution_2.12:3.0.0-M1:jar" level="project" />
+    <orderEntry type="library" name="SBT: io.monix:monix-reactive_2.12:3.0.0-M1:jar" level="project" />
+    <orderEntry type="library" name="SBT: io.monix:monix-tail_2.12:3.0.0-M1:jar" level="project" />
+    <orderEntry type="library" name="SBT: io.monix:monix_2.12:3.0.0-M1:jar" level="project" />
   </component>
 </module>

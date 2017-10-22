@@ -1,0 +1,161 @@
+@import com.teamgehem.security.AuthMessagesRequest
+@(boards: Seq[Board], permissions: Seq[Permission], form: Form[_], url: Call)(implicit request: AuthMessagesRequest[AnyContent], messagesProvider: MessagesProvider, context:com.teamgehem.model.TGContext)
+
+@implicitFieldConstructor = @{
+    b3.vertical.fieldConstructor
+}
+
+@option_permissions = @{
+    for {
+        permission <- permissions
+    } yield (permission.permission_code.toString -> permission.content)
+}
+
+@scripts = {
+    <script type="text/javascript" src="https://cdn.datatables.net/v/bs/dt-1.10.16/datatables.min.js"></script>
+    <script type="text/javascript" src="@routes.AdminController.javascriptRoutesAdmin()"></script>
+    <script src="@routes.Assets.versioned("javascripts/table_sorting.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.versioned("javascripts/jquery.formautofill.min.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.versioned("javascripts/get_board_info.js")" type="text/javascript"></script>
+}
+@styles ={
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs/dt-1.10.16/datatables.min.css"/>
+}
+
+@main("boards", "admin", scripts = scripts, styles = styles) {
+
+    <div class="panel panel-default">
+        <div class="panel-heading">Boards</div>
+        <div class="table-responsive">
+            <table id="sorting_table" class="table table-bordered table-hover table-condensed">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>name</th>
+                        <th>reply</th>
+                        <th>comment</th>
+                        <th>attachment</th>
+                        <th>notice</th>
+                        <th>list</th>
+                        <th>read</th>
+                        <th>write</th>
+                        <th>author</th>
+                        <th>priority</th>
+                        <th>date</th>
+                        <th>edit</th>
+                        <th>state</th>
+                        <th>del</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @for(board <- boards) {
+                    <tr>
+                        <th scope="row">@{
+                            board.seq
+                        }</th>
+                        <td>@{
+                            board.name
+                        }</td>
+                        <td>@{
+                            board.is_reply
+                        }</td>
+                        <td>@{
+                            board.is_comment
+                        }</td>
+                        <td>@{
+                            board.is_attachment
+                        }</td>
+                        <td>@{
+                            board.is_notice
+                        }</td>
+                        <td>@{
+                            board.list_permission
+                        }</td>
+                        <td>@{
+                            board.read_permission
+                        }</td>
+                        <td>@{
+                            board.write_permission
+                        }</td>
+                        <td>@{
+                            board.author
+                        }</td>
+                        <td>@{
+                            board.priority
+                        }</td>
+                        <td>@tags.tag_cleanly_date(board.register_date)</td>
+                        <td>
+                           @* <a title = "edit" href="@routes.BoardController.editBoardForm(board.seq)" class="btn btn-info btn-xs active" role="button"><span class="fa fa-pencil-square-o" aria-hidden="true"></span></a>*@
+                            <button class="button_edit btn btn-info btn-xs active" data-board-seq="@board.seq" data-type="number"><span class="fa fa-pencil-square-o" aria-hidden="true"></span></button>
+
+                        </td>
+                        <td>
+                        @defining(board.status) { status =>
+                            <a title = "active" href="@routes.BoardController.setActiveBoard(board.seq, true)" class="btn btn-warning btn-xs @if(status) {disabled} else {active}" role="button"><span class="fa fa-check"></span></a>
+                            <a title = "inactive" href="@routes.BoardController.setActiveBoard(board.seq, false)" class="btn btn-warning btn-xs @if(status) {active} else {disabled}" role="button"><span class="fa fa-times"></span></a>
+                        }
+                        </td>
+                        <td>
+                            <button type="button" title = "remove" data-toggle="modal" data-target= "#remove_board_@{
+                                board.seq
+                            }" class="btn btn-danger btn-xs" ><span class="fa fa-trash-o" aria-hidden="true"></span></button>
+                        </td>
+                        @tags.tag_simple_modal(s"remove_board_${board.seq}", "Warnning", routes.BoardController.deleteBoard(board.seq)) {
+                            Are you sure you want to remove "@board.name" board?
+                        }
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <hr />
+
+    @b3.formCSRF(url, 'id -> "board_form") {
+
+        @defining(form.data.get("seq")) { seq =>
+            @if(seq.isDefined) {
+                @b3.hidden("seq", seq)
+            }
+            @b3.hidden(form("seq"))
+
+        <div class="row">
+            <div class="col-md-4">
+                @b3.text(form("name"), '_label -> "Title")
+                @b3.text(form("priority"), '_label -> "Priority")
+            </div>
+            <div class="col-md-2">
+            @b3.checkbox(form("status"), '_text -> "status")
+            </div>
+            <div class="col-md-2">
+            @b3.checkbox(form("is_reply"), '_text -> "is_reply")
+            </div>
+            <div class="col-md-2">
+            @b3.checkbox(form("is_comment"), '_text -> "is_comment")
+            </div>
+            <div class="col-md-2">
+            @b3.checkbox(form("is_attachment"), '_text -> "is_attachment")
+            @b3.checkbox(form("is_notice"), '_text -> "is_notice")
+            </div>
+        </div>
+            @b3.textarea(form("description"), '_label -> "Contents")
+        <div class="row">
+            <div class="col-md-4">
+            @b3.select(form("list_perm"), options = option_permissions, '_label -> "List Permission")
+            </div>
+            <div class="col-md-4">
+            @b3.select(form("read_perm"), options = option_permissions, '_label -> "Read Permission")
+            </div>
+            <div class="col-md-4">
+            @b3.select(form("write_perm"), options = option_permissions, '_label -> "Write Permission")
+            </div>
+        </div>
+
+            @b3.submit('class -> "btn btn-default") {
+                <span class="fa fa-check"></span>
+                @if(seq.isDefined) {Edit} else {Create}
+            }
+        }
+    }
+}

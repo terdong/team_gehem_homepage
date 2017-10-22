@@ -1,0 +1,7 @@
+@(content_option: Option[String])(implicit request: MessagesRequest[AnyContent], context:com.teamgehem.model.TGContext)
+
+@main("about") {
+        @defining(content_option.getOrElse("")) { content =>
+            @Html(content)
+        }
+}

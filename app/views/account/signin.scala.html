@@ -1,0 +1,35 @@
+@(signinForm: Form[SignIn])(implicit flash: Flash, request: play.api.mvc.RequestHeader, messages: Messages, context : com.teamgehem.model.TGContext)
+@import b3.vertical.fieldConstructor
+
+@main("signin") {
+
+    @flash.get("error").map { error_message =>
+    @error_message
+        <div class="alert alert-danger text-center">
+            <strong>Error!</strong> @messages(error_message)
+        </div>
+        <script type="text/javascript">
+                $(document).ready(function () {
+                    $.notify({
+                        icon: "fa fa-exclamation-triangle",
+                        message: "@messages(error_message)"
+                    }, {
+                        type: 'danger',
+                        placement: {
+                            from: "top",
+                            align: "center"
+                        },
+                        delay: 3000,
+                        mouse_over: "pause",
+                        template: '<div data-notify="container" class="col-xs-11 col-sm-3 alert alert-{0} text-center" role="alert">' +
+                        '<button type="button" aria-hidden="true" class="close" data-notify="dismiss">×</button>' +
+                        '<span data-notify="icon"></span> ' +
+                        '<span data-notify="message">{2}</span>' +
+                        '</div>'
+                    });
+                });
+        </script>
+    }
+
+    @tags.tag_signin_form(signinForm)
+}

@@ -1,0 +1,35 @@
+@(client_id: String)(implicit request: MessagesRequest[AnyContent], context:com.teamgehem.model.TGContext)
+@import views.html.helper.CSRF
+@styles = {
+    <link rel="stylesheet" media="screen" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-social/5.1.1/bootstrap-social.min.css">
+}
+@scripts = {
+    <script src="https://apis.google.com/js/api:client.js"></script>
+    <script src="@routes.Assets.versioned("javascripts/string_format.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.versioned("javascripts/google_sign_in.js")" type="text/javascript"></script>
+    <script type="text/javascript" src="@routes.HomeController.javascriptRoutes"></script>
+}
+
+@main("signin", scripts = scripts, styles = styles) {
+
+    @b3.hidden("google_client_id", client_id)
+    @CSRF.formField
+
+    <div class="row">
+        <div class="col-sm-4 col-sm-offset-4">
+            <div class="login-panel panel panel-primary">
+                <div class="panel-heading">
+                    <h3 class="panel-title">@Messages("account.signin.title")</h3>
+                </div>
+                <div class="panel-body">
+
+                    <div class="btn btn-block btn-social btn-google" id="google_sign_in_button">
+                        <span class="fa fa-google"></span> @Messages("account.signin.google")
+                    </div>
+
+                    <span id="result_counter"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+}

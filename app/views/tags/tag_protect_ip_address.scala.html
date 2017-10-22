@@ -1,0 +1,11 @@
+@(ip_address:String)
+
+@defining(ip_address.split('.')) { arr =>
+    @{
+        arr.zipWithIndex.foldLeft("")((zip1, zip2) => if(zip2._2 < (arr.length / 2)) {
+            s"${zip1}${zip2._1}."
+        } else {
+            zip1
+        }).concat("***.***")
+    }
+}

@@ -1,0 +1,51 @@
+@import com.teamgehem.model.PaginationInfo
+@(pagination_info : PaginationInfo, bound: Int = 5)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+
+
+<input type="hidden" name="page_info_length" value="@pagination_info.page_length"/>
+<input type="hidden" name="page_info_all_comment_count" value="@pagination_info.all_item_count"/>
+<input type="hidden" name="page_info_bound" value="@bound"/>
+
+<nav aria-label="Page navigation">
+    <div class="text-center">
+        <ul class="pagination justify-content-center">
+            <li id="page_front" class="@if(pagination_info.current_page == 1) {disabled}"><a href="javascript:;" class="comment_page" value="1">@Messages("pagination.front")</a>
+            </li>
+            <li id="page_prev" class="@if(pagination_info.current_page == 1) {disabled}">
+                <a href="javascript:;" aria-label="Previous" class="comment_page">
+                    <i class="fa fa-angle-double-left" aria-hidden="true"></i>
+                </a>
+            </li>
+
+            @defining(pagination_info.getLowBound(bound)) { low_bound =>
+                @defining(pagination_info.getHighBound(bound, low_bound)) { high_bound =>
+
+                    @for(i <- low_bound.max(1) until pagination_info.current_page) {
+                        <li><a href="#" class="comment_page">@i</a></li>
+                    }
+
+                <li class="active"><a href="#" class="comment_page">@{pagination_info.current_page}</a></li>
+
+                    @for(i <- pagination_info.current_page + 1 to high_bound) {
+                        <li><a href="#" class="comment_page">@i</a></li>
+                    }
+
+                <li id="page_next" class=" @if(pagination_info.current_page >= high_bound) {disabled}">
+                    <a href="#" class="comment_page" aria-label="Next" value=@{pagination_info.current_page + 1}>
+                        <i class="fa fa-angle-double-right" aria-hidden="true"></i>
+                    </a>
+                </li>
+                    @defining(pagination_info.all_item_count % pagination_info.page_length == 0) { is_empty_rest =>
+                        @defining(pagination_info.all_item_count / pagination_info.page_length) { max_page =>
+                            <li id="page_end" class="@if(pagination_info.current_page >= high_bound) {disabled}"><a href="#" class="comment_page" value="@if(is_empty_rest) {@max_page} else {
+                                @{
+                                    max_page + 1
+                                }
+                            }">@Messages("pagination.end")</a></li>
+                        }
+                    }
+                }
+            }
+        </ul>
+    </div>
+</nav>
