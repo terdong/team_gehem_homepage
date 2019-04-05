@@ -6,7 +6,7 @@
 This project is the web site of the web and game development studio "Team Gehem".
 
 ## Demo
-+ [My resume site](http://resume.teamgehem.com)
++ getting ready
 
 ## Features
 + Admin (Account, Board, Permission, Navigation)
