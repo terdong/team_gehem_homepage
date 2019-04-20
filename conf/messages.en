@@ -43,7 +43,7 @@ account.permission.member=Member
 account.permission.admin=Administrator
 account.permission.max=Max
 account.permission.waiting_auth=Waiting for authentication
-contents.home.resume.introduction=<p>This is a resume site of Scala Developer "DongHee Kim". (developed with Play Framework 2.6 with Scala)</p>\
+contents.home.resume.introduction=<p>This is a resume site of Scala Developer "DongHee Kim". (developed with Play Framework 2.6 for Scala)</p>\
 <p>I posted details about the projects I participated in.</ p>\
 <p>Login authentication uses Google OAuth 2.0, and you can automatically get monitor permission when signing up (this has permission to read the admin page).</p>\
 <p>If you have any questions, please feel free to contact me at the below phone or email.</p>\
