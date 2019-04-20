@@ -103,6 +103,16 @@ class AccountController @Inject()(config: Configuration,
     Ok(views.html.account.signin(signin_form))
   }
 
+  def signinWithGuest = Action.async { implicit request =>
+    members_repo.findByEmail("guest@teamgehem.com").map{ member =>
+      members_repo.updateLastSignin(member.seq)
+      Redirect(routes.HomeController.index()).withSession("seq" -> member.seq.toString,
+          "email" -> member.email,
+          "permission" -> member.permission.toString,
+          "nick" -> member.nick)
+    }
+  }
+
   @deprecated("This is no longer used.","0.5.2")
   def signin = Action.async { implicit request =>
     signin_form.bindFromRequest.fold(

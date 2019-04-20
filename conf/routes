@@ -7,7 +7,7 @@ GET           /javascriptRoutesUpload                                           
 GET           /javascriptRoutesAdmin                                                  controllers.AdminController.javascriptRoutesAdmin
 
 # main
-GET          /chatFeed                                                               controllers.HomeController.chatFeed
+GET           /chatFeed                                                               controllers.HomeController.chatFeed
 POST          /postMessage                                                            controllers.HomeController.postMessage
 
 # Account
@@ -19,6 +19,8 @@ GET           /signin                                                           
 POST          /signin                                                                 controllers.AccountController.signinOpenId
 GET           /signout                                                                controllers.AccountController.signout
 POST          /getClientId                                                            controllers.AccountController.getClientId
+
+GET           /signin/guest                                                           controllers.AccountController.signinWithGuest
 
 POST          /edit                                                                   controllers.AccountController.edit
 GET           /edit                                                                   controllers.AccountController.editForm

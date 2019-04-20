@@ -57,3 +57,5 @@ board.search.author.title=작성자
 account.edit.delete.title=계정 삭제
 account.edit.delete.message=계정을 삭제 하시겠습니까?
 account.edit.delete.complete=계정이 삭제 되었습니다.
+account.signin.guest=손님으로 로그인하기
+account.permission.monitor=모니터

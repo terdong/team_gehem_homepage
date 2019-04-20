@@ -48,8 +48,10 @@ libraryDependencies ++=  Seq(
   "com.typesafe.play" %% "play-iteratees-reactive-streams" % "2.6.1"
 )
 
-mappings in Universal  += file ( "eb/Procfile" ) ->  "Procfile"
+//javaOptions in ThisBuild += "--add-modules=java.xml.bind"
 
-import NativePackagerHelper._
+//mappings in Universal  += file ( "eb/Procfile" ) ->  "Procfile"
 
-mappings in Universal ++= directory(".ebextensions")
+//import NativePackagerHelper._
+
+//mappings in Universal ++= directory(".ebextensions")

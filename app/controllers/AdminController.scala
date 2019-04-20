@@ -35,7 +35,7 @@ class AdminController @Inject()(mcc: MessagesControllerComponents,
                                )
   extends TGBasicController(mcc, sync_cache) with DbResultChecker {
 
-  def members = auth.authrized_semi_admin.async { implicit request =>
+  def members = auth.authrized_monitor.async { implicit request =>
     for {
       members <- members_repo.allWithPermission
     } yield Ok(views.html.admin.members("members", members))
@@ -76,7 +76,7 @@ class AdminController @Inject()(mcc: MessagesControllerComponents,
       }
   }
 
-  def permissions = auth.authrized_semi_admin.async { implicit request =>
+  def permissions = auth.authrized_monitor.async { implicit request =>
     permissions_(permissionForm)
   }
 
@@ -98,7 +98,7 @@ class AdminController @Inject()(mcc: MessagesControllerComponents,
         .map(_ => Redirect(routes.AdminController.permissions))
   }
 
-  def navigations = auth.authrized_semi_admin.async { implicit request =>
+  def navigations = auth.authrized_monitor.async { implicit request =>
     getNavigationResult_(navigation_form, routes.AdminController.createNavigation)
   }
 

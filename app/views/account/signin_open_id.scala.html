@@ -27,6 +27,10 @@
                         <span class="fa fa-google"></span> @Messages("account.signin.google")
                     </div>
 
+                    <a href="@routes.AccountController.signinWithGuest" class="btn btn-block btn-social btn-github" id="guest_sign_in_button">
+                        <span class="fa fa-user-o"></span> @Messages("account.signin.guest")
+                    </a>
+
                     <span id="result_counter"></span>
                 </div>
             </div>

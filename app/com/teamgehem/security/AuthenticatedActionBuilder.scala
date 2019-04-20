@@ -35,6 +35,9 @@ class AuthenticatedActionBuilder(val parser: BodyParser[AnyContent],
   def authrized_dev = {
     this andThen MemberAuthorizedFilter(Developer)
   }
+  def authrized_monitor = {
+    this andThen MemberAuthorizedFilter(Monitor)
+  }
   def authrized_semi_admin = {
     this andThen MemberAuthorizedFilter(SemiAdmin)
   }

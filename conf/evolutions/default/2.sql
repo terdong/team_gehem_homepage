@@ -5,8 +5,9 @@ insert into "permissions" values
   (01, true, 'account.permission.waiting_auth'),
   (02, true, 'account.permission.member'),
   (07, true, 'account.permission.developer'),
-  (08, true, 'account.permission.semi_admin'),
-  (09, true, 'account.permission.admin'),
+  (08, true, 'account.permission.monitor'),
+  (09, true, 'account.permission.semi_admin'),
+  (20, true, 'account.permission.admin'),
   (99, true, 'account.permission.max');
 
 # --- !Downs

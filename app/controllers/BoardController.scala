@@ -32,7 +32,7 @@ class BoardController @Inject()(cache_manager:CacheManager,
                                 permissions_repo: PermissionsRepository)
   extends TGBasicController(mcc, sync_cache) {
 
-  def boards = auth.authrized_semi_admin.async { implicit request: AuthMessagesRequest[AnyContent] =>
+  def boards = auth.authrized_monitor.async { implicit request: AuthMessagesRequest[AnyContent] =>
     okWithFormBoards_(board_form, routes.BoardController.createBoard)
   }
 

@@ -9,7 +9,8 @@ object PermissionProvider extends Enumeration {
   val Standby: Byte = 1
   val Member: Byte = 2
   val Developer: Byte = 7
-  val SemiAdmin: Byte = 8
-  val Admin: Byte = 9
+  val Monitor: Byte = 8
+  val SemiAdmin: Byte = 9
+  val Admin: Byte = 20
   val Spare: Byte = 99
 }
