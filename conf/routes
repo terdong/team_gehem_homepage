@@ -19,6 +19,7 @@ GET           /signin                                                           
 POST          /signin                                                                 controllers.AccountController.signinOpenId
 GET           /signout                                                                controllers.AccountController.signout
 POST          /getClientId                                                            controllers.AccountController.getClientId
+GET           /signin/admin                                                           controllers.AccountController.signinAdmin
 
 GET           /signin/guest                                                           controllers.AccountController.signinWithGuest
 

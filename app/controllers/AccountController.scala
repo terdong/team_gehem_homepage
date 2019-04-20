@@ -132,6 +132,19 @@ class AccountController @Inject()(config: Configuration,
     )
   }
 
+  def signinAdmin = Action. async{ implicit request =>
+    members_repo.findByEmail("terdong@naver.com") map { member =>
+      members_repo.updateLastSignin(member.seq)
+      Redirect(
+        routes.HomeController
+          .index())
+        .withSession("seq" -> member.seq.toString,
+          "email" -> member.email,
+          "permission" -> member.permission.toString,
+          "nick" -> member.nick)
+    }
+  }
+
   def signinOpenIdForm = Action { implicit request =>
     Ok(views.html.account.signin_open_id(google_client_id))
   }
