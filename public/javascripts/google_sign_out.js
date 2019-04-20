@@ -14,14 +14,14 @@ $(document).ready(function () {
                 gapi.load('auth2', function(){
                     auth2 = gapi.auth2.init({
                         client_id: json_data.client_id
-                    }).then(function(){
+                    }).then(function(e){
                         gapi.auth2.getAuthInstance().signOut().then(function(){
                             window.location = href;
                         });
+                    }, function(e){
+                        window.location = href;
                     });
                 });
-            }else{
-                window.location = href;
             }
         }).fail(function (e) {
             var error_message = jQuery.parseJSON(JSON.stringify(e)).error;
