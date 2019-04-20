@@ -43,9 +43,9 @@ account.permission.member=Member
 account.permission.admin=Administrator
 account.permission.max=Max
 account.permission.waiting_auth=Waiting for authentication
-contents.home.resume.introduction=<p>This is the resume homepage of Scala Programmer "DongHee Kim".</p>\
-<p>I posted my experience as a programmer, my education, my special skills, and the projects I participated in and the development of this homepage.</p>\
-<p>Login authentication uses Google OAuth 2.0, and you can automatically get semi-admin permission when signing up. (this permission has some limitations than just Admin). You can see by clicking the top menus.</p>\
+contents.home.resume.introduction=<p>This is the resume homepage of Scala Developer "DongHee Kim".</ p>\
+<p>I posted details about the projects I participated in.</ p>\
+<p>Login authentication uses Google OAuth 2.0, and you can automatically get monitor permission when signing up (this has permission to read the admin page).</p>\
 <p>If you have any questions, please feel free to contact me at the below phone or email.</p>\
 <p>Thank you.</p>
 account.permission.semi_admin=Semi_Administrator
