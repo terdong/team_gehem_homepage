@@ -24,14 +24,14 @@
                     <a href="@routes.PostController.list(0, 1)" >Board</a>
                 </li>
 
-                @tags.tag_contents_by_permission(8){
+                @tags.tag_contents_by_permission(com.teamgehem.enumeration.PermissionProvider.Monitor){
                     <li class="dropdown @("active".when(tab == "admin"))">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin <b class="caret"></b></a>
                         @includes.nav_admin()
                     </li>
                 }()
 
-                @tags.tag_contents_by_permission(9){
+                @tags.tag_contents_by_permission(com.teamgehem.enumeration.PermissionProvider.Admin){
                     <li class="dropdown @("active".when(tab == "dev"))">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dev <b class="caret"></b></a>
 
