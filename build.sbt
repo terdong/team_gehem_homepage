@@ -1,6 +1,6 @@
 name := "team_gehem_homepage"
 
-version := "0.5.29"
+version := "0.5.29.3"
 
 lazy val `team_gehem_homepage` = (project in file(".")).enablePlugins(PlayScala, LauncherJarPlugin)
 
@@ -8,12 +8,12 @@ resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"
 
 resolvers += "Akka Snapshot Repository" at "http://repo.akka.io/snapshots/"
 
-scalaVersion := "2.12.2"
+scalaVersion := "2.12.8"
 
 libraryDependencies ++= Seq(ehcache, ws, specs2 % Test, guice, evolutions)
 
-unmanagedResourceDirectories in Test <+= baseDirectory(
-  _ / "target/web/public/test")
+unmanagedResourceDirectories in Test += baseDirectory(
+  _ / "target/web/public/test").value
 
 resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
