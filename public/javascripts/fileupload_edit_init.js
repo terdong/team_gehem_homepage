@@ -64,7 +64,8 @@ $(document).ready(function () {
                 var uuid_spans = $('.qq-uuid');
                 $.each(response,function(i, data) {
                     var button = uuid_spans.eq(i);
-                    button.attr("data-clipboard-text", "http://d2bbobgydxzko3.cloudfront.net/" + data['uuid']);
+                    button.attr("data-clipboard-text", "/images/" + data['uuid']);
+                    //button.attr("data-clipboard-text", "http://d2bbobgydxzko3.cloudfront.net/" + data['uuid']);
                     button.removeClass("qq-hide");
                     button.click(function(){
                         hash_button_click(data['name']);
