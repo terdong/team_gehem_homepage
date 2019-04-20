@@ -20,6 +20,8 @@ $(document).ready(function () {
                         });
                     });
                 });
+            }else{
+                window.location = href;
             }
         }).fail(function (e) {
             var error_message = jQuery.parseJSON(JSON.stringify(e)).error;
