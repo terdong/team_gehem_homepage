@@ -8,7 +8,7 @@
 This project is the web site of the web and game development studio "Team Gehem".
 
 ## Demo
-+ getting ready
++ [demo](https://resume.teamgehem.com)
 
 ## Features
 + Admin (Account, Board, Permission, Navigation)
